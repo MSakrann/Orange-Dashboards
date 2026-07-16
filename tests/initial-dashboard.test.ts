@@ -7,6 +7,7 @@ const fixture: DashboardViewModel = {
   slug: "alpha",
   name: "Fixture Alpha",
   description: "",
+  jiraLinked: false,
   statuses: [],
   statusGroups: { active: [], risk: [], delayed: [], completed: [] },
   projects: [],

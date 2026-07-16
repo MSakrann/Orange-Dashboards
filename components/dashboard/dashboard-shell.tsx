@@ -134,6 +134,7 @@ function optimisticItem(
     ...(value.endDate ? { endDate: value.endDate } : {}),
     sortOrder,
     updatedAt,
+    syncSource: "local",
     comments,
   };
 }
@@ -206,9 +207,9 @@ export function DashboardShell({
   viewState = "ready",
 }: DashboardShellProps) {
   const realtime = useWorkspaceRealtime(initialDashboard, { enabled: source === "database" });
-  const canAdmin = isAdmin && source === "database";
-  const supabase = useMemo(() => canAdmin ? createClient() : null, [canAdmin]);
   const [workspace, setWorkspace] = useState(realtime.data);
+  const canAdmin = isAdmin && source === "database" && !workspace.jiraLinked;
+  const supabase = useMemo(() => canAdmin ? createClient() : null, [canAdmin]);
   const workspaceRef = useRef(workspace);
   const authoritativeRef = useRef(realtime.data);
   const mutationBusyRef = useRef(false);
@@ -601,20 +602,24 @@ export function DashboardShell({
             </div>
           </div>
           <div className="header-tools">
-            {canAdmin ? (
+            {isAdmin && source === "database" ? (
               <>
-                <Link
-                  className="secondary-button settings-link"
-                  href={`/${workspace.slug}/history`}
-                >
-                  History
-                </Link>
-                <Link
-                  className="secondary-button settings-link"
-                  href={`/${workspace.slug}/settings/statuses`}
-                >
-                  Status Settings
-                </Link>
+                {canAdmin ? (
+                  <>
+                    <Link
+                      className="secondary-button settings-link"
+                      href={`/${workspace.slug}/history`}
+                    >
+                      History
+                    </Link>
+                    <Link
+                      className="secondary-button settings-link"
+                      href={`/${workspace.slug}/settings/statuses`}
+                    >
+                      Status Settings
+                    </Link>
+                  </>
+                ) : null}
                 {adminEmail ? (
                   <SessionControls email={adminEmail} returnTo={`/${workspace.slug}`} />
                 ) : null}
@@ -632,6 +637,17 @@ export function DashboardShell({
             </div>
           </div>
         </header>
+
+        {workspace.jiraLinked ? (
+          <p className="jira-banner" role="status">
+            This workspace mirrors Jira. Tasks, statuses, and progress update automatically from your
+            connected Jira instance.
+            {workspace.lastJiraSyncAt
+              ? ` Last sync: ${new Date(workspace.lastJiraSyncAt).toLocaleString()}.`
+              : ""}
+            {workspace.lastJiraSyncError ? ` Sync warning: ${workspace.lastJiraSyncError}` : ""}
+          </p>
+        ) : null}
 
         <KpiGrid kpis={workspace.kpis} />
 

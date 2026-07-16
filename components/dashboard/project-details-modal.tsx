@@ -47,7 +47,20 @@ export function ProjectDetailsModal({
           <span aria-hidden="true" style={{ backgroundColor: project.statusColor }} />
           {project.statusName}
         </p>
-        <h2 id={`project-title-${project.id}`}>{project.title}</h2>
+        <h2 id={`project-title-${project.id}`}>
+          {project.title}
+          {project.jiraIssueKey ? (
+            <span className="jira-key">
+              {project.jiraUrl ? (
+                <a href={project.jiraUrl} target="_blank" rel="noreferrer">
+                  {project.jiraIssueKey}
+                </a>
+              ) : (
+                project.jiraIssueKey
+              )}
+            </span>
+          ) : null}
+        </h2>
         <p className="modal-description">{project.description}</p>
         <ProgressBar label={`${project.title} progress`} value={project.progress} />
         <dl className="modal-meta">

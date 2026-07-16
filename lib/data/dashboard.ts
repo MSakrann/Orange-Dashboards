@@ -49,6 +49,9 @@ export interface DashboardWorkItem {
   endDate?: string;
   sortOrder: number;
   updatedAt: string;
+  syncSource: "local" | "jira";
+  jiraIssueKey?: string;
+  jiraUrl?: string;
   comments: DashboardComment[];
 }
 
@@ -69,6 +72,10 @@ export interface DashboardViewModel {
   slug: string;
   name: string;
   description: string;
+  jiraLinked: boolean;
+  jiraBrowseBaseUrl?: string;
+  lastJiraSyncAt?: string;
+  lastJiraSyncError?: string;
   statuses: DashboardStatus[];
   statusGroups: Record<ReportingCategory, string[]>;
   projects: DashboardProject[];
@@ -135,7 +142,15 @@ export function aggregateKpis(projects: DashboardProject[]): DashboardKpis {
   };
 }
 
-export function mapDashboardRows(rows: DashboardRows): DashboardViewModel {
+export function mapDashboardRows(
+  rows: DashboardRows,
+  options?: {
+    jiraLinked?: boolean;
+    jiraBrowseBaseUrl?: string;
+    lastJiraSyncAt?: string | null;
+    lastJiraSyncError?: string | null;
+  },
+): DashboardViewModel {
   const workspaceId = rows.workspace.id;
   const statuses = rows.statuses
     .filter((status) => status.workspace_id === workspaceId)
@@ -195,6 +210,15 @@ export function mapDashboardRows(rows: DashboardRows): DashboardViewModel {
       ...(item.end_date ? { endDate: item.end_date } : {}),
       sortOrder: item.sort_order,
       updatedAt: item.updated_at,
+      syncSource: item.sync_source === "jira" ? "jira" : "local",
+      ...(item.jira_issue_key && options?.jiraBrowseBaseUrl
+        ? {
+            jiraIssueKey: item.jira_issue_key,
+            jiraUrl: `${options.jiraBrowseBaseUrl}/browse/${item.jira_issue_key}`,
+          }
+        : item.jira_issue_key
+          ? { jiraIssueKey: item.jira_issue_key }
+          : {}),
       comments: commentsByItem.get(item.id) ?? [],
     };
   }
@@ -213,6 +237,10 @@ export function mapDashboardRows(rows: DashboardRows): DashboardViewModel {
     slug: rows.workspace.slug,
     name: rows.workspace.name,
     description: rows.workspace.description ?? "",
+    jiraLinked: Boolean(options?.jiraLinked),
+    ...(options?.jiraBrowseBaseUrl ? { jiraBrowseBaseUrl: options.jiraBrowseBaseUrl } : {}),
+    ...(options?.lastJiraSyncAt ? { lastJiraSyncAt: options.lastJiraSyncAt } : {}),
+    ...(options?.lastJiraSyncError ? { lastJiraSyncError: options.lastJiraSyncError } : {}),
     statuses,
     statusGroups: groupStatuses(statuses),
     projects,
@@ -242,7 +270,7 @@ export async function loadDashboard(
   if (!workspaceResult.data) return null;
 
   const workspace = workspaceResult.data;
-  const [statusesResult, workItemsResult] = await Promise.all([
+  const [statusesResult, workItemsResult, jiraSettingsResult] = await Promise.all([
     supabase
       .from("statuses")
       .select("*")
@@ -253,6 +281,11 @@ export async function loadDashboard(
       .select("*")
       .eq("workspace_id", workspace.id)
       .order("sort_order", { ascending: true }),
+    supabase
+      .from("workspace_jira_settings")
+      .select("enabled, last_synced_at, last_sync_error")
+      .eq("workspace_id", workspace.id)
+      .maybeSingle(),
   ]);
 
   const statuses = dataOrThrow(statusesResult.data, statusesResult.error, "statuses");
@@ -270,5 +303,23 @@ export async function loadDashboard(
     comments = dataOrThrow(commentsResult.data, commentsResult.error, "comments");
   }
 
-  return mapDashboardRows({ workspace, statuses, workItems, comments });
+  return mapDashboardRows(
+    { workspace, statuses, workItems, comments },
+    {
+      jiraLinked: Boolean(jiraSettingsResult.data?.enabled),
+      jiraBrowseBaseUrl: resolveJiraBrowseBaseUrl(workspace.slug),
+      lastJiraSyncAt: jiraSettingsResult.data?.last_synced_at ?? null,
+      lastJiraSyncError: jiraSettingsResult.data?.last_sync_error ?? null,
+    },
+  );
+}
+
+function resolveJiraBrowseBaseUrl(workspaceSlug: string) {
+  if (workspaceSlug === "pe-development") {
+    return process.env.JIRA_PE_BASE_URL?.replace(/\/$/, "");
+  }
+  if (workspaceSlug === "platform-development") {
+    return process.env.JIRA_PLATFORM_BASE_URL?.replace(/\/$/, "");
+  }
+  return undefined;
 }

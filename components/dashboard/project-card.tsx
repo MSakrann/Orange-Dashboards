@@ -46,7 +46,20 @@ export function ProjectCard({ project, onOpen, adminControls }: ProjectCardProps
             <span aria-hidden="true" style={{ backgroundColor: project.statusColor }} />
             {project.statusName}
           </p>
-          <h2>{project.title}</h2>
+          <h2>
+            {project.title}
+            {project.jiraIssueKey ? (
+              <span className="jira-key">
+                {project.jiraUrl ? (
+                  <a href={project.jiraUrl} target="_blank" rel="noreferrer">
+                    {project.jiraIssueKey}
+                  </a>
+                ) : (
+                  project.jiraIssueKey
+                )}
+              </span>
+            ) : null}
+          </h2>
         </div>
         <span className={`priority priority-${project.priority}`}>{project.priority}</span>
       </div>

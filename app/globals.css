@@ -121,6 +121,30 @@ h1 {
   font-size: 14px;
 }
 
+.jira-banner {
+  margin: 0 0 1.25rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid #f5c26b;
+  border-radius: 0.75rem;
+  background: #fff8eb;
+  color: #7a4d00;
+}
+
+.jira-key {
+  margin-left: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.jira-key a {
+  color: #c2410c;
+  text-decoration: none;
+}
+
+.jira-key a:hover {
+  text-decoration: underline;
+}
+
 .header-tools {
   display: flex;
   align-items: flex-end;

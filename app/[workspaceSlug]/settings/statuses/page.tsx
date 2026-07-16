@@ -30,6 +30,7 @@ export default async function StatusSettingsPage({
 
   const dashboard = await loadDashboard(supabase, workspaceSlug);
   if (!dashboard) redirect(workspacePath);
+  if (dashboard.jiraLinked) redirect(workspacePath);
 
   return <StatusManager initialDashboard={dashboard} />;
 }

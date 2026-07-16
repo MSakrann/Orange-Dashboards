@@ -180,6 +180,73 @@ full disaster-recovery path.
 Never restore over production without a maintenance window, a verified backup, and a
 rollback plan.
 
+## Jira integration (one-way sync)
+
+PE Development and Platform Development mirror separate Jira Cloud instances. Hot Topics
+remains fully manual in the dashboard. The application never writes back to Jira.
+
+### How it works
+
+- **Cron sync** runs every 15 minutes via Vercel (`/api/jira/sync`).
+- **Webhooks** push near-real-time updates when issues are created, updated, or deleted.
+- **RLS** blocks manual edits to work items, statuses, and comments in Jira-linked workspaces.
+- **Status mapping** translates Jira status names into dashboard statuses via
+  `jira_status_mappings` (seeded defaults in migration `0006_jira_sync.sql`).
+
+### Apply the migration
+
+```bash
+npx supabase db push
+```
+
+### Server environment variables (Vercel)
+
+Set these in **Production** (and Preview if you test there). Never expose them in the browser.
+
+| Variable | Workspace |
+| --- | --- |
+| `JIRA_PE_*` | PE Development |
+| `JIRA_PLATFORM_*` | Platform Development |
+| `SUPABASE_SERVICE_ROLE_KEY` | Sync jobs (server only) |
+| `CRON_SECRET` | Protects `/api/jira/sync` |
+
+See `.env.example` for the full list. Each Jira instance needs:
+
+- `BASE_URL` — e.g. `https://your-company.atlassian.net`
+- `EMAIL` — Atlassian account email
+- `API_TOKEN` — from [Atlassian API tokens](https://id.atlassian.com/manage-profile/security/api-tokens)
+- `JQL` — which issues to mirror, e.g. `project = PE ORDER BY updated DESC`
+- `WEBHOOK_SECRET` — a long random string you choose; used to validate incoming webhooks
+- `PROGRESS_FIELD_ID` — optional custom field for progress percentage
+
+### Jira webhooks (one per instance)
+
+In each Jira Cloud project/instance, create a webhook:
+
+| Workspace | URL |
+| --- | --- |
+| PE Development | `https://<your-app>/api/jira/webhook/pe-development?secret=<JIRA_PE_WEBHOOK_SECRET>` |
+| Platform Development | `https://<your-app>/api/jira/webhook/platform-development?secret=<JIRA_PLATFORM_WEBHOOK_SECRET>` |
+
+Subscribe to **issue created**, **issue updated**, and **issue deleted**.
+
+### Initial sync and status mapping
+
+1. Deploy with all env vars set.
+2. Trigger the first sync manually:
+
+```bash
+curl -H "Authorization: Bearer <CRON_SECRET>" https://<your-app>/api/jira/sync
+```
+
+3. Open each Jira-linked dashboard and confirm projects appear with Jira keys.
+4. If statuses look wrong, update `jira_status_mappings` in Supabase SQL editor to match your
+   Jira workflow status names (case-insensitive). Each mapping points to a dashboard
+   `status_id` in that workspace.
+
+Progress is derived from the Jira status category (To Do → 0%, In Progress → 50%, Done → 100%)
+unless you set `JIRA_*_PROGRESS_FIELD_ID` to a numeric custom field.
+
 ## Security
 
 - Anonymous and authenticated users can read dashboard workspace/status/work-item/comment rows by design.

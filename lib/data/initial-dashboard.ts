@@ -96,6 +96,7 @@ export function mapFixtureWorkspace(workspace: Workspace): DashboardViewModel {
       reportingCategory: status.reportingCategory,
       sortOrder,
       updatedAt: "",
+      syncSource: "local" as const,
       comments: project.comments.map((comment, index) => ({
         id: `fixture-${project.id}-comment-${index}`,
         ...comment,
@@ -111,6 +112,7 @@ export function mapFixtureWorkspace(workspace: Workspace): DashboardViewModel {
     slug: workspace.slug,
     name: workspace.name,
     description: workspace.description,
+    jiraLinked: false,
     statuses,
     statusGroups: groupStatuses(statuses),
     projects,

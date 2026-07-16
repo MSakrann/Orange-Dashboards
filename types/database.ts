@@ -54,6 +54,79 @@ export type Database = {
         };
         Relationships: [];
       };
+      jira_status_mappings: {
+        Row: {
+          created_at: string;
+          id: string;
+          jira_status_name: string;
+          status_id: string;
+          updated_at: string;
+          workspace_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          jira_status_name: string;
+          status_id: string;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          jira_status_name?: string;
+          status_id?: string;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "jira_status_mappings_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      workspace_jira_settings: {
+        Row: {
+          created_at: string;
+          enabled: boolean;
+          last_sync_error: string | null;
+          last_sync_issue_count: number;
+          last_synced_at: string | null;
+          updated_at: string;
+          workspace_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          enabled?: boolean;
+          last_sync_error?: string | null;
+          last_sync_issue_count?: number;
+          last_synced_at?: string | null;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          created_at?: string;
+          enabled?: boolean;
+          last_sync_error?: string | null;
+          last_sync_issue_count?: number;
+          last_synced_at?: string | null;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "workspace_jira_settings_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: true;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       workspace_identity_registry: {
         Row: {
           name: string;
@@ -182,12 +255,16 @@ export type Database = {
           description: string | null;
           end_date: string | null;
           id: string;
+          jira_issue_id: string | null;
+          jira_issue_key: string | null;
+          jira_updated_at: string | null;
           parent_id: string | null;
           priority: string;
           progress: number;
           sort_order: number;
           start_date: string | null;
           status_id: string;
+          sync_source: string;
           title: string;
           updated_at: string;
           workspace_id: string;
@@ -198,12 +275,16 @@ export type Database = {
           description?: string | null;
           end_date?: string | null;
           id?: string;
+          jira_issue_id?: string | null;
+          jira_issue_key?: string | null;
+          jira_updated_at?: string | null;
           parent_id?: string | null;
           priority?: string;
           progress?: number;
           sort_order?: number;
           start_date?: string | null;
           status_id: string;
+          sync_source?: string;
           title: string;
           updated_at?: string;
           workspace_id: string;
@@ -214,12 +295,16 @@ export type Database = {
           description?: string | null;
           end_date?: string | null;
           id?: string;
+          jira_issue_id?: string | null;
+          jira_issue_key?: string | null;
+          jira_updated_at?: string | null;
           parent_id?: string | null;
           priority?: string;
           progress?: number;
           sort_order?: number;
           start_date?: string | null;
           status_id?: string;
+          sync_source?: string;
           title?: string;
           updated_at?: string;
           workspace_id?: string;
@@ -374,7 +459,8 @@ export type Database = {
         };
         Returns: undefined;
       };
-      set_updated_at: { Args: Record<PropertyKey, never>; Returns: unknown };
+      begin_jira_sync_batch: { Args: Record<PropertyKey, never>; Returns: undefined };
+      workspace_jira_enabled: { Args: { target_workspace_id: string }; Returns: boolean };
     };
     Enums: Record<never, never>;
     CompositeTypes: Record<never, never>;

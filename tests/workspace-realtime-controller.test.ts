@@ -12,6 +12,7 @@ function dashboard(title: string, itemIds = ["item-1"]): DashboardViewModel {
     slug: "alpha",
     name: "Alpha",
     description: "",
+    jiraLinked: false,
     statuses: [{
       id: "status-1",
       name: "In delivery",
@@ -40,6 +41,7 @@ function dashboard(title: string, itemIds = ["item-1"]): DashboardViewModel {
       progress: 50,
       sortOrder,
       updatedAt: "",
+      syncSource: "local" as const,
       comments: [],
       subtasks: [],
     })),

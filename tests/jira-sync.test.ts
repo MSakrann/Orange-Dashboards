@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getJiraConnectionForSlug, isJiraWorkspaceSlug } from "@/lib/jira/config";
 import { partitionMappedIssues } from "@/lib/jira/hierarchy";
 import { mapJiraIssue } from "@/lib/jira/map-issue";
-import { resolveDashboardStatusId } from "@/lib/jira/resolve-status";
+import { inferReportingCategory, uniqueJiraStatuses } from "@/lib/jira/resolve-status";
 import { verifyJiraHubSignature } from "@/lib/jira/webhook-auth";
 import type { JiraConnectionConfig, JiraIssue } from "@/lib/jira/types";
 
@@ -106,38 +106,20 @@ describe("partitionMappedIssues", () => {
   });
 });
 
-describe("resolveDashboardStatusId", () => {
-  const statuses = [
-    { id: "active", name: "In Progress", reporting_category: "active" },
-    { id: "risk", name: "At Risk", reporting_category: "risk" },
-    { id: "delayed", name: "Delayed", reporting_category: "delayed" },
-    { id: "done", name: "Completed", reporting_category: "completed" },
-  ];
-
-  it("maps Done by category even without an explicit mapping row", () => {
-    expect(resolveDashboardStatusId({
-      jiraStatusName: "Released",
-      jiraStatusCategoryKey: "done",
-      statuses,
-      mappings: [],
-    })).toBe("done");
+describe("inferReportingCategory", () => {
+  it("keeps Done in completed and To Do in active for KPIs only", () => {
+    expect(inferReportingCategory("Done", "done")).toBe("completed");
+    expect(inferReportingCategory("To Do", "new")).toBe("active");
+    expect(inferReportingCategory("Blocked", "indeterminate")).toBe("risk");
   });
+});
 
-  it("maps To Do / Backlog to active, not delayed", () => {
-    expect(resolveDashboardStatusId({
-      jiraStatusName: "To Do",
-      jiraStatusCategoryKey: "new",
-      statuses,
-      mappings: [],
-    })).toBe("active");
-  });
-
-  it("maps Blocked to risk via name heuristics", () => {
-    expect(resolveDashboardStatusId({
-      jiraStatusName: "Blocked",
-      jiraStatusCategoryKey: "indeterminate",
-      statuses,
-      mappings: [],
-    })).toBe("risk");
+describe("uniqueJiraStatuses", () => {
+  it("preserves exact Jira status names", () => {
+    expect(uniqueJiraStatuses([
+      { jiraStatusName: "In Review", jiraStatusCategoryKey: "indeterminate" },
+      { jiraStatusName: "in review", jiraStatusCategoryKey: "indeterminate" },
+      { jiraStatusName: "To Do", jiraStatusCategoryKey: "new" },
+    ]).map((status) => status.name)).toEqual(["In Review", "To Do"]);
   });
 });

@@ -1,6 +1,6 @@
 import { fetchJiraIssue, searchJiraIssues } from "@/lib/jira/client";
+import { ensureJiraNamedStatuses, removeUnusedSeedStatuses } from "@/lib/jira/ensure-statuses";
 import { partitionMappedIssues } from "@/lib/jira/hierarchy";
-import { resolveDashboardStatusId } from "@/lib/jira/resolve-status";
 import type { JiraConnectionConfig } from "@/lib/jira/types";
 import { mapJiraIssue } from "@/lib/jira/map-issue";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -54,46 +54,25 @@ async function loadWorkspaceContext(workspaceSlug: string) {
   if (workspaceError) throw new Error(workspaceError.message);
   if (!workspace) throw new Error(`Workspace not found: ${workspaceSlug}`);
 
-  const [{ data: statuses, error: statusesError }, { data: mappings, error: mappingsError }] =
-    await Promise.all([
-      supabase
-        .from("statuses")
-        .select("id, name, reporting_category, sort_order")
-        .eq("workspace_id", workspace.id)
-        .order("sort_order", { ascending: true }),
-      supabase
-        .from("jira_status_mappings")
-        .select("jira_status_name, status_id")
-        .eq("workspace_id", workspace.id),
-    ]);
+  const { data: statuses, error: statusesError } = await supabase
+    .from("statuses")
+    .select("id, name, reporting_category, sort_order, color")
+    .eq("workspace_id", workspace.id)
+    .order("sort_order", { ascending: true });
 
   if (statusesError) throw new Error(statusesError.message);
-  if (mappingsError) throw new Error(mappingsError.message);
   if (!statuses?.length) throw new Error(`No statuses configured for ${workspaceSlug}`);
-
-  function resolveStatusId(jiraStatusName: string, jiraStatusCategoryKey?: string | null) {
-    const statusId = resolveDashboardStatusId({
-      jiraStatusName,
-      jiraStatusCategoryKey,
-      statuses: statuses ?? [],
-      mappings: mappings ?? [],
-    });
-    if (!statusId) throw new Error(`Unable to resolve status for ${jiraStatusName}`);
-    return statusId;
-  }
 
   return {
     supabase,
     workspace,
     statuses,
-    resolveStatusId,
   };
 }
 
 async function beginJiraSync(supabase: ReturnType<typeof createServiceClient>) {
   const { error } = await supabase.rpc("begin_jira_sync_batch");
   if (error) {
-    // Continue if the helper is unavailable; sync still works without audit suppression.
     console.warn("begin_jira_sync_batch failed:", error.message);
   }
 }
@@ -102,7 +81,7 @@ export async function syncWorkspaceFromJira(
   config: JiraConnectionConfig,
   options?: { issueKey?: string },
 ): Promise<SyncResult> {
-  const { supabase, workspace, resolveStatusId } = await loadWorkspaceContext(config.workspaceSlug);
+  const { supabase, workspace, statuses } = await loadWorkspaceContext(config.workspaceSlug);
   const issues = options?.issueKey
     ? [await fetchJiraIssue(config, options.issueKey)]
     : await searchJiraIssues(config);
@@ -110,6 +89,21 @@ export async function syncWorkspaceFromJira(
   await beginJiraSync(supabase);
 
   const mapped = issues.map((issue) => mapJiraIssue(issue, config));
+  const statusByJiraName = await ensureJiraNamedStatuses(
+    supabase,
+    workspace.id,
+    statuses,
+    mapped,
+  );
+
+  function resolveStatusId(jiraStatusName: string) {
+    const statusId = statusByJiraName.get(jiraStatusName.trim().toLowerCase());
+    if (!statusId) {
+      throw new Error(`Missing dashboard status for Jira status "${jiraStatusName}"`);
+    }
+    return statusId;
+  }
+
   const { projects: topLevel, children: nestedChildren } = partitionMappedIssues(mapped);
 
   const { data: existingItems, error: existingError } = await supabase
@@ -163,7 +157,7 @@ export async function syncWorkspaceFromJira(
       parent_id: parentId,
       title: issue.title,
       description: issue.description || null,
-      status_id: resolveStatusId(issue.jiraStatusName, issue.jiraStatusCategoryKey),
+      status_id: resolveStatusId(issue.jiraStatusName),
       priority: issue.priority,
       progress: issue.progress,
       start_date: issue.startDate,
@@ -232,16 +226,21 @@ export async function syncWorkspaceFromJira(
       if (error) throw new Error(error.message);
       deleted = stale.length;
     }
+
+    await removeUnusedSeedStatuses(
+      supabase,
+      workspace.id,
+      new Set(statusByJiraName.values()),
+    );
   }
 
-  const syncError = null;
   const { error: settingsError } = await supabase
     .from("workspace_jira_settings")
     .upsert({
       workspace_id: workspace.id,
       enabled: true,
       last_synced_at: new Date().toISOString(),
-      last_sync_error: syncError,
+      last_sync_error: null,
       last_sync_issue_count: mapped.length,
     });
 

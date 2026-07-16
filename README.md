@@ -245,10 +245,9 @@ curl -H "Authorization: Bearer <CRON_SECRET>" https://<your-app>/api/jira/sync
 ```
 
 3. Open each Jira-linked dashboard and confirm projects appear with Jira keys.
-4. If statuses look wrong after sync, redeploy and re-run sync — the app maps Jira
-   status categories (To Do / In Progress / Done) automatically. You do not need to
-   edit PE/Platform statuses in the dashboard (those workspaces are read-only mirrors).
-   Hot Topics remains fully editable.
+4. After sync, PE/Platform show **Jira’s own status names** (e.g. To Do, In Review, Done).
+   The old In Progress / At Risk / Delayed / Completed labels are only used for Hot Topics.
+   You do not edit PE/Platform statuses in the dashboard — change them in Jira.
 
 ## Security
 

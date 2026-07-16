@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getJiraConnectionForSlug, isJiraWorkspaceSlug } from "@/lib/jira/config";
+import { partitionMappedIssues } from "@/lib/jira/hierarchy";
 import { mapJiraIssue } from "@/lib/jira/map-issue";
 import { verifyJiraHubSignature } from "@/lib/jira/webhook-auth";
 import type { JiraConnectionConfig, JiraIssue } from "@/lib/jira/types";
@@ -72,5 +73,33 @@ describe("verifyJiraHubSignature", () => {
         "It's a Secret to Everybody",
       ),
     ).toBe(false);
+  });
+});
+
+describe("partitionMappedIssues", () => {
+  it("flattens Epic → Story → Sub-task onto Epic as project + two subtasks", () => {
+    const epic = {
+      jiraIssueId: "1",
+      jiraIssueKey: "ODF-1",
+      jiraUpdatedAt: "2026-01-01T00:00:00Z",
+      title: "Epic",
+      description: "",
+      assignee: null,
+      endDate: null,
+      startDate: null,
+      priority: "medium" as const,
+      progress: 50,
+      jiraStatusName: "In Progress",
+      parentJiraIssueId: null,
+    };
+    const story = { ...epic, jiraIssueId: "2", jiraIssueKey: "ODF-2", title: "Story", parentJiraIssueId: "1" };
+    const subtask = { ...epic, jiraIssueId: "3", jiraIssueKey: "ODF-3", title: "Sub", parentJiraIssueId: "2" };
+
+    const { projects, children } = partitionMappedIssues([epic, story, subtask]);
+    expect(projects.map((issue) => issue.jiraIssueId)).toEqual(["1"]);
+    expect(children.map((child) => [child.issue.jiraIssueId, child.parentJiraIssueId])).toEqual([
+      ["2", "1"],
+      ["3", "1"],
+    ]);
   });
 });

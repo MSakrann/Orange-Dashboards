@@ -1,4 +1,5 @@
 import { fetchJiraIssue, searchJiraIssues } from "@/lib/jira/client";
+import { partitionMappedIssues } from "@/lib/jira/hierarchy";
 import type { JiraConnectionConfig } from "@/lib/jira/types";
 import { mapJiraIssue } from "@/lib/jira/map-issue";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -115,8 +116,7 @@ export async function syncWorkspaceFromJira(
   await beginJiraSync(supabase);
 
   const mapped = issues.map((issue) => mapJiraIssue(issue, config));
-  const topLevel = mapped.filter((issue) => !issue.parentJiraIssueId);
-  const subtasks = mapped.filter((issue) => issue.parentJiraIssueId);
+  const { projects: topLevel, children: nestedChildren } = partitionMappedIssues(mapped);
 
   const { data: existingItems, error: existingError } = await supabase
     .from("work_items")
@@ -135,7 +135,9 @@ export async function syncWorkspaceFromJira(
   let updated = 0;
   let skipped = 0;
   const seenJiraIds = new Set<string>();
-  const jiraIdToWorkItemId = new Map<string, string>();
+  const jiraIdToWorkItemId = new Map<string, string>(
+    [...existingByJiraId.entries()].map(([jiraId, item]) => [jiraId, item.id]),
+  );
 
   async function upsertIssue(
     issue: ReturnType<typeof mapJiraIssue>,
@@ -192,11 +194,12 @@ export async function syncWorkspaceFromJira(
     await upsertIssue(issue, null, index);
   }
 
-  for (const [index, issue] of subtasks.entries()) {
-    const parentWorkItemId = issue.parentJiraIssueId
-      ? jiraIdToWorkItemId.get(issue.parentJiraIssueId)
-      : undefined;
-    if (!parentWorkItemId) continue;
+  for (const [index, { issue, parentJiraIssueId }] of nestedChildren.entries()) {
+    const parentWorkItemId = jiraIdToWorkItemId.get(parentJiraIssueId);
+    if (!parentWorkItemId) {
+      skipped += 1;
+      continue;
+    }
     await upsertIssue(issue, parentWorkItemId, index);
   }
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getJiraConnectionForSlug, isJiraWorkspaceSlug } from "@/lib/jira/config";
 import { mapJiraIssue } from "@/lib/jira/map-issue";
+import { verifyJiraHubSignature } from "@/lib/jira/webhook-auth";
 import type { JiraConnectionConfig, JiraIssue } from "@/lib/jira/types";
 
 const config: JiraConnectionConfig = {
@@ -49,5 +50,27 @@ describe("mapJiraIssue", () => {
     expect(mapped.progress).toBe(50);
     expect(mapped.priority).toBe("high");
     expect(mapped.parentJiraIssueId).toBeNull();
+  });
+});
+
+describe("verifyJiraHubSignature", () => {
+  it("matches Atlassian sample HMAC values", () => {
+    expect(
+      verifyJiraHubSignature(
+        "Hello World!",
+        "sha256=a4771c39fbe90f317c7824e83ddef3caae9cb3d976c214ace1f2937e133263c9",
+        "It's a Secret to Everybody",
+      ),
+    ).toBe(true);
+  });
+
+  it("rejects invalid signatures", () => {
+    expect(
+      verifyJiraHubSignature(
+        "Hello World!",
+        "sha256=deadbeef",
+        "It's a Secret to Everybody",
+      ),
+    ).toBe(false);
   });
 });

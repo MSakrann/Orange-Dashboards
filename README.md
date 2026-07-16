@@ -221,12 +221,17 @@ See `.env.example` for the full list. Each Jira instance needs:
 
 ### Jira webhooks (one per instance)
 
-In each Jira Cloud project/instance, create a webhook:
+In each Jira Cloud site: **Settings → System → Webhooks → Create webhook**.
+
+Use a **clean URL** (no `?secret=` query string — Jira often rejects those as invalid):
 
 | Workspace | URL |
 | --- | --- |
-| PE Development | `https://<your-app>/api/jira/webhook/pe-development?secret=<JIRA_PE_WEBHOOK_SECRET>` |
-| Platform Development | `https://<your-app>/api/jira/webhook/platform-development?secret=<JIRA_PLATFORM_WEBHOOK_SECRET>` |
+| PE Development | `https://<your-app>/api/jira/webhook/pe-development` |
+| Platform Development | `https://<your-app>/api/jira/webhook/platform-development` |
+
+In the webhook form’s **Secret** field, paste the same value as `JIRA_PE_WEBHOOK_SECRET` or
+`JIRA_PLATFORM_WEBHOOK_SECRET`. Jira signs payloads with HMAC (`X-Hub-Signature`); the dashboard verifies that.
 
 Subscribe to **issue created**, **issue updated**, and **issue deleted**.
 

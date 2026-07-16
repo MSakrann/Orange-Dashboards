@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getJiraConnectionForSlug, isJiraWorkspaceSlug } from "@/lib/jira/config";
 import { syncWorkspaceFromJira } from "@/lib/jira/sync-workspace";
+import { isWebhookAuthorized } from "@/lib/jira/webhook-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,11 +16,16 @@ function readIssueKey(payload: unknown): string | null {
   return issue?.key ?? null;
 }
 
-function isAuthorized(request: Request, expectedSecret: string) {
-  const headerSecret = request.headers.get("x-dashboard-webhook-secret");
-  const url = new URL(request.url);
-  const querySecret = url.searchParams.get("secret");
-  return headerSecret === expectedSecret || querySecret === expectedSecret;
+/** Health check for URL probes; Jira admin webhooks only need a valid HTTPS URL. */
+export async function GET(
+  _request: Request,
+  context: { params: Promise<WebhookParams> },
+) {
+  const { workspaceSlug } = await context.params;
+  if (!isJiraWorkspaceSlug(workspaceSlug)) {
+    return NextResponse.json({ error: "Unsupported workspace." }, { status: 404 });
+  }
+  return NextResponse.json({ ok: true, workspaceSlug });
 }
 
 export async function POST(
@@ -37,13 +43,18 @@ export async function POST(
     return NextResponse.json({ error: "Jira is not configured for this workspace." }, { status: 500 });
   }
 
-  if (!isAuthorized(request, config.webhookSecret)) {
+  const rawBody = await request.text();
+  if (!isWebhookAuthorized({
+    request,
+    rawBody,
+    expectedSecret: config.webhookSecret,
+  })) {
     return NextResponse.json({ error: "Invalid webhook secret." }, { status: 401 });
   }
 
   let payload: unknown;
   try {
-    payload = await request.json();
+    payload = rawBody ? JSON.parse(rawBody) : {};
   } catch {
     return NextResponse.json({ error: "Invalid JSON payload." }, { status: 400 });
   }

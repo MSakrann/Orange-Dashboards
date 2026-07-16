@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+
+# Environment and credentials (keep the documented template)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials*.json
+
+# Next.js, TypeScript, and test output
+.next/
+out/
+dist/
+build/
+.turbo/
+.vercel/
+*.tsbuildinfo
+coverage/
+test-results/
+playwright-report/
+playwright/.cache/
+blob-report/
+private/
+
+# Supabase local state
+supabase/.branches/
+supabase/.temp/
+
+# Logs and local editor/OS files
+*.log
+npm-debug.log*
+.DS_Store
+.idea/
+.vscode/

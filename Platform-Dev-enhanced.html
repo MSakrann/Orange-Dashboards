@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Platform Development | Mouhab Mahmoud</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  :root {
+    --bg-primary: #0b0b0b;
+    --bg-secondary: #141414;
+    --bg-card: #1A1A1A;
+    --bg-card-hover: #222222;
+    --border: #2A2A2A;
+    --text-primary: #FAFAFA;
+    --text-secondary: #A0A0A0;
+    --text-muted: #666666;
+    --mamba-purple: #552583;
+    --mamba-gold: #e07a21;
+    --tech-cyan: #00D9FF;
+    --electric-lime: #23b123;
+    --warning-red: #FF3B30;
+    --status-in-progress: #23b123;
+    --status-at-risk: #FF9500;
+    --status-delayed: #FF3B30;
+    --status-completed: #00D9FF;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 32px 24px;
+    line-height: 1.5;
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .header-left h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    background: var(--mamba-gold);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header-left p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-top: 6px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .live-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .pulse-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--electric-lime);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--electric-lime);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.2); }
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .stat-card:hover {
+    background: var(--bg-card-hover);
+    transform: translateY(-2px);
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent-color, var(--mamba-gold));
+  }
+
+  .stat-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .stat-meta {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 6px;
+  }
+
+  .filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 10px 18px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+  }
+
+  .filter-btn:hover {
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+  }
+
+  .filter-btn.active {
+    background: var(--text-primary);
+    color: var(--bg-primary);
+    border-color: var(--text-primary);
+  }
+
+  .create-btn {
+    background: linear-gradient(135deg, var(--mamba-gold), #ff9a56);
+    border: none;
+    color: var(--bg-primary);
+    padding: 12px 20px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .create-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(224, 122, 33, 0.4);
+  }
+
+  .create-btn:active {
+    transform: translateY(0);
+  }
+
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 20px;
+  }
+
+  .project-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .project-card:hover {
+    background: var(--bg-card-hover);
+    border-color: #3A3A3A;
+    transform: translateY(-4px);
+  }
+
+  .project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .project-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.3;
+    flex: 1;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  .status-in-progress {
+    background: rgba(197, 248, 42, 0.12);
+    color: var(--status-in-progress);
+    border: 1px solid rgba(197, 248, 42, 0.3);
+  }
+  .status-at-risk {
+    background: rgba(255, 149, 0, 0.12);
+    color: var(--status-at-risk);
+    border: 1px solid rgba(255, 149, 0, 0.3);
+  }
+  .status-delayed {
+    background: rgba(255, 59, 48, 0.12);
+    color: var(--status-delayed);
+    border: 1px solid rgba(255, 59, 48, 0.3);
+  }
+  .status-completed {
+    background: rgba(0, 217, 255, 0.12);
+    color: var(--status-completed);
+    border: 1px solid rgba(0, 217, 255, 0.3);
+  }
+  .status-unknown {
+    background: rgba(160, 160, 160, 0.12);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .project-owner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .owner-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--mamba-purple), var(--mamba-gold));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text-primary);
+  }
+
+  .owner-info {
+    flex: 1;
+  }
+
+  .owner-name {
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .owner-role {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .timeline {
+    margin-bottom: 20px;
+  }
+
+  .timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .timeline-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .timeline-percent {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .progress-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 100px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 100px;
+    background: linear-gradient(90deg, var(--mamba-purple), var(--mamba-gold));
+    transition: width 1s ease;
+  }
+
+  .timeline-dates {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .date-input {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    padding: 6px 10px;
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 1;
+  }
+
+  .date-input:hover {
+    border-color: #3A3A3A;
+    background: var(--bg-card-hover);
+  }
+
+  .date-input:focus {
+    outline: none;
+    border-color: var(--tech-cyan);
+    box-shadow: 0 0 8px rgba(0, 217, 255, 0.2);
+  }
+
+  .date-input::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+  }
+
+  .comments-section {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+
+  .comments-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .comment-text {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  .subtasks-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .subtasks-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .subtasks-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .subtask-add-btn {
+    background: rgba(0, 217, 255, 0.1);
+    border: 1px solid rgba(0, 217, 255, 0.3);
+    color: var(--tech-cyan);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+  }
+
+  .subtask-add-btn:hover {
+    background: rgba(0, 217, 255, 0.2);
+    border-color: var(--tech-cyan);
+  }
+
+  .subtasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .subtask-item {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(0, 217, 255, 0.1);
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    transition: all 0.2s ease;
+  }
+
+  .subtask-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(0, 217, 255, 0.2);
+  }
+
+  .subtask-checkbox {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    cursor: pointer;
+    accent-color: var(--electric-lime);
+  }
+
+  .subtask-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .subtask-title-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    margin-bottom: 4px;
+    padding: 0;
+    outline: none;
+    cursor: text;
+  }
+
+  .subtask-title-input:focus {
+    border-bottom: 1px solid var(--tech-cyan);
+  }
+
+  .subtask-details {
+    display: flex;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+  }
+
+  .subtask-owner,
+  .subtask-due,
+  .subtask-priority {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 8px;
+    border-radius: 4px;
+    cursor: text;
+    transition: all 0.2s ease;
+  }
+
+  .subtask-owner:hover,
+  .subtask-due:hover,
+  .subtask-priority:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .subtask-actions {
+    display: flex;
+    gap: 6px;
+  }
+
+  .subtask-btn {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+
+  .subtask-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+  }
+
+  .subtask-btn.delete:hover {
+    background: rgba(255, 59, 48, 0.2);
+    color: var(--warning-red);
+  }
+
+  .project-description {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+
+  .empty-state-hint {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-style: italic;
+  }
+
+  .footer {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+
+  .footer strong {
+    color: var(--mamba-gold);
+  }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 24px;
+  }
+
+  .modal-overlay.active {
+    display: flex;
+  }
+
+  .modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 40px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+  }
+
+  .modal-close {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .modal-close:hover {
+    background: var(--border);
+  }
+
+  .modal-section {
+    margin-bottom: 24px;
+  }
+
+  .modal-section-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .modal-section-content {
+    font-size: 14px;
+    color: var(--text-primary);
+    line-height: 1.6;
+  }
+
+  .modal-comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .modal-comment {
+    background: var(--bg-secondary);
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  .modal-comment-author {
+    font-size: 11px;
+    color: var(--mamba-gold);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  @media (max-width: 768px) {
+    body { padding: 20px 16px; }
+    .header-left h1 { font-size: 28px; }
+    .projects-grid { grid-template-columns: 1fr; }
+    .stat-value { font-size: 28px; }
+  }
+
+  .fade-in {
+    animation: fadeIn 0.6s ease backwards;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== EDITABLE FIELDS ===== */
+  .editable-field {
+    outline: none;
+    border-radius: 5px;
+    padding: 1px 4px;
+    margin: -1px -4px;
+    transition: background 0.15s ease, box-shadow 0.15s ease;
+    cursor: text;
+  }
+  .editable-field:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .editable-field:focus {
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 1px var(--mamba-gold);
+    cursor: text;
+  }
+  select.status-badge.editable-field {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  select.status-badge.editable-field:hover {
+    filter: brightness(1.15);
+  }
+  .progress-input {
+    width: 42px;
+    background: transparent;
+    border: none;
+    color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    text-align: right;
+    -moz-appearance: textfield;
+  }
+  .progress-input::-webkit-outer-spin-button,
+  .progress-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .progress-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 1px var(--mamba-gold);
+    border-radius: 4px;
+  }
+
+  /* ===== DRAG & DROP ===== */
+  .drag-handle {
+    cursor: grab;
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1;
+    padding: 4px 2px;
+    user-select: none;
+    letter-spacing: -1px;
+    transition: color 0.15s ease;
+  }
+  .drag-handle:hover {
+    color: var(--text-secondary);
+  }
+  .drag-handle:active {
+    cursor: grabbing;
+  }
+
+  .delete-project-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 14px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .delete-project-btn:hover {
+    background: rgba(255, 59, 48, 0.15);
+    color: var(--warning-red);
+  }
+
+  .delete-project-btn:active {
+    transform: scale(0.95);
+  }
+
+  .project-card.dragging {
+    opacity: 0.4;
+  }
+  .project-card.drag-over {
+    border-color: var(--mamba-gold);
+    box-shadow: 0 0 0 2px rgba(224, 122, 33, 0.35);
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header class="header">
+    <div class="header-left">
+      <h1>Platform Development Dashboard</h1>
+    </div>
+    <div class="header-right">
+      <button class="create-btn" onclick="createNewProject()" title="Create a new project">
+        <span>+</span> New Project
+      </button>
+      <div class="live-indicator">
+        <span class="pulse-dot"></span>
+        <span id="lastUpdated">Updated just now</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="stats-grid" id="statsGrid"></section>
+
+  <div class="filters">
+    <button class="filter-btn active" data-filter="all">All Projects</button>
+    <button class="filter-btn" data-filter="in-progress">In Progress</button>
+    <button class="filter-btn" data-filter="at-risk">At Risk</button>
+    <button class="filter-btn" data-filter="delayed">Delayed</button>
+    <button class="filter-btn" data-filter="completed">Completed</button>
+  </div>
+
+  <section class="projects-grid" id="projectsGrid"></section>
+
+  <footer class="footer">
+    Built with focus by <strong>Mouhab Mahmoud</strong> · "Better every day."
+  </footer>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<script>
+/* ============================================================
+   📝 HOW TO UPDATE THIS DASHBOARD
+   ============================================================
+   All fields are OPTIONAL. Missing fields simply won't render.
+
+   AVAILABLE FIELDS:
+   - id:          Unique number (recommended but not required)
+   - title:       Project name
+   - status:      "in-progress" | "at-risk" | "delayed" | "completed" | "unknown"
+   - owner:       Person responsible (name)
+   - ownerRole:   Their job title
+   - progress:    Number 0-100 (% complete)
+   - startDate:   Project start (e.g., "2025-01-15")
+   - endDate:     Project deadline (e.g., "2025-06-30")
+   - comments:    Array of { author, text }
+   - priority:    "high" | "medium" | "low"
+   - description: Short summary
+
+   EXAMPLES:
+   - Minimal: { title: "Quick task" }
+   - Full:    { title: "Big project", status: "in-progress", owner: "...", ... }
+   ============================================================ */
+
+const projectsData = [
+    { id: 9,
+    title: "Operations Team Open Tickets",
+    status: "in-progress",
+    owner: "Marwa Saleh",
+    priority: "high",
+    description: "Open Tickets: 10 <br> Pending Tickets: 8 <br> SD Manager Open Tickets: 5",
+    progress: 100,
+    startDate: "2026-05-15",
+    comments:[
+      { author: "Marwa ", text: "1 pending SD" }
+    ],
+    subtasks: []
+  },
+  {
+    id: 1,
+    title: "Ops Received Requests Ticketing System",
+    status: "completed",
+    owner: "Marwa Saleh",
+    progress: 100,
+    startDate: "2026-05-15",
+    endDate:"",
+    priority: "medium",
+    description: "SD Manager configured and being used now.",
+  },
+  {
+    id: 2,
+    title: "Price up documentation",
+    status: "completed",
+    owner: "Mouhab Mahmoud",
+    priority: "medium",
+    description: "Create a consolidated price up documentation for all teams. ",
+    progress: 100,
+    startDate: "2026-05-15",
+    endDate: "2026-06-1"
+  },
+  {
+    id: 3,
+    title: "2026 Harwdare With Networks Team",
+    status: "in-progress",
+    owner: "Mouhab Mahhmoud",
+    priority: "high",
+    startDate: "2026-05-15",
+    endDate:"",
+    description: "Follow up on acquiring the servers from Amgad's team and delivering it to our data centers in Obour.",
+    comments: [
+      { author: "Mouhab", text: "Following up on creating power survey" }
+    ]
+  },
+  {
+    id: 4,
+    title: "Development Team Projects Management",
+    status: "in-progress",
+    owner: "Mouhab Mahhmoud",
+    priority: "high",
+    progress: 80,
+    startDate: "2026-06-1",
+    endDate: "2026-06-15",
+    description: "Setting up JIRA for Platform Development team.",
+  },
+  {
+    id: 5,
+    title: "PE Team Projects Management",
+    status: "in-progress",
+    owner: "Mouhab Mahhmoud",
+    priority: "high",
+    progress: 90,
+    startDate: "2026-06-1",
+    endDate: "2026-06-15",
+    description: "Setting up JIRA for Platform Development team.",
+  },
+  {
+    id: 6,
+    title: "Openshift License",
+    status: "delayed",
+    owner: "Mouhab Mahhmoud",
+    priority: "medium",
+    progress: 50,
+    startDate: "2026-05-1",
+    endDate:"",
+    description: "Currently we are set on Linux Plus",
+  },
+  { id: 7,
+    title: "DPI Servers",
+    status: "delayed",
+    owner: "Mouhab Mahmoud",
+    priority: "medium",
+    description: "Getting a date from El Fekki",
+    progress: 50,
+    startDate: "2026-05-1",
+    endDate:"",
+  },
+  { id: 8,
+    title: "Data Lake Reports Optimization",
+    status: "in-progress",
+    owner: "Marwa Saleh",
+    priority: "medium",
+    description: "Total Done: 6 reports<br> Pending: 2 reports",
+    startDate: "2026-05-1",
+    endDate:"",
+  },
+  { id: 10,
+    title: "Promo Engine Storage Issue",
+    status: "in-progress",
+    owner: "Mouhab Mahmoud",
+    priority: "medium",
+    description: "Check with Mohamed AbdelMaksoud",
+    startDate: "2026-06-21",
+    endDate:"",
+  },
+    { id: 11,
+    title: "Promo Engine Upgrade Server Issue",
+    status: "in-progress",
+    owner: "Mouhab Mahmoud",
+    priority: "medium",
+    description: "Check with Mohamed AbdelMaksoud",
+    startDate: "2026-05-1",
+    endDate:"",
+  },
+    { id: 11,
+    title: "Pacific Oceanstore servers acquisition",
+    status: "in-progress",
+    owner: "Mouhab Mahmoud",
+    priority: "medium",
+    description: "Finalizing offers from vendors with Hany",
+    startDate: "2026-06-15",
+    endDate:"",
+  },
+    { id: 11,
+    title: "SSD Storage Upgrade",
+    status: "in-progress",
+    owner: "Mouhab Mahmoud",
+    priority: "medium",
+    description: "Finalizing offers from suppliers with Hany",
+    startDate: "2026-06-15",
+    endDate:"",
+  },
+];
+
+/* ============================================================
+   🔧 HELPERS — Safe access for optional fields
+   ============================================================ */
+
+function has(value) {
+  return value !== undefined && value !== null && value !== '';
+}
+
+function formatDate(dateStr) {
+  if (!has(dateStr)) return null;
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return null;
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function getInitials(name) {
+  if (!has(name)) return '?';
+  return name.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().slice(0, 2);
+}
+
+function statusClass(status) {
+  const valid = ['in-progress', 'at-risk', 'delayed', 'completed'];
+  return valid.includes(status) ? status : 'unknown';
+}
+
+function statusLabel(status) {
+  const valid = ['in-progress', 'at-risk', 'delayed', 'completed'];
+  return valid.includes(status) ? status.replace('-', ' ') : 'no status';
+}
+
+function statusOptions(current) {
+  const list = ['in-progress', 'at-risk', 'delayed', 'completed'];
+  return `<option value="" ${!current ? 'selected' : ''}>no status</option>` +
+    list.map(s => `<option value="${s}" ${s === current ? 'selected' : ''}>${s.replace('-', ' ')}</option>`).join('');
+}
+
+function createNewProject() {
+  const nextId = 1 + projectsData.reduce((max, p) => Math.max(max, p.id || 0), 0);
+  
+  const newProject = {
+    id: nextId,
+    title: 'New Project',
+    status: 'in-progress',
+    owner: '',
+    priority: 'medium',
+    description: '',
+    progress: 0,
+    startDate: '',
+    endDate: '',
+    comments: [],
+    subtasks: []
+  };
+  
+  projectsData.unshift(newProject);
+  saveState();
+  renderStats();
+  renderProjects('all');
+  
+  // Scroll to top to see the new project
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function normalizeIds() {
+  // Guarantees every project has a unique id (the source data has
+  // duplicate ids, which would break edits and drag/drop reordering).
+  const seen = new Set();
+  let nextId = 1 + projectsData.reduce((max, p) => Math.max(max, p.id || 0), 0);
+  projectsData.forEach(p => {
+    if (p.id == null || seen.has(p.id)) {
+      p.id = nextId++;
+    }
+    seen.add(p.id);
+  });
+}
+
+function initializeSubtasks() {
+  // Ensure all projects have subtasks array
+  projectsData.forEach(p => {
+    if (!Array.isArray(p.subtasks)) {
+      p.subtasks = [];
+    }
+  });
+}
+
+/* ============================================================
+   💾 PERSISTENCE (edits + card order saved in this browser)
+   ============================================================ */
+
+const STORAGE_KEY = 'hot-topics-dashboard-state-v1';
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(projectsData));
+  } catch (e) {
+    console.warn('Could not save changes:', e);
+  }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    if (Array.isArray(saved) && saved.length) {
+      projectsData.length = 0;
+      projectsData.push(...saved);
+    }
+  } catch (e) {
+    console.warn('Could not load saved changes:', e);
+  }
+}
+
+/* ============================================================
+   ✏️ INLINE FIELD EDITING
+   ============================================================ */
+
+function getActiveFilter() {
+  return document.querySelector('.filter-btn.active')?.dataset.filter || 'all';
+}
+
+function updateTextField(el) {
+  const id = Number(el.dataset.id);
+  const field = el.dataset.field;
+  const project = projectsData.find(p => p.id === id);
+  if (!project) return;
+  const value = el.textContent.trim();
+
+  if (field === 'title') {
+    project.title = value;
+  } else if (field === 'description') {
+    if (value) project.description = value; else delete project.description;
+  } else if (field === 'ownerName') {
+    if (value) project.owner = value; else delete project.owner;
+    const avatar = document.querySelector(`.owner-avatar[data-id="${id}"]`);
+    if (avatar) avatar.textContent = getInitials(project.owner);
+  } else if (field === 'ownerRole') {
+    if (value) project.ownerRole = value; else delete project.ownerRole;
+  } else if (field === 'priority') {
+    if (value) project.priority = value; else delete project.priority;
+  } else if (field === 'commentText') {
+    if (has(project.comments) && project.comments.length) {
+      project.comments[project.comments.length - 1].text = value.replace(/^"|"$/g, '');
+    }
+  }
+  saveState();
+}
+
+function updateStatusField(el) {
+  const id = Number(el.dataset.id);
+  const project = projectsData.find(p => p.id === id);
+  if (!project) return;
+  project.status = el.value;
+  saveState();
+  const active = getActiveFilter();
+  renderStats();
+  renderProjects(active);
+}
+
+function updateProgressField(el) {
+  const id = Number(el.dataset.id);
+  const project = projectsData.find(p => p.id === id);
+  if (!project) return;
+  let val = parseInt(el.value, 10);
+  if (isNaN(val)) val = 0;
+  val = Math.max(0, Math.min(100, val));
+  project.progress = val;
+  el.value = val;
+  saveState();
+  renderStats();
+  const bar = el.closest('.timeline')?.querySelector('.progress-fill');
+  if (bar) bar.style.width = val + '%';
+}
+
+function updateDateField(el) {
+  const id = Number(el.dataset.id);
+  const field = el.dataset.field;
+  const project = projectsData.find(p => p.id === id);
+  if (!project) return;
+  const value = el.value;
+  
+  if (field === 'startDate') {
+    if (value) project.startDate = value;
+    else delete project.startDate;
+  } else if (field === 'endDate') {
+    if (value) project.endDate = value;
+    else delete project.endDate;
+  }
+  saveState();
+}
+
+function updateCommentField(el) {
+  const id = Number(el.dataset.id);
+  const index = parseInt(el.dataset.index, 10);
+  const project = projectsData.find(p => p.id === id);
+  if (!project) return;
+  const value = el.textContent.trim().replace(/^"|"$/g, '');
+  
+  if (has(project.comments) && project.comments[index]) {
+    project.comments[index].text = value;
+  }
+  saveState();
+}
+
+function handleEditableKeydown(e, el) {
+  const field = el.dataset.field;
+  const multiline = field === 'description' || field === 'commentText';
+  if (e.key === 'Enter' && !multiline) {
+    e.preventDefault();
+    el.blur();
+  } else if (e.key === 'Escape') {
+    el.blur();
+  }
+}
+
+/* ============================================================
+   📋 SUBTASKS MANAGEMENT
+   ============================================================ */
+
+function addSubtask(projectId) {
+  const project = projectsData.find(p => p.id === projectId);
+  if (!project) return;
+  
+  if (!Array.isArray(project.subtasks)) {
+    project.subtasks = [];
+  }
+  
+  project.subtasks.push({
+    title: 'New Subtask',
+    completed: false,
+    owner: '',
+    dueDate: '',
+    priority: ''
+  });
+  
+  saveState();
+  const active = getActiveFilter();
+  renderProjects(active);
+}
+
+function updateSubtaskField(projectId, subtaskIdx, field, value) {
+  const project = projectsData.find(p => p.id === projectId);
+  if (!project || !project.subtasks || !project.subtasks[subtaskIdx]) return;
+  
+  const subtask = project.subtasks[subtaskIdx];
+  
+  if (field === 'title') {
+    subtask.title = value || 'Untitled';
+  } else if (field === 'owner') {
+    subtask.owner = value && value !== '👤 Assign' ? value : '';
+  } else if (field === 'dueDate') {
+    subtask.dueDate = value && value !== '📅 Due' ? value : '';
+  } else if (field === 'priority') {
+    subtask.priority = value && value !== '⚡ Priority' ? value : '';
+  }
+  
+  saveState();
+}
+
+function deleteSubtask(projectId, subtaskIdx) {
+  const project = projectsData.find(p => p.id === projectId);
+  if (!project || !project.subtasks) return;
+  
+  project.subtasks.splice(subtaskIdx, 1);
+  saveState();
+  const active = getActiveFilter();
+  renderProjects(active);
+}
+
+function toggleSubtaskComplete(projectId, subtaskIdx) {
+  const project = projectsData.find(p => p.id === projectId);
+  if (!project || !project.subtasks || !project.subtasks[subtaskIdx]) return;
+  
+  project.subtasks[subtaskIdx].completed = !project.subtasks[subtaskIdx].completed;
+  saveState();
+  const active = getActiveFilter();
+  renderProjects(active);
+}
+
+function deleteProject(projectId) {
+  const projectIndex = projectsData.findIndex(p => p.id === projectId);
+  if (projectIndex === -1) return;
+  
+  const project = projectsData[projectIndex];
+  const confirmDelete = confirm(`Are you sure you want to delete "${project.title}" and all its subtasks? This cannot be undone.`);
+  
+  if (!confirmDelete) return;
+  
+  projectsData.splice(projectIndex, 1);
+  saveState();
+  renderStats();
+  const active = getActiveFilter();
+  renderProjects(active);
+}
+
+/* ============================================================
+   🔀 DRAG & DROP REORDERING
+   ============================================================ */
+
+let dragSrcId = null;
+
+function handleDragStart(e, id) {
+  dragSrcId = id;
+  e.dataTransfer.effectAllowed = 'move';
+  try { e.dataTransfer.setData('text/plain', String(id)); } catch (err) {}
+  e.currentTarget.classList.add('dragging');
+}
+
+function handleDragEnd(e) {
+  e.currentTarget.classList.remove('dragging');
+  e.currentTarget.draggable = false;
+  document.querySelectorAll('.project-card.drag-over').forEach(el => el.classList.remove('drag-over'));
+  dragSrcId = null;
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.classList.add('drag-over');
+}
+
+function handleDragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+
+function handleDrop(e, targetId) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (dragSrcId === null || dragSrcId === targetId) return;
+
+  const fromIdx = projectsData.findIndex(p => p.id === dragSrcId);
+  const toIdx = projectsData.findIndex(p => p.id === targetId);
+  if (fromIdx === -1 || toIdx === -1) return;
+
+  const [moved] = projectsData.splice(fromIdx, 1);
+  projectsData.splice(toIdx, 0, moved);
+  dragSrcId = null;
+  saveState();
+  renderProjects(getActiveFilter());
+}
+
+/* ============================================================
+   🚀 RENDER LOGIC
+   ============================================================ */
+
+function renderStats() {
+  const stats = {
+    total: projectsData.length,
+    onTrack: projectsData.filter(p => p.status === 'in-progress').length,
+    atRisk: projectsData.filter(p => p.status === 'at-risk').length,
+    delayed: projectsData.filter(p => p.status === 'delayed').length,
+    completed: projectsData.filter(p => p.status === 'completed').length
+  };
+
+  const projectsWithProgress = projectsData.filter(p => has(p.progress));
+  const avgProgress = projectsWithProgress.length
+    ? Math.round(projectsWithProgress.reduce((sum, p) => sum + p.progress, 0) / projectsWithProgress.length)
+    : 0;
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card fade-in" style="--accent-color: var(--mamba-gold)">
+      <div class="stat-label">Total Projects</div>
+      <div class="stat-value">${stats.total}</div>
+      <div class="stat-meta">Across all teams</div>
+    </div>
+    <div class="stat-card fade-in" style="--accent-color: var(--status-in-progress)">
+      <div class="stat-label">In Progress</div>
+      <div class="stat-value">${stats.onTrack}</div>
+      <div class="stat-meta">Healthy momentum</div>
+    </div>
+    <div class="stat-card fade-in" style="--accent-color: var(--status-at-risk)">
+      <div class="stat-label">At Risk</div>
+      <div class="stat-value">${stats.atRisk}</div>
+      <div class="stat-meta">Needs attention</div>
+    </div>
+    <div class="stat-card fade-in" style="--accent-color: var(--status-completed)">
+      <div class="stat-label">Avg. Progress</div>
+      <div class="stat-value">${avgProgress}%</div>
+      <div class="stat-meta">${projectsWithProgress.length} project(s) tracked</div>
+    </div>
+  `;
+}
+
+function renderSubtaskItem(projectId, subtaskIdx, subtask) {
+  return `
+    <div class="subtask-item" data-project-id="${projectId}" data-subtask-idx="${subtaskIdx}">
+      <input type="checkbox" class="subtask-checkbox" 
+        ${subtask.completed ? 'checked' : ''} 
+        onchange="toggleSubtaskComplete(${projectId}, ${subtaskIdx})"
+        onclick="event.stopPropagation()">
+      <div class="subtask-content">
+        <input type="text" class="subtask-title-input" 
+          value="${subtask.title || ''}" 
+          placeholder="Subtask title"
+          onchange="updateSubtaskField(${projectId}, ${subtaskIdx}, 'title', this.value)"
+          onclick="event.stopPropagation()"
+          spellcheck="false">
+        <div class="subtask-details">
+          ${subtask.owner ? `<span class="subtask-owner" contenteditable="true" data-field="owner" onclick="event.stopPropagation()" onblur="updateSubtaskField(${projectId}, ${subtaskIdx}, 'owner', this.textContent)">${subtask.owner}</span>` : `<span class="subtask-owner" contenteditable="true" data-field="owner" onclick="event.stopPropagation()" onblur="updateSubtaskField(${projectId}, ${subtaskIdx}, 'owner', this.textContent)">👤 Assign</span>`}
+          ${subtask.dueDate ? `<span class="subtask-due" contenteditable="true" data-field="due" onclick="event.stopPropagation()" onblur="updateSubtaskField(${projectId}, ${subtaskIdx}, 'dueDate', this.textContent)">${subtask.dueDate}</span>` : `<span class="subtask-due" contenteditable="true" data-field="due" onclick="event.stopPropagation()" onblur="updateSubtaskField(${projectId}, ${subtaskIdx}, 'dueDate', this.textContent)">📅 Due</span>`}
+          ${subtask.priority ? `<span class="subtask-priority" contenteditable="true" data-field="priority" onclick="event.stopPropagation()" onblur="updateSubtaskField(${projectId}, ${subtaskIdx}, 'priority', this.textContent)">${subtask.priority}</span>` : `<span class="subtask-priority" contenteditable="true" data-field="priority" onclick="event.stopPropagation()" onblur="updateSubtaskField(${projectId}, ${subtaskIdx}, 'priority', this.textContent)">⚡ Priority</span>`}
+        </div>
+      </div>
+      <div class="subtask-actions">
+        <button class="subtask-btn delete" onclick="event.stopPropagation(); deleteSubtask(${projectId}, ${subtaskIdx})" title="Delete subtask">×</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderProjectCard(project, i) {
+  const sClass = statusClass(project.status);
+  const showOwner = has(project.owner);
+  const showProgress = has(project.progress);
+  const showStart = has(project.startDate);
+  const showEnd = has(project.endDate);
+  const showComments = has(project.comments) && project.comments.length > 0;
+  const showDescription = has(project.description);
+  const showPriority = has(project.priority);
+  const showAnyDate = showStart || showEnd;
+  const showTimeline = showProgress || showAnyDate;
+
+  return `
+    <article class="project-card fade-in" data-id="${project.id}" draggable="false"
+      style="animation-delay: ${i * 0.05}s"
+      onclick="openModal(${project.id})"
+      ondragstart="handleDragStart(event, ${project.id})"
+      ondragend="handleDragEnd(event)"
+      ondragover="handleDragOver(event)"
+      ondragleave="handleDragLeave(event)"
+      ondrop="handleDrop(event, ${project.id})">
+      <div class="project-header">
+        <h3 class="project-title editable-field" contenteditable="true" spellcheck="false"
+          data-id="${project.id}" data-field="title"
+          onclick="event.stopPropagation()"
+          onblur="updateTextField(this)"
+          onkeydown="handleEditableKeydown(event, this)">${has(project.title) ? project.title : 'Untitled Project'}</h3>
+        <span class="drag-handle" title="Drag to reorder"
+          onclick="event.stopPropagation()"
+          onmousedown="event.stopPropagation(); this.closest('.project-card').draggable = true;"
+          onmouseup="this.closest('.project-card').draggable = false;">⠿⠿</span>
+        <button class="delete-project-btn" onclick="event.stopPropagation(); deleteProject(${project.id})" title="Delete this project">🗑️</button>
+        <select class="status-badge status-${sClass} editable-field" data-id="${project.id}"
+          onclick="event.stopPropagation()"
+          onchange="updateStatusField(this)">
+          ${statusOptions(project.status)}
+        </select>
+      </div>
+
+      <p class="project-description editable-field" contenteditable="true" spellcheck="false"
+        data-id="${project.id}" data-field="description"
+        onclick="event.stopPropagation()"
+        onblur="updateTextField(this)"
+        onkeydown="handleEditableKeydown(event, this)"
+        style="${showDescription ? '' : 'color: var(--text-muted); font-style: italic;'}">${showDescription ? project.description : 'Add a description…'}</p>
+
+      <div class="project-owner">
+        <div class="owner-avatar" data-id="${project.id}">${getInitials(project.owner)}</div>
+        <div class="owner-info">
+          <div class="owner-name editable-field" contenteditable="true" spellcheck="false"
+            data-id="${project.id}" data-field="ownerName"
+            onclick="event.stopPropagation()"
+            onblur="updateTextField(this)"
+            onkeydown="handleEditableKeydown(event, this)"
+            style="${showOwner ? '' : 'color: var(--text-muted); font-style: italic;'}">${showOwner ? project.owner : 'Unassigned'}</div>
+          <div class="owner-role editable-field" contenteditable="true" spellcheck="false"
+            data-id="${project.id}" data-field="ownerRole"
+            onclick="event.stopPropagation()"
+            onblur="updateTextField(this)"
+            onkeydown="handleEditableKeydown(event, this)">${has(project.ownerRole) ? project.ownerRole : ''}</div>
+        </div>
+        <span class="editable-field" contenteditable="true" spellcheck="false"
+          data-id="${project.id}" data-field="priority"
+          onclick="event.stopPropagation()"
+          onblur="updateTextField(this)"
+          onkeydown="handleEditableKeydown(event, this)"
+          style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">${has(project.priority) ? project.priority : 'priority'}</span>
+      </div>
+
+      ${showTimeline ? `
+        <div class="timeline">
+          ${showProgress ? `
+            <div class="timeline-header">
+              <span class="timeline-label">Progress</span>
+              <span class="timeline-percent"><input type="number" class="progress-input editable-field" min="0" max="100"
+                value="${project.progress}" data-id="${project.id}"
+                onclick="event.stopPropagation()"
+                onchange="updateProgressField(this)">%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${project.progress}%"></div>
+            </div>
+          ` : ''}
+          ${showAnyDate ? `
+            <div class="timeline-dates">
+              <input type="date" class="date-input editable-field" 
+                value="${project.startDate || ''}" data-id="${project.id}" data-field="startDate"
+                onclick="event.stopPropagation()"
+                onchange="updateDateField(this)"
+                placeholder="Start date" title="Click to edit start date">
+              <span style="color: var(--text-muted);">→</span>
+              <input type="date" class="date-input editable-field" 
+                value="${project.endDate || ''}" data-id="${project.id}" data-field="endDate"
+                onclick="event.stopPropagation()"
+                onchange="updateDateField(this)"
+                placeholder="End date" title="Click to edit end date">
+            </div>
+          ` : ''}
+        </div>
+      ` : ''}
+
+      ${showComments ? `
+        <div class="comments-section">
+          <div class="comments-header">
+            <span>💬</span>
+            <span>Latest Update (${project.comments.length})</span>
+          </div>
+          <div class="comment-text editable-field" contenteditable="true" spellcheck="false"
+            data-id="${project.id}" data-field="comments" data-index="${project.comments.length - 1}"
+            onclick="event.stopPropagation()"
+            onblur="updateCommentField(this)"
+            onkeydown="handleEditableKeydown(event, this)" title="Click to edit comment">"${project.comments[project.comments.length - 1].text}"</div>
+        </div>
+      ` : ''}
+
+      <div class="subtasks-section">
+        <div class="subtasks-header">
+          <span class="subtasks-title">📋 Subtasks ${Array.isArray(project.subtasks) && project.subtasks.length > 0 ? `(${project.subtasks.length})` : ''}</span>
+          <button class="subtask-add-btn" onclick="event.stopPropagation(); addSubtask(${project.id})">+ Add</button>
+        </div>
+        ${Array.isArray(project.subtasks) && project.subtasks.length > 0 ? `<div class="subtasks-list">${project.subtasks.map((st, idx) => renderSubtaskItem(project.id, idx, st)).join('')}</div>` : `<div style="color: var(--text-muted); font-size: 12px; text-align: center; padding: 8px;">No subtasks yet</div>`}
+      </div>
+    </article>
+  `;
+}
+
+function renderProjects(filter = 'all') {
+  const filtered = filter === 'all'
+    ? projectsData
+    : projectsData.filter(p => p.status === filter);
+
+  const grid = document.getElementById('projectsGrid');
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `
+      <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px; color: var(--text-muted);">
+        <p style="font-size: 16px;">No projects in this category.</p>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = filtered.map((project, i) => renderProjectCard(project, i)).join('');
+}
+
+function openModal(id) {
+  const project = projectsData.find(p => p.id === id);
+  if (!project) return;
+
+  const sClass = statusClass(project.status);
+  const sLabel = statusLabel(project.status);
+  const showStatus = has(project.status);
+  const showDescription = has(project.description);
+  const showOwner = has(project.owner);
+  const showProgress = has(project.progress);
+  const showStart = has(project.startDate);
+  const showEnd = has(project.endDate);
+  const showAnyDate = showStart || showEnd;
+  const showTimeline = showProgress || showAnyDate;
+  const showComments = has(project.comments) && project.comments.length > 0;
+  const showPriority = has(project.priority);
+
+  const modal = document.getElementById('modalContent');
+  modal.innerHTML = `
+    <div class="modal-header">
+      <div>
+        <h2 style="font-family: 'Space Grotesk', sans-serif; font-size: 28px; margin-bottom: 8px;">${has(project.title) ? project.title : 'Untitled Project'}</h2>
+        ${showStatus ? `
+          <span class="status-badge status-${sClass}">
+            <span class="status-dot"></span>
+            ${sLabel}
+          </span>
+        ` : ''}
+        ${showPriority ? `
+          <span style="margin-left: 8px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">
+            · ${project.priority} priority
+          </span>
+        ` : ''}
+      </div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+
+    ${showDescription ? `
+      <div class="modal-section">
+        <div class="modal-section-title">Description</div>
+        <div class="modal-section-content">${project.description}</div>
+      </div>
+    ` : ''}
+
+    ${showOwner ? `
+      <div class="modal-section">
+        <div class="modal-section-title">Owner</div>
+        <div class="modal-section-content">
+          <strong>${project.owner}</strong>${has(project.ownerRole) ? ' — ' + project.ownerRole : ''}
+        </div>
+      </div>
+    ` : ''}
+
+    ${showTimeline ? `
+      <div class="modal-section">
+        <div class="modal-section-title">Timeline</div>
+        <div class="modal-section-content">
+          ${showStart ? formatDate(project.startDate) : 'Not set'} → ${showEnd ? formatDate(project.endDate) : 'Not set'}<br>
+          ${showProgress ? `<strong>${project.progress}%</strong> complete` : ''}
+        </div>
+        ${showProgress ? `
+          <div class="progress-bar" style="margin-top: 10px;">
+            <div class="progress-fill" style="width: ${project.progress}%"></div>
+          </div>
+        ` : ''}
+      </div>
+    ` : ''}
+
+    ${showComments ? `
+      <div class="modal-section">
+        <div class="modal-section-title">Comments (${project.comments.length})</div>
+        <div class="modal-comments-list">
+          ${project.comments.map(c => `
+            <div class="modal-comment">
+              ${has(c.author) ? `<div class="modal-comment-author">${c.author}</div>` : ''}
+              ${has(c.text) ? c.text : ''}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    ` : ''}
+
+    ${!showDescription && !showOwner && !showTimeline && !showComments && !showStatus ? `
+      <div class="modal-section">
+        <div class="modal-section-content empty-state-hint">No additional details for this project yet.</div>
+      </div>
+    ` : ''}
+  `;
+
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('active');
+}
+
+document.getElementById('modalOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'modalOverlay') closeModal();
+});
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderProjects(btn.dataset.filter);
+  });
+});
+
+loadState();
+normalizeIds();
+initializeSubtasks();
+renderStats();
+renderProjects();
+</script>
+</body>
+</html>

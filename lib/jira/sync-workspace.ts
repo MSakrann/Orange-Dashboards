@@ -1,5 +1,6 @@
 import { fetchJiraIssue, searchJiraIssues } from "@/lib/jira/client";
 import { partitionMappedIssues } from "@/lib/jira/hierarchy";
+import { resolveDashboardStatusId } from "@/lib/jira/resolve-status";
 import type { JiraConnectionConfig } from "@/lib/jira/types";
 import { mapJiraIssue } from "@/lib/jira/map-issue";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -70,22 +71,15 @@ async function loadWorkspaceContext(workspaceSlug: string) {
   if (mappingsError) throw new Error(mappingsError.message);
   if (!statuses?.length) throw new Error(`No statuses configured for ${workspaceSlug}`);
 
-  const defaultStatus =
-    statuses.find((status) => status.reporting_category === "active")
-    ?? statuses[0];
-
-  const statusByJiraName = new Map(
-    (mappings ?? []).map((mapping) => [mapping.jira_status_name.toLowerCase(), mapping.status_id]),
-  );
-  const statusByDashboardName = new Map(
-    statuses.map((status) => [status.name.toLowerCase(), status.id]),
-  );
-
-  function resolveStatusId(jiraStatusName: string) {
-    const normalized = jiraStatusName.toLowerCase();
-    return statusByJiraName.get(normalized)
-      ?? statusByDashboardName.get(normalized)
-      ?? defaultStatus.id;
+  function resolveStatusId(jiraStatusName: string, jiraStatusCategoryKey?: string | null) {
+    const statusId = resolveDashboardStatusId({
+      jiraStatusName,
+      jiraStatusCategoryKey,
+      statuses: statuses ?? [],
+      mappings: mappings ?? [],
+    });
+    if (!statusId) throw new Error(`Unable to resolve status for ${jiraStatusName}`);
+    return statusId;
   }
 
   return {
@@ -169,7 +163,7 @@ export async function syncWorkspaceFromJira(
       parent_id: parentId,
       title: issue.title,
       description: issue.description || null,
-      status_id: resolveStatusId(issue.jiraStatusName),
+      status_id: resolveStatusId(issue.jiraStatusName, issue.jiraStatusCategoryKey),
       priority: issue.priority,
       progress: issue.progress,
       start_date: issue.startDate,

@@ -45,5 +45,6 @@ export interface MappedJiraIssue {
   priority: "low" | "medium" | "high";
   progress: number;
   jiraStatusName: string;
+  jiraStatusCategoryKey: string | null;
   parentJiraIssueId: string | null;
 }

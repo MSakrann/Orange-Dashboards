@@ -69,6 +69,7 @@ export function mapJiraIssue(
     priority: mapPriority(issue.fields.priority?.name),
     progress,
     jiraStatusName: issue.fields.status?.name?.trim() || "In Progress",
+    jiraStatusCategoryKey: issue.fields.status?.statusCategory?.key ?? null,
     parentJiraIssueId: issue.fields.parent?.id ?? null,
   };
 }

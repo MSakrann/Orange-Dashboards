@@ -245,12 +245,10 @@ curl -H "Authorization: Bearer <CRON_SECRET>" https://<your-app>/api/jira/sync
 ```
 
 3. Open each Jira-linked dashboard and confirm projects appear with Jira keys.
-4. If statuses look wrong, update `jira_status_mappings` in Supabase SQL editor to match your
-   Jira workflow status names (case-insensitive). Each mapping points to a dashboard
-   `status_id` in that workspace.
-
-Progress is derived from the Jira status category (To Do → 0%, In Progress → 50%, Done → 100%)
-unless you set `JIRA_*_PROGRESS_FIELD_ID` to a numeric custom field.
+4. If statuses look wrong after sync, redeploy and re-run sync — the app maps Jira
+   status categories (To Do / In Progress / Done) automatically. You do not need to
+   edit PE/Platform statuses in the dashboard (those workspaces are read-only mirrors).
+   Hot Topics remains fully editable.
 
 ## Security
 

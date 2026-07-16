@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getJiraConnectionForSlug, isJiraWorkspaceSlug } from "@/lib/jira/config";
 import { partitionMappedIssues } from "@/lib/jira/hierarchy";
 import { mapJiraIssue } from "@/lib/jira/map-issue";
+import { resolveDashboardStatusId } from "@/lib/jira/resolve-status";
 import { verifyJiraHubSignature } from "@/lib/jira/webhook-auth";
 import type { JiraConnectionConfig, JiraIssue } from "@/lib/jira/types";
 
@@ -90,6 +91,7 @@ describe("partitionMappedIssues", () => {
       priority: "medium" as const,
       progress: 50,
       jiraStatusName: "In Progress",
+      jiraStatusCategoryKey: "indeterminate",
       parentJiraIssueId: null,
     };
     const story = { ...epic, jiraIssueId: "2", jiraIssueKey: "ODF-2", title: "Story", parentJiraIssueId: "1" };
@@ -101,5 +103,41 @@ describe("partitionMappedIssues", () => {
       ["2", "1"],
       ["3", "1"],
     ]);
+  });
+});
+
+describe("resolveDashboardStatusId", () => {
+  const statuses = [
+    { id: "active", name: "In Progress", reporting_category: "active" },
+    { id: "risk", name: "At Risk", reporting_category: "risk" },
+    { id: "delayed", name: "Delayed", reporting_category: "delayed" },
+    { id: "done", name: "Completed", reporting_category: "completed" },
+  ];
+
+  it("maps Done by category even without an explicit mapping row", () => {
+    expect(resolveDashboardStatusId({
+      jiraStatusName: "Released",
+      jiraStatusCategoryKey: "done",
+      statuses,
+      mappings: [],
+    })).toBe("done");
+  });
+
+  it("maps To Do / Backlog to active, not delayed", () => {
+    expect(resolveDashboardStatusId({
+      jiraStatusName: "To Do",
+      jiraStatusCategoryKey: "new",
+      statuses,
+      mappings: [],
+    })).toBe("active");
+  });
+
+  it("maps Blocked to risk via name heuristics", () => {
+    expect(resolveDashboardStatusId({
+      jiraStatusName: "Blocked",
+      jiraStatusCategoryKey: "indeterminate",
+      statuses,
+      mappings: [],
+    })).toBe("risk");
   });
 });

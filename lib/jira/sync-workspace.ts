@@ -139,12 +139,31 @@ export async function syncWorkspaceFromJira(
     [...existingByJiraId.entries()].map(([jiraId, item]) => [jiraId, item.id]),
   );
 
+  const nextSortByParent = new Map<string, number>();
+  function parentKey(parentId: string | null) {
+    return parentId ?? "__root__";
+  }
+  for (const item of existingItems ?? []) {
+    const key = parentKey(item.parent_id);
+    const current = nextSortByParent.get(key) ?? 0;
+    nextSortByParent.set(key, Math.max(current, item.sort_order + 1));
+  }
+  function allocateSortOrder(parentId: string | null, existing?: WorkItemRow) {
+    if (existing && (existing.parent_id ?? null) === parentId) {
+      return existing.sort_order;
+    }
+    const key = parentKey(parentId);
+    const next = nextSortByParent.get(key) ?? 0;
+    nextSortByParent.set(key, next + 1);
+    return next;
+  }
+
   async function upsertIssue(
     issue: ReturnType<typeof mapJiraIssue>,
     parentId: string | null,
-    sortOrder: number,
   ) {
     seenJiraIds.add(issue.jiraIssueId);
+    const existing = existingByJiraId.get(issue.jiraIssueId);
     const payload = {
       workspace_id: workspace.id,
       parent_id: parentId,
@@ -156,14 +175,13 @@ export async function syncWorkspaceFromJira(
       start_date: issue.startDate,
       end_date: issue.endDate,
       assignee: issue.assignee,
-      sort_order: sortOrder,
+      sort_order: allocateSortOrder(parentId, existing),
       sync_source: "jira" as const,
       jira_issue_id: issue.jiraIssueId,
       jira_issue_key: issue.jiraIssueKey,
       jira_updated_at: issue.jiraUpdatedAt,
     };
 
-    const existing = existingByJiraId.get(issue.jiraIssueId);
     if (!existing) {
       const { data, error } = await supabase
         .from("work_items")
@@ -172,6 +190,7 @@ export async function syncWorkspaceFromJira(
         .single();
       if (error) throw new Error(error.message);
       jiraIdToWorkItemId.set(issue.jiraIssueId, data.id);
+      existingByJiraId.set(issue.jiraIssueId, { ...payload, id: data.id } as WorkItemRow);
       imported += 1;
       return;
     }
@@ -187,20 +206,21 @@ export async function syncWorkspaceFromJira(
       .update(payload)
       .eq("id", existing.id);
     if (error) throw new Error(error.message);
+    existingByJiraId.set(issue.jiraIssueId, { ...existing, ...payload });
     updated += 1;
   }
 
-  for (const [index, issue] of topLevel.entries()) {
-    await upsertIssue(issue, null, index);
+  for (const issue of topLevel) {
+    await upsertIssue(issue, null);
   }
 
-  for (const [index, { issue, parentJiraIssueId }] of nestedChildren.entries()) {
+  for (const { issue, parentJiraIssueId } of nestedChildren) {
     const parentWorkItemId = jiraIdToWorkItemId.get(parentJiraIssueId);
     if (!parentWorkItemId) {
       skipped += 1;
       continue;
     }
-    await upsertIssue(issue, parentWorkItemId, index);
+    await upsertIssue(issue, parentWorkItemId);
   }
 
   let deleted = 0;

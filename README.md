@@ -187,7 +187,7 @@ remains fully manual in the dashboard. The application never writes back to Jira
 
 ### How it works
 
-- **Cron sync** runs every 15 minutes via Vercel (`/api/jira/sync`).
+- **Cron sync** runs once daily via Vercel (`/api/jira/sync`, Hobby plan limit). Upgrade to Pro for more frequent cron, or trigger sync manually anytime.
 - **Webhooks** push near-real-time updates when issues are created, updated, or deleted.
 - **RLS** blocks manual edits to work items, statuses, and comments in Jira-linked workspaces.
 - **Status mapping** translates Jira status names into dashboard statuses via

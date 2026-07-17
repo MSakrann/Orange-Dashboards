@@ -707,6 +707,7 @@ export function DashboardShell({
                     <ProjectCard
                       project={project}
                       key={project.id}
+                      showInlineDetails={workspace.slug === "hot-topics"}
                       onOpen={(selected) => setSelectedProjectId(selected.id)}
                       adminControls={canAdmin ? {
                         onEdit: () => setEditor({

@@ -4,6 +4,7 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 interface ProjectCardProps {
   project: DashboardProject;
   onOpen: (project: DashboardProject) => void;
+  showInlineDetails?: boolean;
   adminControls?: {
     onEdit: () => void;
     onDelete: () => void;
@@ -21,10 +22,21 @@ const dateFormatter = new Intl.DateTimeFormat("en", {
   timeZone: "UTC",
 });
 
+const commentDateFormatter = new Intl.DateTimeFormat("en", {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+});
+
 function formatDate(date?: string) {
   if (!date) return "Not scheduled";
   const parsed = new Date(`${date}T00:00:00Z`);
   return Number.isNaN(parsed.getTime()) ? "Not scheduled" : dateFormatter.format(parsed);
+}
+
+function formatCommentDate(value: string) {
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? "" : commentDateFormatter.format(parsed);
 }
 
 function initials(name: string) {
@@ -37,7 +49,12 @@ function initials(name: string) {
     .slice(0, 2);
 }
 
-export function ProjectCard({ project, onOpen, adminControls }: ProjectCardProps) {
+export function ProjectCard({
+  project,
+  onOpen,
+  showInlineDetails = false,
+  adminControls,
+}: ProjectCardProps) {
   return (
     <article className="project-card">
       <div className="project-heading">
@@ -74,6 +91,10 @@ export function ProjectCard({ project, onOpen, adminControls }: ProjectCardProps
         </span>
       </div>
 
+      {showInlineDetails && project.description.trim() ? (
+        <p className="project-card-description">{project.description}</p>
+      ) : null}
+
       <ProgressBar label={`${project.title} progress`} value={project.progress} />
 
       <dl className="project-dates">
@@ -86,6 +107,27 @@ export function ProjectCard({ project, onOpen, adminControls }: ProjectCardProps
           <dd>{formatDate(project.endDate)}</dd>
         </div>
       </dl>
+
+      {showInlineDetails ? (
+        <section className="project-card-comments" aria-label={`${project.title} comments`}>
+          <h3>Comments</h3>
+          {project.comments.length ? (
+            <ul>
+              {project.comments.map((comment) => (
+                <li key={comment.id}>
+                  <p>{comment.text}</p>
+                  <cite>
+                    {comment.author}
+                    {comment.createdAt ? ` · ${formatCommentDate(comment.createdAt)}` : ""}
+                  </cite>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="project-card-comments-empty">No comments yet.</p>
+          )}
+        </section>
+      ) : null}
 
       <button className="details-button" type="button" onClick={() => onOpen(project)}>
         View {project.title} details

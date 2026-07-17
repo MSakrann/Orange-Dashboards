@@ -547,6 +547,63 @@ h1 {
   font-weight: 650;
 }
 
+.project-card-description {
+  margin: 0 0 16px;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.project-card-comments {
+  margin: 0 0 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.project-card-comments h3 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.project-card-comments ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.project-card-comments li {
+  padding: 12px 14px;
+  border-left: 3px solid var(--orange);
+  border-radius: 0 10px 10px 0;
+  background: var(--surface-soft);
+}
+
+.project-card-comments li p {
+  margin: 0 0 6px;
+  font-size: 13px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.project-card-comments cite {
+  color: var(--muted);
+  font-size: 11px;
+  font-style: normal;
+}
+
+.project-card-comments-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
 .details-button {
   width: 100%;
   cursor: pointer;

@@ -92,7 +92,12 @@ export function ProjectCard({
       </div>
 
       {showInlineDetails && project.description.trim() ? (
-        <p className="project-card-description">{project.description}</p>
+        <section className="project-card-description" aria-label={`${project.title} description`}>
+          <h3>Description</h3>
+          <div className="project-card-description-body">
+            <p>{project.description}</p>
+          </div>
+        </section>
       ) : null}
 
       <ProgressBar label={`${project.title} progress`} value={project.progress} />

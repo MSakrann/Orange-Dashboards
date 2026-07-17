@@ -549,9 +549,31 @@ h1 {
 
 .project-card-description {
   margin: 0 0 16px;
-  color: var(--text);
-  font-size: 14px;
-  line-height: 1.5;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.project-card-description h3,
+.project-card-comments h3 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.project-card-description-body {
+  padding: 12px 14px;
+  border-left: 3px solid var(--orange);
+  border-radius: 0 10px 10px 0;
+  background: var(--surface-soft);
+}
+
+.project-card-description-body p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
   white-space: pre-wrap;
 }
 
@@ -563,11 +585,6 @@ h1 {
 
 .project-card-comments h3 {
   margin: 0 0 10px;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--muted);
 }
 
 .project-card-comments ul {

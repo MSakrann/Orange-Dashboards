@@ -54,10 +54,11 @@ Always inspect the linked project and the dry-run output before applying migrati
 
 ## Seed data and future imports
 
-`supabase/seed.sql` is deterministic. It creates Hot Topics, Platform Development, and
-PE Development workspaces and their statuses; only Hot Topics is currently seeded with
-projects and comments. Re-running `supabase db reset` is destructive and is for
-local/test databases only.
+`supabase/seed.sql` is deterministic. It creates Hot Topics, PE Development,
+Platform Development, PE Operations, Development Operations, and Data Lake
+Operations workspaces and their statuses; only Hot Topics is currently seeded with
+projects and comments. Jira-linked boards stay empty until sync. Re-running
+`supabase db reset` is destructive and is for local/test databases only.
 
 For future PE or Platform imports:
 
@@ -182,7 +183,8 @@ rollback plan.
 
 ## Jira integration (one-way sync)
 
-PE Development and Platform Development mirror separate Jira Cloud instances. Hot Topics
+PE Development, Platform Development, PE Operations, Development Operations, and
+Data Lake Operations each mirror a separate Jira Cloud instance. Hot Topics
 remains fully manual in the dashboard. The application never writes back to Jira.
 
 ### How it works
@@ -207,6 +209,9 @@ Set these in **Production** (and Preview if you test there). Never expose them i
 | --- | --- |
 | `JIRA_PE_*` | PE Development |
 | `JIRA_PLATFORM_*` | Platform Development |
+| `JIRA_PE_OPS_*` | PE Operations |
+| `JIRA_DEV_OPS_*` | Development Operations |
+| `JIRA_DATALAKE_OPS_*` | Data Lake Operations |
 | `SUPABASE_SERVICE_ROLE_KEY` | Sync jobs (server only) |
 | `CRON_SECRET` | Protects `/api/jira/sync` |
 
@@ -229,9 +234,13 @@ Use a **clean URL** (no `?secret=` query string — Jira often rejects those as 
 | --- | --- |
 | PE Development | `https://<your-app>/api/jira/webhook/pe-development` |
 | Platform Development | `https://<your-app>/api/jira/webhook/platform-development` |
+| PE Operations | `https://<your-app>/api/jira/webhook/pe-operations` |
+| Development Operations | `https://<your-app>/api/jira/webhook/development-operations` |
+| Data Lake Operations | `https://<your-app>/api/jira/webhook/datalake-operations` |
 
-In the webhook form’s **Secret** field, paste the same value as `JIRA_PE_WEBHOOK_SECRET` or
-`JIRA_PLATFORM_WEBHOOK_SECRET`. Jira signs payloads with HMAC (`X-Hub-Signature`); the dashboard verifies that.
+In the webhook form’s **Secret** field, paste the same value as the matching
+`JIRA_*_WEBHOOK_SECRET` env var for that workspace. Jira signs payloads with HMAC
+(`X-Hub-Signature`); the dashboard verifies that.
 
 Subscribe to **issue created**, **issue updated**, and **issue deleted**.
 
@@ -245,9 +254,9 @@ curl -H "Authorization: Bearer <CRON_SECRET>" https://<your-app>/api/jira/sync
 ```
 
 3. Open each Jira-linked dashboard and confirm projects appear with Jira keys.
-4. After sync, PE/Platform show **Jira’s own status names** (e.g. To Do, In Review, Done).
+4. After sync, Jira-linked workspaces show **Jira’s own status names** (e.g. To Do, In Review, Done).
    The old In Progress / At Risk / Delayed / Completed labels are only used for Hot Topics.
-   You do not edit PE/Platform statuses in the dashboard — change them in Jira.
+   You do not edit Jira-linked statuses in the dashboard — change them in Jira.
 
 ## Security
 

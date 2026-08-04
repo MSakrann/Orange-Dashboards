@@ -30,6 +30,26 @@ test.describe("public fixture workspace", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       "Platform Development",
     );
+
+    await page.getByRole("combobox", { name: "Workspace" }).selectOption("pe-operations");
+    await expect(page).toHaveURL(/\/pe-operations$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("PE Operations");
+
+    await page
+      .getByRole("combobox", { name: "Workspace" })
+      .selectOption("development-operations");
+    await expect(page).toHaveURL(/\/development-operations$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Development Operations",
+    );
+
+    await page
+      .getByRole("combobox", { name: "Workspace" })
+      .selectOption("datalake-operations");
+    await expect(page).toHaveURL(/\/datalake-operations$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Data Lake Operations",
+    );
     await expectAccessible(page);
   });
 

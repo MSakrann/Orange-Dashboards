@@ -19,6 +19,9 @@ describe("jira config", () => {
   it("recognizes Jira-linked workspace slugs", () => {
     expect(isJiraWorkspaceSlug("pe-development")).toBe(true);
     expect(isJiraWorkspaceSlug("platform-development")).toBe(true);
+    expect(isJiraWorkspaceSlug("pe-operations")).toBe(true);
+    expect(isJiraWorkspaceSlug("development-operations")).toBe(true);
+    expect(isJiraWorkspaceSlug("datalake-operations")).toBe(true);
     expect(isJiraWorkspaceSlug("hot-topics")).toBe(false);
   });
 

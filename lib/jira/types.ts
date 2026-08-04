@@ -1,4 +1,9 @@
-export type JiraWorkspaceSlug = "pe-development" | "platform-development";
+export type JiraWorkspaceSlug =
+  | "pe-development"
+  | "platform-development"
+  | "pe-operations"
+  | "development-operations"
+  | "datalake-operations";
 
 export interface JiraConnectionConfig {
   workspaceSlug: JiraWorkspaceSlug;

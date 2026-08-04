@@ -315,11 +315,14 @@ export async function loadDashboard(
 }
 
 function resolveJiraBrowseBaseUrl(workspaceSlug: string) {
-  if (workspaceSlug === "pe-development") {
-    return process.env.JIRA_PE_BASE_URL?.replace(/\/$/, "");
-  }
-  if (workspaceSlug === "platform-development") {
-    return process.env.JIRA_PLATFORM_BASE_URL?.replace(/\/$/, "");
-  }
-  return undefined;
+  const prefixBySlug: Record<string, string> = {
+    "pe-development": "JIRA_PE",
+    "platform-development": "JIRA_PLATFORM",
+    "pe-operations": "JIRA_PE_OPS",
+    "development-operations": "JIRA_DEV_OPS",
+    "datalake-operations": "JIRA_DATALAKE_OPS",
+  };
+  const prefix = prefixBySlug[workspaceSlug];
+  if (!prefix) return undefined;
+  return process.env[`${prefix}_BASE_URL`]?.replace(/\/$/, "");
 }

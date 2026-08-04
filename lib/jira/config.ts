@@ -3,10 +3,21 @@ import type { JiraConnectionConfig, JiraWorkspaceSlug } from "@/lib/jira/types";
 const JIRA_WORKSPACE_SLUGS: JiraWorkspaceSlug[] = [
   "pe-development",
   "platform-development",
+  "pe-operations",
+  "development-operations",
+  "datalake-operations",
 ];
 
-function envPrefixForSlug(slug: JiraWorkspaceSlug): "JIRA_PE" | "JIRA_PLATFORM" {
-  return slug === "pe-development" ? "JIRA_PE" : "JIRA_PLATFORM";
+const JIRA_ENV_PREFIX_BY_SLUG: Record<JiraWorkspaceSlug, string> = {
+  "pe-development": "JIRA_PE",
+  "platform-development": "JIRA_PLATFORM",
+  "pe-operations": "JIRA_PE_OPS",
+  "development-operations": "JIRA_DEV_OPS",
+  "datalake-operations": "JIRA_DATALAKE_OPS",
+};
+
+function envPrefixForSlug(slug: JiraWorkspaceSlug): string {
+  return JIRA_ENV_PREFIX_BY_SLUG[slug];
 }
 
 export function isJiraWorkspaceSlug(slug: string): slug is JiraWorkspaceSlug {

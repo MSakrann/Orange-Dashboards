@@ -56,6 +56,22 @@ describe("Supabase core database behavior", () => {
     await db.close();
   });
 
+  it("seeds six workspaces in product order", async () => {
+    const rows = await db.query<{ slug: string; sort_order: number }>(`
+      select slug, sort_order
+        from public.workspaces
+       order by sort_order
+    `);
+    expect(rows.rows.map((row) => row.slug)).toEqual([
+      "hot-topics",
+      "pe-development",
+      "platform-development",
+      "pe-operations",
+      "development-operations",
+      "datalake-operations",
+    ]);
+  });
+
   it("applies the migration and seed with UUID keys, timestamps, foreign keys, and indexes", async () => {
     const columns = await db.query<{
       table_name: string;

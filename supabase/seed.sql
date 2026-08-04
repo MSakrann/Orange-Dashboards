@@ -3,8 +3,11 @@ begin;
 insert into public.workspaces (id, slug, name, description, sort_order)
 values
   ('10000000-0000-4000-8000-000000000001', 'hot-topics', 'Hot Topics', 'Cross-team operational priorities and escalations.', 0),
-  ('10000000-0000-4000-8000-000000000002', 'platform-development', 'Platform Development', 'Platform development delivery workspace.', 1),
-  ('10000000-0000-4000-8000-000000000003', 'pe-development', 'PE Development', 'Platform engineering delivery workspace.', 2)
+  ('10000000-0000-4000-8000-000000000003', 'pe-development', 'PE Development', 'Platform engineering delivery workspace.', 1),
+  ('10000000-0000-4000-8000-000000000002', 'platform-development', 'Platform Development', 'Platform development delivery workspace.', 2),
+  ('10000000-0000-4000-8000-000000000004', 'pe-operations', 'PE Operations', 'PE operations delivery workspace.', 3),
+  ('10000000-0000-4000-8000-000000000005', 'development-operations', 'Development Operations', 'Development operations delivery workspace.', 4),
+  ('10000000-0000-4000-8000-000000000006', 'datalake-operations', 'Data Lake Operations', 'Data lake operations delivery workspace.', 5)
 on conflict (id) do update set
   slug = excluded.slug,
   name = excluded.name,
@@ -26,7 +29,19 @@ values
   ('20000000-0000-4000-8000-000000000009', '10000000-0000-4000-8000-000000000003', 'In Progress', '#23b123', 0, 'active'),
   ('20000000-0000-4000-8000-00000000000a', '10000000-0000-4000-8000-000000000003', 'At Risk', '#f59e0b', 1, 'risk'),
   ('20000000-0000-4000-8000-00000000000b', '10000000-0000-4000-8000-000000000003', 'Delayed', '#ef4444', 2, 'delayed'),
-  ('20000000-0000-4000-8000-00000000000c', '10000000-0000-4000-8000-000000000003', 'Completed', '#16a34a', 3, 'completed')
+  ('20000000-0000-4000-8000-00000000000c', '10000000-0000-4000-8000-000000000003', 'Completed', '#16a34a', 3, 'completed'),
+  ('20000000-0000-4000-8000-00000000000d', '10000000-0000-4000-8000-000000000004', 'In Progress', '#23b123', 0, 'active'),
+  ('20000000-0000-4000-8000-00000000000e', '10000000-0000-4000-8000-000000000004', 'At Risk', '#f59e0b', 1, 'risk'),
+  ('20000000-0000-4000-8000-00000000000f', '10000000-0000-4000-8000-000000000004', 'Delayed', '#ef4444', 2, 'delayed'),
+  ('20000000-0000-4000-8000-000000000010', '10000000-0000-4000-8000-000000000004', 'Completed', '#16a34a', 3, 'completed'),
+  ('20000000-0000-4000-8000-000000000011', '10000000-0000-4000-8000-000000000005', 'In Progress', '#23b123', 0, 'active'),
+  ('20000000-0000-4000-8000-000000000012', '10000000-0000-4000-8000-000000000005', 'At Risk', '#f59e0b', 1, 'risk'),
+  ('20000000-0000-4000-8000-000000000013', '10000000-0000-4000-8000-000000000005', 'Delayed', '#ef4444', 2, 'delayed'),
+  ('20000000-0000-4000-8000-000000000014', '10000000-0000-4000-8000-000000000005', 'Completed', '#16a34a', 3, 'completed'),
+  ('20000000-0000-4000-8000-000000000015', '10000000-0000-4000-8000-000000000006', 'In Progress', '#23b123', 0, 'active'),
+  ('20000000-0000-4000-8000-000000000016', '10000000-0000-4000-8000-000000000006', 'At Risk', '#f59e0b', 1, 'risk'),
+  ('20000000-0000-4000-8000-000000000017', '10000000-0000-4000-8000-000000000006', 'Delayed', '#ef4444', 2, 'delayed'),
+  ('20000000-0000-4000-8000-000000000018', '10000000-0000-4000-8000-000000000006', 'Completed', '#16a34a', 3, 'completed')
 on conflict (id) do update set
   workspace_id = excluded.workspace_id,
   name = excluded.name,

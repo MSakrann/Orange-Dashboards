@@ -236,8 +236,8 @@ describe("Supabase security, audit, RPC, and realtime behavior", () => {
       `);
       await resetIdentity(db);
       expect(counts.rows[0]).toEqual({
-        workspaces: 3,
-        statuses: 12,
+        workspaces: 6,
+        statuses: 24,
         work_items: 13,
         comments: 2,
       });

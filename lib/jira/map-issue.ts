@@ -35,7 +35,7 @@ function progressFromStatusCategory(key?: string): number {
 
 function progressFromCustomField(issue: JiraIssue, fieldId?: string): number | null {
   if (!fieldId) return null;
-  const raw = issue.fields[fieldId as keyof typeof issue.fields];
+  const raw = issue.fields[fieldId];
   if (typeof raw === "number" && Number.isFinite(raw)) {
     return Math.max(0, Math.min(100, Math.round(raw)));
   }
@@ -48,14 +48,32 @@ function progressFromCustomField(issue: JiraIssue, fieldId?: string): number | n
   return null;
 }
 
+function readEpicLinkKey(issue: JiraIssue, epicLinkFieldId?: string | null): string | null {
+  if (!epicLinkFieldId) return null;
+  const value = issue.fields[epicLinkFieldId];
+  if (typeof value === "string" && value.trim()) return value.trim();
+  if (value && typeof value === "object" && "key" in value) {
+    const key = (value as { key?: unknown }).key;
+    if (typeof key === "string" && key.trim()) return key.trim();
+  }
+  return null;
+}
+
 export function mapJiraIssue(
   issue: JiraIssue,
   config: JiraConnectionConfig,
+  options?: { epicLinkFieldId?: string | null },
 ): MappedJiraIssue {
   const created = issue.fields.created?.slice(0, 10) ?? null;
   const progress =
     progressFromCustomField(issue, config.progressFieldId)
     ?? progressFromStatusCategory(issue.fields.status?.statusCategory?.key);
+
+  const parentId = issue.fields.parent?.id ?? null;
+  const parentKey =
+    issue.fields.parent?.key?.trim()
+    || readEpicLinkKey(issue, options?.epicLinkFieldId)
+    || null;
 
   return {
     jiraIssueId: issue.id,
@@ -70,6 +88,8 @@ export function mapJiraIssue(
     progress,
     jiraStatusName: issue.fields.status?.name?.trim() || "In Progress",
     jiraStatusCategoryKey: issue.fields.status?.statusCategory?.key ?? null,
-    parentJiraIssueId: issue.fields.parent?.id ?? null,
+    parentJiraIssueId: parentId,
+    parentJiraIssueKey: parentKey,
+    issueTypeName: issue.fields.issuetype?.name?.trim() || null,
   };
 }

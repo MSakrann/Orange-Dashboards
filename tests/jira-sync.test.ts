@@ -45,6 +45,7 @@ describe("mapJiraIssue", () => {
         updated: "2026-07-01T12:00:00.000Z",
         priority: { name: "High" },
         parent: null,
+        issuetype: { name: "Story" },
       },
     };
 
@@ -55,6 +56,26 @@ describe("mapJiraIssue", () => {
     expect(mapped.progress).toBe(50);
     expect(mapped.priority).toBe("high");
     expect(mapped.parentJiraIssueId).toBeNull();
+    expect(mapped.issueTypeName).toBe("Story");
+  });
+
+  it("resolves Epic Link custom field when parent is absent", () => {
+    const issue: JiraIssue = {
+      id: "10002",
+      key: "PE-20",
+      fields: {
+        summary: "Story under epic",
+        status: { name: "To Do", statusCategory: { key: "new" } },
+        parent: null,
+        issuetype: { name: "Story" },
+        customfield_10014: "PE-1",
+        updated: "2026-07-01T12:00:00.000Z",
+      },
+    };
+
+    const mapped = mapJiraIssue(issue, config, { epicLinkFieldId: "customfield_10014" });
+    expect(mapped.parentJiraIssueId).toBeNull();
+    expect(mapped.parentJiraIssueKey).toBe("PE-1");
   });
 });
 
@@ -96,9 +117,27 @@ describe("partitionMappedIssues", () => {
       jiraStatusName: "In Progress",
       jiraStatusCategoryKey: "indeterminate",
       parentJiraIssueId: null,
+      parentJiraIssueKey: null,
+      issueTypeName: "Epic",
     };
-    const story = { ...epic, jiraIssueId: "2", jiraIssueKey: "ODF-2", title: "Story", parentJiraIssueId: "1" };
-    const subtask = { ...epic, jiraIssueId: "3", jiraIssueKey: "ODF-3", title: "Sub", parentJiraIssueId: "2" };
+    const story = {
+      ...epic,
+      jiraIssueId: "2",
+      jiraIssueKey: "ODF-2",
+      title: "Story",
+      parentJiraIssueId: "1",
+      parentJiraIssueKey: "ODF-1",
+      issueTypeName: "Story",
+    };
+    const subtask = {
+      ...epic,
+      jiraIssueId: "3",
+      jiraIssueKey: "ODF-3",
+      title: "Sub",
+      parentJiraIssueId: "2",
+      parentJiraIssueKey: "ODF-2",
+      issueTypeName: "Sub-task",
+    };
 
     const { projects, children } = partitionMappedIssues([epic, story, subtask]);
     expect(projects.map((issue) => issue.jiraIssueId)).toEqual(["1"]);
@@ -106,6 +145,39 @@ describe("partitionMappedIssues", () => {
       ["2", "1"],
       ["3", "1"],
     ]);
+  });
+
+  it("nests stories under epics when only Epic Link key is present", () => {
+    const epic = {
+      jiraIssueId: "10",
+      jiraIssueKey: "PE-1",
+      jiraUpdatedAt: "2026-01-01T00:00:00Z",
+      title: "Epic",
+      description: "",
+      assignee: null,
+      endDate: null,
+      startDate: null,
+      priority: "medium" as const,
+      progress: 50,
+      jiraStatusName: "In Progress",
+      jiraStatusCategoryKey: "indeterminate",
+      parentJiraIssueId: null,
+      parentJiraIssueKey: null,
+      issueTypeName: "Epic",
+    };
+    const story = {
+      ...epic,
+      jiraIssueId: "11",
+      jiraIssueKey: "PE-2",
+      title: "Story",
+      parentJiraIssueId: null,
+      parentJiraIssueKey: "PE-1",
+      issueTypeName: "Story",
+    };
+
+    const { projects, children } = partitionMappedIssues([epic, story]);
+    expect(projects.map((issue) => issue.jiraIssueId)).toEqual(["10"]);
+    expect(children).toEqual([{ issue: story, parentJiraIssueId: "10" }]);
   });
 });
 

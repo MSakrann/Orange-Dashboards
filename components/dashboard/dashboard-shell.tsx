@@ -640,8 +640,8 @@ export function DashboardShell({
 
         {workspace.jiraLinked ? (
           <p className="jira-banner" role="status">
-            This workspace mirrors Jira. Tasks, statuses, and progress update automatically from your
-            connected Jira instance.
+            This workspace mirrors Jira. Parent work items are shown as cards; children nest underneath
+            with their Jira keys. Statuses and progress update from your connected Jira instance.
             {workspace.lastJiraSyncAt
               ? ` Last sync: ${new Date(workspace.lastJiraSyncAt).toLocaleString()}.`
               : ""}
@@ -708,6 +708,7 @@ export function DashboardShell({
                       project={project}
                       key={project.id}
                       showInlineDetails={workspace.slug === "hot-topics"}
+                      showChildHierarchy={workspace.jiraLinked}
                       onOpen={(selected) => setSelectedProjectId(selected.id)}
                       adminControls={canAdmin ? {
                         onEdit: () => setEditor({

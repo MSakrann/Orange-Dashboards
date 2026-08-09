@@ -22,9 +22,12 @@ export interface JiraIssueFields {
   assignee?: { displayName?: string } | null;
   duedate?: string | null;
   parent?: { id?: string; key?: string } | null;
+  issuetype?: { name?: string; hierarchyLevel?: number } | null;
   created?: string;
   updated?: string;
   priority?: { name?: string } | null;
+  /** Custom fields such as Epic Link / progress. */
+  [customField: string]: unknown;
 }
 
 export interface JiraIssue {
@@ -36,6 +39,7 @@ export interface JiraIssue {
 export interface JiraSearchResponse {
   issues: JiraIssue[];
   nextPageToken?: string;
+  isLast?: boolean;
 }
 
 export interface MappedJiraIssue {
@@ -52,4 +56,6 @@ export interface MappedJiraIssue {
   jiraStatusName: string;
   jiraStatusCategoryKey: string | null;
   parentJiraIssueId: string | null;
+  parentJiraIssueKey: string | null;
+  issueTypeName: string | null;
 }

@@ -47,6 +47,14 @@ export function ProjectDetailsModal({
           <span aria-hidden="true" style={{ backgroundColor: project.statusColor }} />
           {project.statusName}
         </p>
+        {project.syncSource === "jira" ? (
+          <p className="hierarchy-badge" aria-label="Parent work item">
+            Parent
+            {project.subtasks.length
+              ? ` · ${project.subtasks.length} child${project.subtasks.length === 1 ? "" : "ren"}`
+              : ""}
+          </p>
+        ) : null}
         <h2 id={`project-title-${project.id}`}>
           {project.title}
           {project.jiraIssueKey ? (
@@ -92,13 +100,28 @@ export function ProjectDetailsModal({
           </div>
         ) : null}
         <section className="subtasks" aria-labelledby={`subtasks-title-${project.id}`}>
-          <h3 id={`subtasks-title-${project.id}`}>Subtasks</h3>
+          <h3 id={`subtasks-title-${project.id}`}>
+            {project.syncSource === "jira" ? "Children" : "Subtasks"}
+          </h3>
           {project.subtasks.length ? (
             <ul>
               {project.subtasks.map((subtask, index) => (
                 <li key={subtask.id}>
                   <div>
-                    <strong>{subtask.title}</strong>
+                    <strong>
+                      {subtask.title}
+                      {subtask.jiraIssueKey ? (
+                        <span className="jira-key">
+                          {subtask.jiraUrl ? (
+                            <a href={subtask.jiraUrl} target="_blank" rel="noreferrer">
+                              {subtask.jiraIssueKey}
+                            </a>
+                          ) : (
+                            subtask.jiraIssueKey
+                          )}
+                        </span>
+                      ) : null}
+                    </strong>
                     <small>{subtask.statusName} · {subtask.progress}%</small>
                   </div>
                   {adminControls ? (

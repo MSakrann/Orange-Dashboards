@@ -1,10 +1,11 @@
-import type { DashboardProject } from "@/lib/data/dashboard";
+import type { DashboardProject, DashboardWorkItem } from "@/lib/data/dashboard";
 import { ProgressBar } from "@/components/ui/progress-bar";
 
 interface ProjectCardProps {
   project: DashboardProject;
   onOpen: (project: DashboardProject) => void;
   showInlineDetails?: boolean;
+  showChildHierarchy?: boolean;
   adminControls?: {
     onEdit: () => void;
     onDelete: () => void;
@@ -49,33 +50,49 @@ function initials(name: string) {
     .slice(0, 2);
 }
 
+function JiraKey({ item }: { item: DashboardWorkItem }) {
+  if (!item.jiraIssueKey) return null;
+  return (
+    <span className="jira-key">
+      {item.jiraUrl ? (
+        <a href={item.jiraUrl} target="_blank" rel="noreferrer">
+          {item.jiraIssueKey}
+        </a>
+      ) : (
+        item.jiraIssueKey
+      )}
+    </span>
+  );
+}
+
 export function ProjectCard({
   project,
   onOpen,
   showInlineDetails = false,
+  showChildHierarchy = false,
   adminControls,
 }: ProjectCardProps) {
+  const childCount = project.subtasks.length;
+
   return (
     <article className="project-card">
       <div className="project-heading">
         <div>
-          <p className="status-badge">
-            <span aria-hidden="true" style={{ backgroundColor: project.statusColor }} />
-            {project.statusName}
-          </p>
+          <div className="project-meta-row">
+            <p className="status-badge">
+              <span aria-hidden="true" style={{ backgroundColor: project.statusColor }} />
+              {project.statusName}
+            </p>
+            {showChildHierarchy ? (
+              <p className="hierarchy-badge" aria-label="Parent work item">
+                Parent
+                {childCount ? ` · ${childCount} child${childCount === 1 ? "" : "ren"}` : ""}
+              </p>
+            ) : null}
+          </div>
           <h2>
             {project.title}
-            {project.jiraIssueKey ? (
-              <span className="jira-key">
-                {project.jiraUrl ? (
-                  <a href={project.jiraUrl} target="_blank" rel="noreferrer">
-                    {project.jiraIssueKey}
-                  </a>
-                ) : (
-                  project.jiraIssueKey
-                )}
-              </span>
-            ) : null}
+            <JiraKey item={project} />
           </h2>
         </div>
         <span className={`priority priority-${project.priority}`}>{project.priority}</span>
@@ -112,6 +129,40 @@ export function ProjectCard({
           <dd>{formatDate(project.endDate)}</dd>
         </div>
       </dl>
+
+      {showChildHierarchy ? (
+        <section
+          className="project-card-children"
+          aria-label={`${project.title} child work items`}
+        >
+          <h3>Children</h3>
+          {childCount ? (
+            <ul>
+              {project.subtasks.map((child) => (
+                <li key={child.id}>
+                  <div className="project-card-child-heading">
+                    <span
+                      className="status-dot"
+                      aria-hidden="true"
+                      style={{ backgroundColor: child.statusColor }}
+                    />
+                    <strong>{child.title}</strong>
+                    <JiraKey item={child} />
+                  </div>
+                  <small>
+                    {child.statusName}
+                    {" · "}
+                    {child.progress}%
+                    {child.owner ? ` · ${child.owner}` : ""}
+                  </small>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="project-card-children-empty">No child work items.</p>
+          )}
+        </section>
+      ) : null}
 
       {showInlineDetails ? (
         <section className="project-card-comments" aria-label={`${project.title} comments`}>

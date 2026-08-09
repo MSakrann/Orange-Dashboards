@@ -1,7 +1,11 @@
-import { fetchJiraIssue, searchJiraIssues } from "@/lib/jira/client";
+import {
+  fetchJiraIssue,
+  resolveEpicLinkFieldId,
+  searchJiraIssues,
+} from "@/lib/jira/client";
 import { ensureJiraNamedStatuses, removeUnusedSeedStatuses } from "@/lib/jira/ensure-statuses";
 import { partitionMappedIssues } from "@/lib/jira/hierarchy";
-import type { JiraConnectionConfig } from "@/lib/jira/types";
+import type { JiraConnectionConfig, JiraIssue } from "@/lib/jira/types";
 import { mapJiraIssue } from "@/lib/jira/map-issue";
 import { createServiceClient } from "@/lib/supabase/service";
 import type { Tables } from "@/types/database";
@@ -82,13 +86,33 @@ export async function syncWorkspaceFromJira(
   options?: { issueKey?: string },
 ): Promise<SyncResult> {
   const { supabase, workspace, statuses } = await loadWorkspaceContext(config.workspaceSlug);
-  const issues = options?.issueKey
+  const epicLinkFieldId = await resolveEpicLinkFieldId(config);
+  let issues: JiraIssue[] = options?.issueKey
     ? [await fetchJiraIssue(config, options.issueKey)]
     : await searchJiraIssues(config);
 
+  // Webhook/single-issue sync: also fetch the parent so hierarchy can resolve.
+  if (options?.issueKey && issues[0]) {
+    const mappedParentKey =
+      issues[0].fields.parent?.key
+      || (epicLinkFieldId && typeof issues[0].fields[epicLinkFieldId] === "string"
+        ? String(issues[0].fields[epicLinkFieldId])
+        : null);
+    if (mappedParentKey && !issues.some((issue) => issue.key === mappedParentKey)) {
+      try {
+        issues = [await fetchJiraIssue(config, mappedParentKey), ...issues];
+      } catch (error) {
+        console.warn(
+          `Could not fetch Jira parent ${mappedParentKey} for ${options.issueKey}:`,
+          error instanceof Error ? error.message : error,
+        );
+      }
+    }
+  }
+
   await beginJiraSync(supabase);
 
-  const mapped = issues.map((issue) => mapJiraIssue(issue, config));
+  const mapped = issues.map((issue) => mapJiraIssue(issue, config, { epicLinkFieldId }));
   const statusByJiraName = await ensureJiraNamedStatuses(
     supabase,
     workspace.id,
@@ -205,7 +229,9 @@ export async function syncWorkspaceFromJira(
   for (const { issue, parentJiraIssueId } of nestedChildren) {
     const parentWorkItemId = jiraIdToWorkItemId.get(parentJiraIssueId);
     if (!parentWorkItemId) {
-      skipped += 1;
+      // Keep the ticket visible as a root rather than skipping (which also
+      // left it out of seenJiraIds and caused stale deletion on full sync).
+      await upsertIssue(issue, null);
       continue;
     }
     await upsertIssue(issue, parentWorkItemId);

@@ -145,6 +145,88 @@ h1 {
   text-decoration: underline;
 }
 
+.project-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.project-meta-row .status-badge {
+  margin-bottom: 0;
+}
+
+.hierarchy-badge {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #fff1e6;
+  color: #9a3412;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.project-card-children {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.project-card-children h3 {
+  margin-bottom: 10px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.project-card-children ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.project-card-children li {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  border-left: 3px solid var(--orange);
+  background: var(--surface-soft);
+}
+
+.project-card-child-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.project-card-child-heading .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.project-card-children small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+}
+
+.project-card-children-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
 .header-tools {
   display: flex;
   align-items: flex-end;

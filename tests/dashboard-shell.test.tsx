@@ -144,6 +144,50 @@ describe("DashboardShell", () => {
     expect(screen.getByText("Active").closest("article")).toHaveTextContent("1");
   });
 
+  it("shows clickable status metrics for pe-development and hides the Jira banner", async () => {
+    const user = userEvent.setup();
+    const peDashboard = {
+      ...dashboard,
+      slug: "pe-development",
+      name: "PE Development",
+      jiraLinked: true,
+      lastJiraSyncAt: "2026-08-10T09:22:25.000Z",
+      statuses: [
+        { ...dashboard.statuses[0], id: "live", name: "live", color: "#23b123" },
+        { ...dashboard.statuses[1], id: "pending", name: "pending", color: "#f59e0b" },
+      ],
+      projects: [
+        {
+          ...dashboard.projects[0],
+          statusId: "live",
+          statusName: "live",
+          statusColor: "#23b123",
+        },
+        {
+          ...dashboard.projects[1],
+          statusId: "pending",
+          statusName: "pending",
+          statusColor: "#f59e0b",
+        },
+      ],
+    };
+    render(<DashboardShell initialDashboard={peDashboard} source="fixture" />);
+
+    expect(screen.queryByText(/This workspace mirrors Jira/i)).not.toBeInTheDocument();
+    expect(screen.queryByText("Total projects")).not.toBeInTheDocument();
+
+    const overview = screen.getByRole("region", { name: "Workspace status overview" });
+    expect(within(overview).getByRole("button", { name: /All Projects/i })).toHaveTextContent("2");
+
+    const liveMetric = within(overview).getByRole("button", { name: /^live/i });
+    expect(liveMetric).toHaveTextContent("1");
+    await user.click(liveMetric);
+
+    expect(screen.getByText("Alpha rollout")).toBeInTheDocument();
+    expect(screen.queryByText("Beta migration")).not.toBeInTheDocument();
+    expect(liveMetric).toHaveAttribute("aria-pressed", "true");
+  });
+
   it("renders arbitrary status colors only on decorative indicators", () => {
     render(<DashboardShell initialDashboard={dashboard} source="fixture" />);
     const badge = screen.getAllByText("In Progress")

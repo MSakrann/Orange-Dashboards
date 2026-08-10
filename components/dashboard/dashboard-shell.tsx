@@ -638,18 +638,17 @@ export function DashboardShell({
           </div>
         </header>
 
-        {workspace.jiraLinked ? (
-          <p className="jira-banner" role="status">
-            This workspace mirrors Jira. Parent work items are shown as cards; children nest underneath
-            with their Jira keys. Statuses and progress update from your connected Jira instance.
-            {workspace.lastJiraSyncAt
-              ? ` Last sync: ${new Date(workspace.lastJiraSyncAt).toLocaleString()}.`
-              : ""}
-            {workspace.lastJiraSyncError ? ` Sync warning: ${workspace.lastJiraSyncError}` : ""}
-          </p>
-        ) : null}
-
-        <KpiGrid kpis={workspace.kpis} />
+        <KpiGrid
+          kpis={workspace.kpis}
+          statusMetrics={workspace.slug === "pe-development"
+            ? {
+              statuses: workspace.statuses,
+              projects: workspace.projects,
+              activeFilter: effectiveFilter,
+              onSelect: setActiveFilter,
+            }
+            : undefined}
+        />
 
         <section className="projects-section" aria-labelledby="projects-title">
           <div className="section-heading">

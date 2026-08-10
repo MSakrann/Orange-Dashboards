@@ -293,6 +293,10 @@ h1 {
   margin-bottom: 32px;
 }
 
+.kpi-grid-status {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
 .kpi-card {
   position: relative;
   overflow: hidden;
@@ -303,11 +307,28 @@ h1 {
   box-shadow: var(--shadow);
 }
 
+.kpi-card-button {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.kpi-card-button:hover {
+  border-color: color-mix(in srgb, var(--kpi-accent, var(--orange)) 45%, var(--border));
+}
+
+.kpi-card-button[data-active="true"] {
+  border-color: var(--kpi-accent, var(--orange));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--kpi-accent, var(--orange)) 35%, transparent);
+}
+
 .kpi-card::before {
   position: absolute;
   inset: 0 auto 0 0;
   width: 3px;
-  background: var(--orange);
+  background: var(--kpi-accent, var(--orange));
   content: "";
 }
 

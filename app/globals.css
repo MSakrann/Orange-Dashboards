@@ -927,6 +927,10 @@ footer {
   .kpi-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .kpi-grid-status {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 680px) {
@@ -964,7 +968,8 @@ footer {
 }
 
 @media (max-width: 430px) {
-  .kpi-grid {
+  .kpi-grid,
+  .kpi-grid-status {
     grid-template-columns: 1fr;
   }
 

@@ -190,6 +190,72 @@ describe("DashboardShell", () => {
     expect(liveMetric).toHaveAttribute("aria-pressed", "true");
   });
 
+  it("shows a Live / Live with CRs dropdown for pe-development live filter", async () => {
+    const user = userEvent.setup();
+    const peDashboard = {
+      ...dashboard,
+      slug: "pe-development",
+      name: "PE Development",
+      jiraLinked: true,
+      statuses: [
+        { ...dashboard.statuses[0], id: "live", name: "live", color: "#23b123" },
+        { ...dashboard.statuses[1], id: "pending", name: "pending", color: "#f59e0b" },
+      ],
+      projects: [
+        {
+          ...dashboard.projects[0],
+          id: "pure-live",
+          title: "Pure live parent",
+          statusId: "live",
+          statusName: "live",
+          statusColor: "#23b123",
+          subtasks: [{
+            ...dashboard.projects[0],
+            id: "pure-live-child",
+            title: "Live child",
+            statusId: "live",
+            statusName: "live",
+            statusColor: "#23b123",
+            subtasks: undefined,
+          }],
+        },
+        {
+          ...dashboard.projects[1],
+          id: "live-with-cr",
+          title: "Live parent with CR",
+          statusId: "live",
+          statusName: "live",
+          statusColor: "#23b123",
+          subtasks: [{
+            ...dashboard.projects[1],
+            id: "cr-child",
+            title: "CR child",
+            statusId: "pending",
+            statusName: "pending",
+            statusColor: "#f59e0b",
+            subtasks: undefined,
+          }],
+        },
+      ],
+    };
+
+    render(<DashboardShell initialDashboard={peDashboard} source="fixture" />);
+
+    expect(screen.queryByLabelText("Live view")).not.toBeInTheDocument();
+
+    const overview = screen.getByRole("region", { name: "Workspace status overview" });
+    await user.click(within(overview).getByRole("button", { name: /^live/i }));
+
+    const liveView = screen.getByLabelText("Live view");
+    expect(liveView).toBeInTheDocument();
+    expect(screen.getByText("Pure live parent")).toBeInTheDocument();
+    expect(screen.queryByText("Live parent with CR")).not.toBeInTheDocument();
+
+    await user.selectOptions(liveView, "live-with-crs");
+    expect(screen.queryByText("Pure live parent")).not.toBeInTheDocument();
+    expect(screen.getByText("Live parent with CR")).toBeInTheDocument();
+  });
+
   it("renders arbitrary status colors only on decorative indicators", () => {
     render(<DashboardShell initialDashboard={dashboard} source="fixture" />);
     const badge = screen.getAllByText("In Progress")

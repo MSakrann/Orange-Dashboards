@@ -36,6 +36,7 @@ import { SessionControls } from "@/components/auth/session-controls";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/view-states";
 import { ModalDialog } from "@/components/ui/modal-dialog";
 import { KpiGrid } from "./kpi-grid";
+import { LiveVariantFilterControl, type LiveVariantFilter } from "./live-variant-filter";
 import { ProjectCard } from "./project-card";
 import { ProjectDetailsModal } from "./project-details-modal";
 import { StatusFilters, type StatusFilter } from "./status-filters";
@@ -214,6 +215,7 @@ export function DashboardShell({
   const authoritativeRef = useRef(realtime.data);
   const mutationBusyRef = useRef(false);
   const [activeFilter, setActiveFilter] = useState<StatusFilter>("all");
+  const [liveVariant, setLiveVariant] = useState<LiveVariantFilter>("live");
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [editor, setEditor] = useState<EditorState | null>(null);
   const [mutationNotice, setMutationNotice] = useState<{
@@ -581,13 +583,35 @@ export function DashboardShell({
       ? activeFilter
       : "all";
 
-  const visibleProjects = useMemo(
-    () =>
-      effectiveFilter === "all"
-        ? workspace.projects
-        : workspace.projects.filter((project) => project.statusId === effectiveFilter),
-    [effectiveFilter, workspace.projects],
+  const liveStatus = useMemo(
+    () => workspace.statuses.find((status) => status.name.trim().toLowerCase() === "live"),
+    [workspace.statuses],
   );
+  const isPeLiveFilter =
+    workspace.slug === "pe-development"
+    && Boolean(liveStatus)
+    && effectiveFilter === liveStatus?.id;
+
+  const visibleProjects = useMemo(() => {
+    const byStatus = effectiveFilter === "all"
+      ? workspace.projects
+      : workspace.projects.filter((project) => project.statusId === effectiveFilter);
+
+    if (!isPeLiveFilter || !liveStatus) return byStatus;
+
+    return byStatus.filter((project) => {
+      const hasNonLiveChild = project.subtasks.some(
+        (child) => child.statusId !== liveStatus.id,
+      );
+      return liveVariant === "live-with-crs" ? hasNonLiveChild : !hasNonLiveChild;
+    });
+  }, [
+    effectiveFilter,
+    isPeLiveFilter,
+    liveStatus,
+    liveVariant,
+    workspace.projects,
+  ]);
 
   return (
     <>
@@ -644,6 +668,10 @@ export function DashboardShell({
           activeFilter={effectiveFilter}
           onSelect={setActiveFilter}
         />
+
+        {isPeLiveFilter ? (
+          <LiveVariantFilterControl value={liveVariant} onChange={setLiveVariant} />
+        ) : null}
 
         <section className="projects-section" aria-labelledby="projects-title">
           <div className="section-heading">

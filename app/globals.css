@@ -233,6 +233,31 @@ h1 {
   gap: 10px;
 }
 
+.live-variant-filter {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 18px;
+  max-width: 280px;
+}
+
+.live-variant-filter span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.live-variant-filter select {
+  min-width: 220px;
+  padding: 10px 34px 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
 .workspace-switcher {
   display: grid;
   gap: 6px;

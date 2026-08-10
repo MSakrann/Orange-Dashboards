@@ -140,8 +140,10 @@ describe("DashboardShell", () => {
     render(<DashboardShell initialDashboard={customDashboard} source="fixture" />);
 
     expect(screen.getByRole("status")).toHaveTextContent("Local/test fixture");
-    expect(screen.getByRole("button", { name: "Awaiting Review" })).toBeInTheDocument();
-    expect(screen.getByText("Active").closest("article")).toHaveTextContent("1");
+    const overview = screen.getByRole("region", { name: "Workspace status overview" });
+    expect(within(overview).getByRole("button", { name: /Awaiting Review/i })).toHaveTextContent("1");
+    expect(screen.queryByText("Total projects")).not.toBeInTheDocument();
+    expect(screen.queryByText("Needs attention")).not.toBeInTheDocument();
   });
 
   it("shows clickable status metrics for pe-development and hides the Jira banner", async () => {

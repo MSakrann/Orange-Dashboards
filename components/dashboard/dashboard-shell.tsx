@@ -639,15 +639,10 @@ export function DashboardShell({
         </header>
 
         <KpiGrid
-          kpis={workspace.kpis}
-          statusMetrics={workspace.slug === "pe-development"
-            ? {
-              statuses: workspace.statuses,
-              projects: workspace.projects,
-              activeFilter: effectiveFilter,
-              onSelect: setActiveFilter,
-            }
-            : undefined}
+          statuses={workspace.statuses}
+          projects={workspace.projects}
+          activeFilter={effectiveFilter}
+          onSelect={setActiveFilter}
         />
 
         <section className="projects-section" aria-labelledby="projects-title">

@@ -77,6 +77,22 @@ describe("mapJiraIssue", () => {
     expect(mapped.parentJiraIssueId).toBeNull();
     expect(mapped.parentJiraIssueKey).toBe("PE-1");
   });
+
+  it("truncates long Jira descriptions to the database limit", () => {
+    const issue: JiraIssue = {
+      id: "10003",
+      key: "PE-99",
+      fields: {
+        summary: "Huge description",
+        description: "x".repeat(12000),
+        status: { name: "To Do", statusCategory: { key: "new" } },
+        updated: "2026-07-01T12:00:00.000Z",
+      },
+    };
+
+    const mapped = mapJiraIssue(issue, config);
+    expect(mapped.description).toHaveLength(10000);
+  });
 });
 
 describe("verifyJiraHubSignature", () => {

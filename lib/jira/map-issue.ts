@@ -2,15 +2,20 @@ import type { JiraConnectionConfig, JiraIssue, MappedJiraIssue } from "@/lib/jir
 
 function extractDescription(value: unknown): string {
   if (!value) return "";
-  if (typeof value === "string") return value;
-  if (typeof value === "object" && value !== null && "content" in value) {
+  let text = "";
+  if (typeof value === "string") {
+    text = value;
+  } else if (typeof value === "object" && value !== null && "content" in value) {
     try {
-      return JSON.stringify(value);
+      text = JSON.stringify(value);
     } catch {
-      return "";
+      text = "";
     }
+  } else {
+    text = String(value);
   }
-  return String(value);
+  // work_items_description_length allows at most 10000 characters.
+  return text.length > 10000 ? text.slice(0, 10000) : text;
 }
 
 function mapPriority(name?: string | null): "low" | "medium" | "high" {

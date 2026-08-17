@@ -1440,12 +1440,7 @@ footer {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 80% 70%, rgba(255, 240, 228, 0.18), transparent 35%),
-    repeating-linear-gradient(
-      -12deg,
-      transparent 0 18px,
-      rgba(255, 255, 255, 0.03) 18px 19px
-    );
+    radial-gradient(circle at 80% 70%, rgba(255, 240, 228, 0.18), transparent 35%);
   animation: dept-atmosphere 18s ease-in-out infinite alternate;
   pointer-events: none;
 }

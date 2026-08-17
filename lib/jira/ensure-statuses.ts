@@ -91,6 +91,11 @@ export async function removeUnusedSeedStatuses(
   workspaceId: string,
   keepStatusIds: Set<string>,
 ) {
+  // Empty sync (0 Jira issues) yields an empty keep set. Never wipe the
+  // workspace's statuses in that case — otherwise the next sync fails with
+  // "No statuses configured".
+  if (keepStatusIds.size === 0) return;
+
   const { data: rows, error } = await supabase
     .from("statuses")
     .select("id")

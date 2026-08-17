@@ -214,3 +214,16 @@ describe("uniqueJiraStatuses", () => {
     ]).map((status) => status.name)).toEqual(["In Review", "To Do"]);
   });
 });
+
+describe("removeUnusedSeedStatuses", () => {
+  it("does not delete statuses when the keep set is empty", async () => {
+    const { removeUnusedSeedStatuses } = await import("@/lib/jira/ensure-statuses");
+    const from = vi.fn(() => {
+      throw new Error("supabase should not be queried when keep set is empty");
+    });
+    await expect(
+      removeUnusedSeedStatuses({ from } as never, "workspace-id", new Set()),
+    ).resolves.toBeUndefined();
+    expect(from).not.toHaveBeenCalled();
+  });
+});

@@ -253,11 +253,14 @@ export async function syncWorkspaceFromJira(
       deleted = stale.length;
     }
 
-    await removeUnusedSeedStatuses(
-      supabase,
-      workspace.id,
-      new Set(statusByJiraName.values()),
-    );
+    // Only prune seed statuses after a sync that actually produced Jira statuses.
+    if (mapped.length > 0) {
+      await removeUnusedSeedStatuses(
+        supabase,
+        workspace.id,
+        new Set(statusByJiraName.values()),
+      );
+    }
   }
 
   const { error: settingsError } = await supabase

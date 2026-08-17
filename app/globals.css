@@ -1602,7 +1602,7 @@ footer {
 
 .dept-team-grid li {
   padding: 1rem 0 1.15rem;
-  border-top: 1px solid var(--border);
+  border-top: 2px solid var(--orange);
   animation: dept-rise 0.7s ease-out both;
 }
 
@@ -1639,7 +1639,7 @@ footer {
 
 .dept-chapter {
   padding-top: 1.5rem;
-  border-top: 1px solid var(--border);
+  border-top: 2px solid var(--orange);
 }
 
 .dept-chapter h3 {

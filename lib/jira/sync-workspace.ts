@@ -12,10 +12,13 @@ import type { Tables } from "@/types/database";
 
 interface SyncResult {
   workspaceSlug: string;
+  fetched: number;
   imported: number;
   updated: number;
   deleted: number;
   skipped: number;
+  jiraBaseUrl: string;
+  jql: string;
 }
 
 type WorkItemRow = Tables<"work_items">;
@@ -277,9 +280,12 @@ export async function syncWorkspaceFromJira(
 
   return {
     workspaceSlug: config.workspaceSlug,
+    fetched: mapped.length,
     imported,
     updated,
     deleted,
     skipped,
+    jiraBaseUrl: config.baseUrl,
+    jql: config.jql,
   };
 }

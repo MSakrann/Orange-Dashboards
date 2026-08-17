@@ -125,4 +125,19 @@ test.describe("public fixture workspace", () => {
     await page.goto("/hot-topics/history");
     await expect(page).toHaveURL(/\/hot-topics$/);
   });
+
+  test("dept structure portfolio loads from fixture and edit redirects away", async ({ page }) => {
+    await page.goto("/dept-structure");
+    await expect(page.locator(".dept-brand")).toHaveText("Orange Egypt");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Technology Delivery Department",
+    );
+    await expect(page.getByRole("heading", { name: "At a glance" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Structure" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "PE Development", exact: true }).first()).toBeVisible();
+    await expectAccessible(page);
+
+    await page.goto("/dept-structure/edit");
+    await expect(page).toHaveURL(/\/dept-structure$/);
+  });
 });

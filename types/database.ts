@@ -145,6 +145,261 @@ export type Database = {
         };
         Relationships: [];
       };
+      dept_profile: {
+        Row: {
+          brand_name: string;
+          created_at: string;
+          department_head_name: string;
+          department_head_title: string;
+          hero_headline: string;
+          hero_support: string;
+          id: string;
+          mission: string;
+          singleton_key: boolean;
+          stat_active_projects: number;
+          stat_members: number;
+          stat_on_track_pct: number;
+          stat_teams: number;
+          updated_at: string;
+        };
+        Insert: {
+          brand_name?: string;
+          created_at?: string;
+          department_head_name?: string;
+          department_head_title?: string;
+          hero_headline?: string;
+          hero_support?: string;
+          id?: string;
+          mission?: string;
+          singleton_key?: boolean;
+          stat_active_projects?: number;
+          stat_members?: number;
+          stat_on_track_pct?: number;
+          stat_teams?: number;
+          updated_at?: string;
+        };
+        Update: {
+          brand_name?: string;
+          created_at?: string;
+          department_head_name?: string;
+          department_head_title?: string;
+          hero_headline?: string;
+          hero_support?: string;
+          id?: string;
+          mission?: string;
+          singleton_key?: boolean;
+          stat_active_projects?: number;
+          stat_members?: number;
+          stat_on_track_pct?: number;
+          stat_teams?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      dept_teams: {
+        Row: {
+          created_at: string;
+          focus: string;
+          goal: string;
+          id: string;
+          lead_name: string;
+          name: string;
+          scope: string;
+          sort_order: number;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          focus?: string;
+          goal?: string;
+          id?: string;
+          lead_name?: string;
+          name: string;
+          scope?: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          focus?: string;
+          goal?: string;
+          id?: string;
+          lead_name?: string;
+          name?: string;
+          scope?: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      dept_members: {
+        Row: {
+          created_at: string;
+          id: string;
+          name: string;
+          role: string;
+          sort_order: number;
+          team_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          name: string;
+          role?: string;
+          sort_order?: number;
+          team_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          name?: string;
+          role?: string;
+          sort_order?: number;
+          team_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "dept_members_team_id_fkey";
+            columns: ["team_id"];
+            isOneToOne: false;
+            referencedRelation: "dept_teams";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      dept_projects: {
+        Row: {
+          created_at: string;
+          end_date: string | null;
+          id: string;
+          is_highlighted: boolean;
+          owner_name: string;
+          progress_pct: number;
+          sort_order: number;
+          start_date: string | null;
+          status_label: string;
+          summary: string;
+          team_id: string | null;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          end_date?: string | null;
+          id?: string;
+          is_highlighted?: boolean;
+          owner_name?: string;
+          progress_pct?: number;
+          sort_order?: number;
+          start_date?: string | null;
+          status_label?: string;
+          summary?: string;
+          team_id?: string | null;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          end_date?: string | null;
+          id?: string;
+          is_highlighted?: boolean;
+          owner_name?: string;
+          progress_pct?: number;
+          sort_order?: number;
+          start_date?: string | null;
+          status_label?: string;
+          summary?: string;
+          team_id?: string | null;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "dept_projects_team_id_fkey";
+            columns: ["team_id"];
+            isOneToOne: false;
+            referencedRelation: "dept_teams";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      dept_milestones: {
+        Row: {
+          created_at: string;
+          due_date: string | null;
+          id: string;
+          is_done: boolean;
+          project_id: string;
+          sort_order: number;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          due_date?: string | null;
+          id?: string;
+          is_done?: boolean;
+          project_id: string;
+          sort_order?: number;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          due_date?: string | null;
+          id?: string;
+          is_done?: boolean;
+          project_id?: string;
+          sort_order?: number;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "dept_milestones_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "dept_projects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      dept_timeline_items: {
+        Row: {
+          created_at: string;
+          end_date: string | null;
+          id: string;
+          label: string;
+          sort_order: number;
+          start_date: string | null;
+          status_label: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          end_date?: string | null;
+          id?: string;
+          label: string;
+          sort_order?: number;
+          start_date?: string | null;
+          status_label?: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          end_date?: string | null;
+          id?: string;
+          label?: string;
+          sort_order?: number;
+          start_date?: string | null;
+          status_label?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       admin_users: {
         Row: {
           auth_user_id: string;

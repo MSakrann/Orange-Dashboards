@@ -33,14 +33,9 @@ export function DeptStructureGrid({
               <li key={team.id}>
                 <h3>{team.name}</h3>
                 <p className="dept-team-lead">Lead: {team.leadName || "—"}</p>
-                <div className="dept-team-meta-row">
-                  <p className="dept-team-meta">
-                    {team.members.length} members · {projectCountByTeam.get(team.id) ?? 0} projects
-                  </p>
-                  {team.activitySummary ? (
-                    <p className="dept-team-activity">{team.activitySummary}</p>
-                  ) : null}
-                </div>
+                <p className="dept-team-meta">
+                  {team.members.length} members · {projectCountByTeam.get(team.id) ?? 0} projects
+                </p>
                 <p className="dept-team-scope">{team.scope || "—"}</p>
               </li>
             ))}

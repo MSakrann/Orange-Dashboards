@@ -1630,19 +1630,11 @@ footer {
   animation: dept-rise 0.7s ease-out both;
 }
 
-.dept-team-meta-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-
 .dept-team-activity {
   margin: 0.2rem 0 0;
   color: var(--orange-dark);
   font-size: 0.82rem;
   font-weight: 700;
-  text-align: right;
 }
 
 .dept-team-grid h3 {
@@ -1677,11 +1669,19 @@ footer {
 }
 
 .dept-chapter {
-  padding: 1.5rem;
-  border: 2px solid var(--orange);
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.86);
-  box-shadow: 0 16px 40px rgba(36, 31, 24, 0.06);
+  padding-top: 1.5rem;
+}
+
+.dept-chapter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.dept-team-activity-inline {
+  text-align: right;
+  white-space: nowrap;
 }
 
 .dept-chapter h3 {
@@ -1703,6 +1703,17 @@ footer {
   margin: 0 0 1.25rem;
 }
 
+.dept-field-card {
+  border: 2px solid var(--orange);
+  border-radius: 16px;
+  padding: 0.9rem 1rem;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.dept-members-card {
+  margin-top: 0.2rem;
+}
+
 .dept-chapter-facts dt {
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -1712,6 +1723,10 @@ footer {
 
 .dept-chapter-facts dd {
   margin: 0.3rem 0 0;
+}
+
+.dept-field-card .dept-members-heading {
+  margin-top: 0;
 }
 
 .dept-members-heading {
@@ -2050,7 +2065,8 @@ footer {
     flex-direction: column;
   }
 
-  .dept-deep-toggle {
+  .dept-chapter-header {
     flex-direction: column;
+    align-items: flex-start;
   }
 }

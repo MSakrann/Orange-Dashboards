@@ -12,29 +12,28 @@ export function DeptTeamChapters({ teams }: { teams: DeptTeam[] }) {
         <div className="dept-chapter-list">
           {teams.map((team) => (
             <article key={team.id} className="dept-chapter">
-              <header>
+              <header className="dept-chapter-header">
                 <h3>{team.name}</h3>
-                <p className="dept-chapter-lead">Led by {team.leadName || "—"}</p>
+                {team.activitySummary ? (
+                  <p className="dept-team-activity dept-team-activity-inline">{team.activitySummary}</p>
+                ) : null}
               </header>
+              <p className="dept-chapter-lead">Led by {team.leadName || "—"}</p>
               <dl className="dept-chapter-facts">
-                <div>
+                <div className="dept-field-card">
                   <dt>Focus</dt>
                   <dd>{team.focus || "—"}</dd>
                 </div>
-                <div>
+                <div className="dept-field-card">
                   <dt>Goal</dt>
                   <dd>{team.goal || "—"}</dd>
                 </div>
-                <div>
+                <div className="dept-field-card">
                   <dt>Scope</dt>
                   <dd>{team.scope || "—"}</dd>
                 </div>
-                <div>
-                  <dt>Activity</dt>
-                  <dd>{team.activitySummary || "—"}</dd>
-                </div>
-              </dl>
-              <div>
+                </dl>
+              <div className="dept-field-card dept-members-card">
                 <h4 className="dept-members-heading">Members</h4>
                 {team.members.length === 0 ? (
                   <p className="dept-empty">No members listed.</p>

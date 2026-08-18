@@ -11,7 +11,7 @@ export function DeptStructureGrid({
   teams: DeptTeam[];
   projectCountByTeam: Map<string, number>;
 }) {
-  const countClass = `dept-team-grid count-${Math.min(Math.max(teams.length, 1), 5)}`;
+  const countClass = `dept-team-grid count-${Math.min(Math.max(teams.length, 1), 6)}`;
 
   return (
     <section className="dept-section dept-structure" aria-labelledby="dept-structure-heading">
@@ -33,9 +33,14 @@ export function DeptStructureGrid({
               <li key={team.id}>
                 <h3>{team.name}</h3>
                 <p className="dept-team-lead">Lead: {team.leadName || "—"}</p>
-                <p className="dept-team-meta">
-                  {team.members.length} members · {projectCountByTeam.get(team.id) ?? 0} projects
-                </p>
+                <div className="dept-team-meta-row">
+                  <p className="dept-team-meta">
+                    {team.members.length} members · {projectCountByTeam.get(team.id) ?? 0} projects
+                  </p>
+                  {team.activitySummary ? (
+                    <p className="dept-team-activity">{team.activitySummary}</p>
+                  ) : null}
+                </div>
                 <p className="dept-team-scope">{team.scope || "—"}</p>
               </li>
             ))}

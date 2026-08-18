@@ -25,6 +25,14 @@ export function DeptTeamChapters({ teams }: { teams: DeptTeam[] }) {
                   <dt>Goal</dt>
                   <dd>{team.goal || "—"}</dd>
                 </div>
+                <div>
+                  <dt>Scope</dt>
+                  <dd>{team.scope || "—"}</dd>
+                </div>
+                <div>
+                  <dt>Activity</dt>
+                  <dd>{team.activitySummary || "—"}</dd>
+                </div>
               </dl>
               <div>
                 <h4 className="dept-members-heading">Members</h4>

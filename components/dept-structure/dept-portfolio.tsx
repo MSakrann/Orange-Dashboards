@@ -3,12 +3,9 @@
 import type { DeptStructure } from "@/data/dept-structure";
 import { DeptGlance } from "./dept-glance";
 import { DeptHero } from "./dept-hero";
-import { DeptHighlighted } from "./dept-highlighted";
 import { DeptMission } from "./dept-mission";
-import { DeptProjectDeepDives } from "./dept-project-deep-dives";
 import { DeptStructureGrid } from "./dept-structure-grid";
 import { DeptTeamChapters } from "./dept-team-chapters";
-import { DeptTimeline } from "./dept-timeline";
 
 export function DeptPortfolio({ data }: { data: DeptStructure }) {
   const projectCountByTeam = new Map<string, number>();
@@ -16,8 +13,6 @@ export function DeptPortfolio({ data }: { data: DeptStructure }) {
     if (!project.teamId) continue;
     projectCountByTeam.set(project.teamId, (projectCountByTeam.get(project.teamId) ?? 0) + 1);
   }
-
-  const highlighted = data.projects.filter((project) => project.isHighlighted).slice(0, 3);
 
   return (
     <main className="dept-portfolio">
@@ -31,9 +26,6 @@ export function DeptPortfolio({ data }: { data: DeptStructure }) {
         projectCountByTeam={projectCountByTeam}
       />
       <DeptTeamChapters teams={data.teams} />
-      <DeptHighlighted projects={highlighted} teams={data.teams} />
-      <DeptProjectDeepDives projects={data.projects} teams={data.teams} />
-      <DeptTimeline items={data.timeline} />
     </main>
   );
 }

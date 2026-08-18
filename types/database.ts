@@ -198,6 +198,7 @@ export type Database = {
       };
       dept_teams: {
         Row: {
+          activity_summary: string;
           created_at: string;
           focus: string;
           goal: string;
@@ -209,6 +210,7 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          activity_summary?: string;
           created_at?: string;
           focus?: string;
           goal?: string;
@@ -220,6 +222,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          activity_summary?: string;
           created_at?: string;
           focus?: string;
           goal?: string;

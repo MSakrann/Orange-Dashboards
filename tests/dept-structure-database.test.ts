@@ -44,6 +44,7 @@ describe("dept structure database", () => {
     await db.exec(read("supabase/migrations/0001_core_schema.sql"));
     await db.exec(read("supabase/migrations/0002_security_audit_realtime.sql"));
     await db.exec(read("supabase/migrations/0009_dept_structure.sql"));
+    await db.exec(read("supabase/migrations/0010_dept_structure_team_updates.sql"));
   });
 
   beforeEach(async () => {
@@ -58,35 +59,26 @@ describe("dept structure database", () => {
     await db.close();
   });
 
-  it("seeds five teams and three highlighted projects", async () => {
-    const teams = await db.query<{ count: number }>(
-      `select count(*)::int as count from public.dept_teams`,
-    );
+  it("seeds five teams and stores activity summary", async () => {
+    const teams = await db.query<{ count: number }>(`select count(*)::int as count from public.dept_teams`);
     expect(teams.rows[0]?.count).toBe(5);
 
-    const highlights = await db.query<{ count: number }>(
-      `select count(*)::int as count from public.dept_projects where is_highlighted = true`,
+    const sample = await db.query<{ activity_summary: string }>(
+      `select activity_summary from public.dept_teams order by sort_order limit 1`,
     );
-    expect(highlights.rows[0]?.count).toBe(3);
-
-    const profile = await db.query<{ brand_name: string }>(
-      `select brand_name from public.dept_profile limit 1`,
-    );
-    expect(profile.rows[0]?.brand_name).toBe("Orange Egypt");
+    expect(sample.rows[0]?.activity_summary).toContain("active");
   });
 
-  it("rejects a sixth team and a fourth highlight", async () => {
-    await expectSqlError(
-      db,
-      `insert into public.dept_teams (name, sort_order) values ('Overflow Team', 99)`,
-      /Maximum of 5 teams/i,
-    );
+  it("allows a sixth team and rejects a seventh", async () => {
+    await db.exec(`insert into public.dept_teams (name, sort_order, activity_summary) values ('Architecture', 5, '6 active')`);
+
+    const teams = await db.query<{ count: number }>(`select count(*)::int as count from public.dept_teams`);
+    expect(teams.rows[0]?.count).toBe(6);
 
     await expectSqlError(
       db,
-      `insert into public.dept_projects (title, is_highlighted, sort_order)
-       values ('Fourth Highlight', true, 99)`,
-      /Maximum of 3 highlighted/i,
+      `insert into public.dept_teams (name, sort_order, activity_summary) values ('Overflow Team', 6, '1 active')`,
+      /Maximum of 6 teams/i,
     );
   });
 });

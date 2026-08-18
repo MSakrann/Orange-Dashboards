@@ -1,11 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  DeptMutationError,
   validateMemberInput,
   validateProfileInput,
-  validateProjectInput,
   validateTeamInput,
-  validateTimelineInput,
-  DeptMutationError,
 } from "@/lib/data/dept-structure-mutations";
 import { loadDeptStructure } from "@/lib/data/dept-structure";
 import { fixtureDeptStructure } from "@/data/dept-structure";
@@ -45,7 +43,7 @@ describe("dept-structure mutations validation", () => {
     ).toThrow(DeptMutationError);
   });
 
-  it("requires team name", () => {
+  it("requires team name and keeps activity summary", () => {
     expect(() =>
       validateTeamInput({
         name: "   ",
@@ -53,44 +51,28 @@ describe("dept-structure mutations validation", () => {
         focus: "",
         goal: "",
         scope: "",
+        activitySummary: "44 active",
         sortOrder: 0,
       }),
     ).toThrow(/Team name is required/);
+
+    expect(
+      validateTeamInput({
+        name: "Team",
+        leadName: "Lead",
+        focus: "Focus",
+        goal: "Goal",
+        scope: "Scope",
+        activitySummary: "44 active, 24 in development",
+        sortOrder: 0,
+      }).activitySummary,
+    ).toBe("44 active, 24 in development");
   });
 
   it("requires member name", () => {
-    expect(() =>
-      validateMemberInput({ name: "", role: "Engineer", sortOrder: 0 }),
-    ).toThrow(/Member name is required/);
-  });
-
-  it("validates project progress bounds", () => {
-    expect(() =>
-      validateProjectInput({
-        teamId: null,
-        title: "Project",
-        summary: "",
-        isHighlighted: false,
-        ownerName: "",
-        startDate: null,
-        endDate: null,
-        progressPct: -1,
-        statusLabel: "",
-        sortOrder: 0,
-      }),
-    ).toThrow(/Progress/);
-  });
-
-  it("requires timeline label", () => {
-    expect(() =>
-      validateTimelineInput({
-        label: " ",
-        startDate: null,
-        endDate: null,
-        statusLabel: "",
-        sortOrder: 0,
-      }),
-    ).toThrow(/Timeline label is required/);
+    expect(() => validateMemberInput({ name: "", role: "Engineer", sortOrder: 0 })).toThrow(
+      /Member name is required/,
+    );
   });
 });
 
@@ -99,6 +81,6 @@ describe("loadDeptStructure", () => {
     const data = await loadDeptStructure(null);
     expect(data.profile.brandName).toBe(fixtureDeptStructure.profile.brandName);
     expect(data.teams).toHaveLength(5);
-    expect(data.projects.filter((p) => p.isHighlighted)).toHaveLength(3);
+    expect(data.teams[0]?.activitySummary).toContain("active");
   });
 });

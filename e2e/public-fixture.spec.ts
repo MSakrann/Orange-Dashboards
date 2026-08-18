@@ -130,7 +130,7 @@ test.describe("public fixture workspace", () => {
     await page.goto("/dept-structure");
     await expect(page.locator(".dept-brand")).toHaveText("Orange Egypt");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      "Technology Delivery Department",
+      "Transformation and Operational Efficiency Department",
     );
     await expect(page.getByRole("heading", { name: "At a glance" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Structure" })).toBeVisible();

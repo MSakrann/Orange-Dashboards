@@ -1457,6 +1457,34 @@ footer {
   animation: dept-rise 0.9s ease-out both;
 }
 
+.dept-hero-logo {
+  position: absolute;
+  right: clamp(1.25rem, 4vw, 3rem);
+  bottom: clamp(1.25rem, 4vw, 3rem);
+  z-index: 1;
+}
+
+.dept-hero-logo-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 150px;
+  padding: 0.8rem 1.15rem;
+  border-radius: 999px;
+  background: rgba(247, 246, 243, 0.92);
+  box-shadow: 0 16px 50px rgba(29, 16, 7, 0.18);
+}
+
+.dept-hero-logo-mark span {
+  color: var(--orange);
+  font-family: var(--dept-display), "Outfit", sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  text-transform: lowercase;
+}
+
 @keyframes dept-rise {
   from { opacity: 0; transform: translateY(18px); }
   to { opacity: 1; transform: translateY(0); }
@@ -1594,11 +1622,27 @@ footer {
 .dept-team-grid.count-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .dept-team-grid.count-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .dept-team-grid.count-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.dept-team-grid.count-6 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
 .dept-team-grid li {
   padding: 1rem 0 1.15rem;
   border-top: 2px solid var(--orange);
   animation: dept-rise 0.7s ease-out both;
+}
+
+.dept-team-meta-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.dept-team-activity {
+  margin: 0.2rem 0 0;
+  color: var(--orange-dark);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: right;
 }
 
 .dept-team-grid h3 {
@@ -1633,8 +1677,11 @@ footer {
 }
 
 .dept-chapter {
-  padding-top: 1.5rem;
-  border-top: 2px solid var(--orange);
+  padding: 1.5rem;
+  border: 2px solid var(--orange);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 16px 40px rgba(36, 31, 24, 0.06);
 }
 
 .dept-chapter h3 {
@@ -1948,8 +1995,10 @@ footer {
 
 .dept-edit-entity {
   margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
+  padding: 16px;
+  border: 2px solid var(--orange);
+  border-radius: 18px;
+  background: rgba(255, 240, 228, 0.35);
 }
 
 .dept-edit-entity h3 {
@@ -1965,6 +2014,7 @@ footer {
 }
 
 @media (max-width: 900px) {
+  .dept-team-grid.count-6,
   .dept-team-grid.count-5,
   .dept-team-grid.count-4,
   .dept-team-grid.count-3 {
@@ -1981,6 +2031,7 @@ footer {
 }
 
 @media (max-width: 640px) {
+  .dept-team-grid.count-6,
   .dept-team-grid.count-5,
   .dept-team-grid.count-4,
   .dept-team-grid.count-3,

@@ -1567,6 +1567,7 @@ footer {
 .dept-glance-grid li {
   padding: 1.1rem 0;
   border-top: 2px solid var(--orange);
+  text-align: center;
 }
 
 .dept-glance-value {
@@ -1725,7 +1726,8 @@ footer {
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--muted);
+  color: var(--orange);
+  font-weight: 700;
 }
 
 .dept-chapter-facts dd {
@@ -1741,7 +1743,8 @@ footer {
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--muted);
+  color: var(--orange);
+  font-weight: 700;
 }
 
 .dept-member-list {
@@ -1939,8 +1942,6 @@ footer {
 }
 
 .dept-deep-facts dt,
-.dept-chapter-facts dt,
-.dept-members-heading,
 .dept-head-label,
 .dept-timeline-status,
 .dept-glance-label,

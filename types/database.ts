@@ -156,10 +156,10 @@ export type Database = {
           id: string;
           mission: string;
           singleton_key: boolean;
-          stat_active_projects: number;
-          stat_members: number;
+          stat_active_projects: number | null;
+          stat_members: number | null;
           stat_on_track_pct: number;
-          stat_teams: number;
+          stat_teams: number | null;
           updated_at: string;
         };
         Insert: {
@@ -172,10 +172,10 @@ export type Database = {
           id?: string;
           mission?: string;
           singleton_key?: boolean;
-          stat_active_projects?: number;
-          stat_members?: number;
+          stat_active_projects?: number | null;
+          stat_members?: number | null;
           stat_on_track_pct?: number;
-          stat_teams?: number;
+          stat_teams?: number | null;
           updated_at?: string;
         };
         Update: {
@@ -188,10 +188,10 @@ export type Database = {
           id?: string;
           mission?: string;
           singleton_key?: boolean;
-          stat_active_projects?: number;
-          stat_members?: number;
+          stat_active_projects?: number | null;
+          stat_members?: number | null;
           stat_on_track_pct?: number;
-          stat_teams?: number;
+          stat_teams?: number | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -205,7 +205,7 @@ export type Database = {
           id: string;
           lead_name: string;
           name: string;
-          project_count: number;
+          project_count: number | null;
           scope: string;
           sort_order: number;
           updated_at: string;
@@ -218,7 +218,7 @@ export type Database = {
           id?: string;
           lead_name?: string;
           name: string;
-          project_count?: number;
+          project_count?: number | null;
           scope?: string;
           sort_order?: number;
           updated_at?: string;
@@ -231,7 +231,7 @@ export type Database = {
           id?: string;
           lead_name?: string;
           name?: string;
-          project_count?: number;
+          project_count?: number | null;
           scope?: string;
           sort_order?: number;
           updated_at?: string;

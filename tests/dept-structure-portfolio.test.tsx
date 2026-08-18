@@ -57,4 +57,38 @@ describe("DeptPortfolio", () => {
     expect(screen.queryByText("44 active, 24 in development")).not.toBeInTheDocument();
     expect(screen.getAllByText("Activity")).toHaveLength(4);
   });
+
+  it("hides empty glance stats and project counts", () => {
+    const emptyCounts = {
+      ...fixtureDeptStructure,
+      profile: {
+        ...fixtureDeptStructure.profile,
+        statTeams: null,
+        statMembers: 41,
+        statActiveProjects: null,
+      },
+      teams: fixtureDeptStructure.teams.map((team) => ({ ...team, projectCount: null })),
+    };
+    render(<DeptPortfolio data={emptyCounts} />);
+
+    expect(screen.getByText("At a glance")).toBeInTheDocument();
+    expect(screen.getByText("Members")).toBeInTheDocument();
+    expect(screen.queryByText("Functions")).not.toBeInTheDocument();
+    expect(screen.queryByText("Active projects")).not.toBeInTheDocument();
+    expect(screen.queryByText(/project/i)).not.toBeInTheDocument();
+  });
+
+  it("hides the glance section when every stat is empty", () => {
+    const noGlance = {
+      ...fixtureDeptStructure,
+      profile: {
+        ...fixtureDeptStructure.profile,
+        statTeams: null,
+        statMembers: null,
+        statActiveProjects: null,
+      },
+    };
+    render(<DeptPortfolio data={noGlance} />);
+    expect(screen.queryByText("At a glance")).not.toBeInTheDocument();
+  });
 });

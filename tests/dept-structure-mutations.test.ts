@@ -71,6 +71,40 @@ describe("dept-structure mutations validation", () => {
     ).toBe("44 active, 24 in development");
   });
 
+  it("allows empty glance stats and project counts", () => {
+    expect(
+      validateProfileInput({
+        brandName: "Orange Egypt",
+        heroHeadline: "Dept",
+        heroSupport: "",
+        mission: "",
+        departmentHeadName: "",
+        departmentHeadTitle: "",
+        statTeams: null,
+        statMembers: null,
+        statActiveProjects: null,
+        statOnTrackPct: null,
+      }),
+    ).toMatchObject({
+      statTeams: null,
+      statMembers: null,
+      statActiveProjects: null,
+    });
+
+    expect(
+      validateTeamInput({
+        name: "Team",
+        leadName: "",
+        focus: "",
+        goal: "",
+        scope: "",
+        activitySummary: "",
+        projectCount: null,
+        sortOrder: 0,
+      }).projectCount,
+    ).toBeNull();
+  });
+
   it("requires member name", () => {
     expect(() => validateMemberInput({ name: "", role: "Engineer", sortOrder: 0 })).toThrow(
       /Member name is required/,

@@ -23,10 +23,10 @@ function mapProfile(row: Tables<"dept_profile">): DeptProfile {
     mission: row.mission,
     departmentHeadName: row.department_head_name,
     departmentHeadTitle: row.department_head_title,
-    statTeams: row.stat_teams,
-    statMembers: row.stat_members,
-    statActiveProjects: row.stat_active_projects,
-    statOnTrackPct: row.stat_on_track_pct,
+    statTeams: row.stat_teams ?? null,
+    statMembers: row.stat_members ?? null,
+    statActiveProjects: row.stat_active_projects ?? null,
+    statOnTrackPct: row.stat_on_track_pct ?? null,
     updatedAt: row.updated_at,
   };
 }
@@ -125,7 +125,7 @@ export async function loadDeptStructure(
     goal: row.goal,
     scope: row.scope,
     activitySummary: row.activity_summary,
-    projectCount: row.project_count,
+    projectCount: row.project_count ?? null,
     sortOrder: row.sort_order,
     members: membersByTeam.get(row.id) ?? [],
   }));

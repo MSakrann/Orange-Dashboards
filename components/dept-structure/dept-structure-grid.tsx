@@ -36,7 +36,8 @@ export function DeptStructureGrid({
                 <h3>{team.name}</h3>
                 <p className="dept-team-lead">Lead: {team.leadName || "—"}</p>
                 <p className="dept-team-meta">
-                  {team.members.length} members · {projectLabel(team.projectCount)}
+                  {team.members.length} members
+                  {team.projectCount == null ? "" : ` · ${projectLabel(team.projectCount)}`}
                 </p>
                 {team.scope.trim() ? <p className="dept-team-scope">{team.scope}</p> : null}
               </li>

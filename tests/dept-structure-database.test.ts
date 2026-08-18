@@ -46,6 +46,7 @@ describe("dept structure database", () => {
     await db.exec(read("supabase/migrations/0009_dept_structure.sql"));
     await db.exec(read("supabase/migrations/0010_dept_structure_team_updates.sql"));
     await db.exec(read("supabase/migrations/0011_dept_team_project_count.sql"));
+    await db.exec(read("supabase/migrations/0012_dept_optional_counts.sql"));
   });
 
   beforeEach(async () => {
@@ -69,10 +70,35 @@ describe("dept structure database", () => {
     );
     expect(sample.rows[0]?.activity_summary).toContain("active");
 
-    const projectCount = await db.query<{ project_count: number }>(
+    const projectCount = await db.query<{ project_count: number | null }>(
       `select project_count from public.dept_teams order by sort_order limit 1`,
     );
-    expect(projectCount.rows[0]?.project_count).toBe(0);
+    expect(projectCount.rows[0]?.project_count).toBeNull();
+  });
+
+  it("allows empty glance and project counts", async () => {
+    await db.exec(`
+      update public.dept_profile
+         set stat_teams = null, stat_members = null, stat_active_projects = null
+       where singleton_key = true
+    `);
+    const profile = await db.query<{
+      stat_teams: number | null;
+      stat_members: number | null;
+      stat_active_projects: number | null;
+    }>(`select stat_teams, stat_members, stat_active_projects from public.dept_profile limit 1`);
+    expect(profile.rows[0]?.stat_teams).toBeNull();
+    expect(profile.rows[0]?.stat_members).toBeNull();
+    expect(profile.rows[0]?.stat_active_projects).toBeNull();
+
+    await db.exec(`
+      insert into public.dept_teams (name, sort_order, activity_summary, project_count)
+      values ('Architecture', 5, '6 active', null)
+    `);
+    const inserted = await db.query<{ project_count: number | null }>(
+      `select project_count from public.dept_teams where name = 'Architecture'`,
+    );
+    expect(inserted.rows[0]?.project_count).toBeNull();
   });
 
   it("allows a sixth team and rejects a seventh", async () => {

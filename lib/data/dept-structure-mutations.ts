@@ -18,10 +18,10 @@ export interface DeptProfileInput {
   mission: string;
   departmentHeadName: string;
   departmentHeadTitle: string;
-  statTeams: number;
-  statMembers: number;
-  statActiveProjects: number;
-  statOnTrackPct: number;
+  statTeams: number | null;
+  statMembers: number | null;
+  statActiveProjects: number | null;
+  statOnTrackPct: number | null;
 }
 
 export interface DeptTeamInput {
@@ -31,7 +31,7 @@ export interface DeptTeamInput {
   goal: string;
   scope: string;
   activitySummary: string;
-  projectCount: number;
+  projectCount: number | null;
   sortOrder: number;
 }
 
@@ -78,6 +78,11 @@ function requireInt(value: number, label: string, min: number, max: number): num
   return value;
 }
 
+function optionalInt(value: number | null | undefined, label: string, min: number, max: number): number | null {
+  if (value === null || value === undefined || Number.isNaN(value)) return null;
+  return requireInt(value, label, min, max);
+}
+
 export function validateProfileInput(input: DeptProfileInput): DeptProfileInput {
   return {
     brandName: requireText(input.brandName, "Brand name", 120),
@@ -86,10 +91,10 @@ export function validateProfileInput(input: DeptProfileInput): DeptProfileInput 
     mission: optionalText(input.mission, "Mission", 5000),
     departmentHeadName: optionalText(input.departmentHeadName, "Department head", 200),
     departmentHeadTitle: optionalText(input.departmentHeadTitle, "Head title", 200),
-    statTeams: requireInt(input.statTeams, "Teams stat", 0, 99),
-    statMembers: requireInt(input.statMembers, "Members stat", 0, 9999),
-    statActiveProjects: requireInt(input.statActiveProjects, "Active projects stat", 0, 9999),
-    statOnTrackPct: requireInt(input.statOnTrackPct, "On-track %", 0, 100),
+    statTeams: optionalInt(input.statTeams, "Functions stat", 0, 99),
+    statMembers: optionalInt(input.statMembers, "Members stat", 0, 9999),
+    statActiveProjects: optionalInt(input.statActiveProjects, "Active projects stat", 0, 9999),
+    statOnTrackPct: optionalInt(input.statOnTrackPct, "On-track %", 0, 100) ?? 0,
   };
 }
 
@@ -101,7 +106,7 @@ export function validateTeamInput(input: DeptTeamInput): DeptTeamInput {
     goal: optionalText(input.goal, "Goal", 2000),
     scope: optionalText(input.scope, "Scope", 500),
     activitySummary: optionalText(input.activitySummary, "Activity summary", 500),
-    projectCount: requireInt(input.projectCount, "Project count", 0, 9999),
+    projectCount: optionalInt(input.projectCount, "Project count", 0, 9999),
     sortOrder: requireInt(input.sortOrder, "Sort order", 0, 99),
   };
 }
@@ -141,6 +146,10 @@ export async function updateDeptProfile(
   return data;
 }
 
+function missingProjectCountColumn(error: { message: string } | null) {
+  return Boolean(error?.message && /project_count/i.test(error.message));
+}
+
 export async function createDeptTeam(
   supabase: SupabaseClient<Database>,
   input: DeptTeamInput,
@@ -154,20 +163,21 @@ export async function createDeptTeam(
     throw new DeptMutationError("Maximum of 6 teams allowed.");
   }
 
-  const { data, error } = await supabase
-    .from("dept_teams")
-    .insert({
-      name: value.name,
-      lead_name: value.leadName,
-      focus: value.focus,
-      goal: value.goal,
-      scope: value.scope,
-      activity_summary: value.activitySummary,
-      project_count: value.projectCount,
-      sort_order: value.sortOrder,
-    })
-    .select("*")
-    .maybeSingle();
+  const payload = {
+    name: value.name,
+    lead_name: value.leadName,
+    focus: value.focus,
+    goal: value.goal,
+    scope: value.scope,
+    activity_summary: value.activitySummary,
+    project_count: value.projectCount,
+    sort_order: value.sortOrder,
+  };
+  let { data, error } = await supabase.from("dept_teams").insert(payload).select("*").maybeSingle();
+  if (missingProjectCountColumn(error)) {
+    const { project_count: _ignored, ...withoutCount } = payload;
+    ({ data, error } = await supabase.from("dept_teams").insert(withoutCount).select("*").maybeSingle());
+  }
   if (error || !data) failure("Create team", error);
   return data;
 }
@@ -178,21 +188,31 @@ export async function updateDeptTeam(
   input: DeptTeamInput,
 ): Promise<Tables<"dept_teams">> {
   const value = validateTeamInput(input);
-  const { data, error } = await supabase
+  const payload = {
+    name: value.name,
+    lead_name: value.leadName,
+    focus: value.focus,
+    goal: value.goal,
+    scope: value.scope,
+    activity_summary: value.activitySummary,
+    project_count: value.projectCount,
+    sort_order: value.sortOrder,
+  };
+  let { data, error } = await supabase
     .from("dept_teams")
-    .update({
-      name: value.name,
-      lead_name: value.leadName,
-      focus: value.focus,
-      goal: value.goal,
-      scope: value.scope,
-      activity_summary: value.activitySummary,
-      project_count: value.projectCount,
-      sort_order: value.sortOrder,
-    })
+    .update(payload)
     .eq("id", teamId)
     .select("*")
     .maybeSingle();
+  if (missingProjectCountColumn(error)) {
+    const { project_count: _ignored, ...withoutCount } = payload;
+    ({ data, error } = await supabase
+      .from("dept_teams")
+      .update(withoutCount)
+      .eq("id", teamId)
+      .select("*")
+      .maybeSingle());
+  }
   if (error || !data) failure("Update team", error);
   return data;
 }

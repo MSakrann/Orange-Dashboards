@@ -14,7 +14,7 @@ export interface DeptTeam {
   goal: string;
   scope: string;
   activitySummary: string;
-  projectCount: number;
+  projectCount: number | null;
   sortOrder: number;
   members: DeptMember[];
 }
@@ -60,10 +60,10 @@ export interface DeptProfile {
   mission: string;
   departmentHeadName: string;
   departmentHeadTitle: string;
-  statTeams: number;
-  statMembers: number;
-  statActiveProjects: number;
-  statOnTrackPct: number;
+  statTeams: number | null;
+  statMembers: number | null;
+  statActiveProjects: number | null;
+  statOnTrackPct: number | null;
   updatedAt: string;
 }
 
@@ -133,7 +133,7 @@ export const fixtureDeptStructure: DeptStructure = {
       goal: "Keep PE services healthy with fast response and clear runbooks.",
       scope: "PE run & escalate",
       activitySummary: "12 active, 4 awaiting closure",
-      projectCount: 0,
+      projectCount: null,
       sortOrder: 2,
       members: [
         { id: "92000000-0000-4000-8000-000000000007", teamId: "91000000-0000-4000-8000-000000000003", name: "Nour El-Din", role: "Team Lead", sortOrder: 0 },

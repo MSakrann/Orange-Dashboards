@@ -10,6 +10,9 @@ import {
   deleteDeptMember,
   deleteDeptTeam,
   DeptMutationError,
+  type DeptMemberInput,
+  type DeptProfileInput,
+  type DeptTeamInput,
   updateDeptMember,
   updateDeptProfile,
   updateDeptTeam,
@@ -110,18 +113,7 @@ function ProfileSection({
 }: {
   data: DeptStructure;
   busy: boolean;
-  onSave: (input: {
-    brandName: string;
-    heroHeadline: string;
-    heroSupport: string;
-    mission: string;
-    departmentHeadName: string;
-    departmentHeadTitle: string;
-    statTeams: number;
-    statMembers: number;
-    statActiveProjects: number;
-    statOnTrackPct: number;
-  }) => void;
+  onSave: (input: DeptProfileInput) => void;
 }) {
   const [form, setForm] = useState({
     brandName: data.profile.brandName,
@@ -146,9 +138,24 @@ function ProfileSection({
         <TextArea className="full" label="Mission" value={form.mission} onChange={(v) => setForm({ ...form, mission: v })} />
         <Field label="Department head" value={form.departmentHeadName} onChange={(v) => setForm({ ...form, departmentHeadName: v })} />
         <Field label="Head title" value={form.departmentHeadTitle} onChange={(v) => setForm({ ...form, departmentHeadTitle: v })} />
-        <NumberField label="Functions stat" value={form.statTeams} onChange={(v) => setForm({ ...form, statTeams: v })} />
-        <NumberField label="Members stat" value={form.statMembers} onChange={(v) => setForm({ ...form, statMembers: v })} />
-        <NumberField label="Active projects stat" value={form.statActiveProjects} onChange={(v) => setForm({ ...form, statActiveProjects: v })} />
+        <NumberField
+          label="Functions stat"
+          value={form.statTeams}
+          optional
+          onChange={(v) => setForm({ ...form, statTeams: v })}
+        />
+        <NumberField
+          label="Members stat"
+          value={form.statMembers}
+          optional
+          onChange={(v) => setForm({ ...form, statMembers: v })}
+        />
+        <NumberField
+          label="Active projects stat"
+          value={form.statActiveProjects}
+          optional
+          onChange={(v) => setForm({ ...form, statActiveProjects: v })}
+        />
       </div>
       <div className="form-actions">
         <button type="button" className="primary-button" disabled={busy} onClick={() => onSave(form)}>
@@ -171,11 +178,11 @@ function TeamsSection({
 }: {
   data: DeptStructure;
   busy: boolean;
-  onCreateTeam: (input: { name: string; leadName: string; focus: string; goal: string; scope: string; activitySummary: string; projectCount: number; sortOrder: number }) => void;
-  onUpdateTeam: (id: string, input: { name: string; leadName: string; focus: string; goal: string; scope: string; activitySummary: string; projectCount: number; sortOrder: number }) => void;
+  onCreateTeam: (input: DeptTeamInput) => void;
+  onUpdateTeam: (id: string, input: DeptTeamInput) => void;
   onDeleteTeam: (id: string) => void;
-  onCreateMember: (teamId: string, input: { name: string; role: string; sortOrder: number }) => void;
-  onUpdateMember: (id: string, input: { name: string; role: string; sortOrder: number }) => void;
+  onCreateMember: (teamId: string, input: DeptMemberInput) => void;
+  onUpdateMember: (id: string, input: DeptMemberInput) => void;
   onDeleteMember: (id: string) => void;
 }) {
   const [draft, setDraft] = useState({
@@ -185,7 +192,7 @@ function TeamsSection({
     goal: "",
     scope: "",
     activitySummary: "",
-    projectCount: 0,
+    projectCount: null as number | null,
     sortOrder: data.teams.length,
   });
 
@@ -215,8 +222,13 @@ function TeamsSection({
             <Field className="full" label="Goal" value={draft.goal} onChange={(v) => setDraft({ ...draft, goal: v })} />
             <Field className="full" label="Scope" value={draft.scope} onChange={(v) => setDraft({ ...draft, scope: v })} />
             <Field className="full" label="Activity summary" value={draft.activitySummary} onChange={(v) => setDraft({ ...draft, activitySummary: v })} />
-            <NumberField label="Projects" value={draft.projectCount} onChange={(v) => setDraft({ ...draft, projectCount: v })} />
-            <NumberField label="Sort order" value={draft.sortOrder} onChange={(v) => setDraft({ ...draft, sortOrder: v })} />
+            <NumberField
+              label="Projects"
+              value={draft.projectCount}
+              optional
+              onChange={(v) => setDraft({ ...draft, projectCount: v })}
+            />
+            <NumberField label="Sort order" value={draft.sortOrder} onChange={(v) => setDraft({ ...draft, sortOrder: v ?? 0 })} />
           </div>
           <div className="form-actions">
             <button
@@ -225,7 +237,7 @@ function TeamsSection({
               disabled={busy}
               onClick={() => {
                 onCreateTeam(draft);
-                setDraft({ name: "", leadName: "", focus: "", goal: "", scope: "", activitySummary: "", projectCount: 0, sortOrder: data.teams.length + 1 });
+                setDraft({ name: "", leadName: "", focus: "", goal: "", scope: "", activitySummary: "", projectCount: null, sortOrder: data.teams.length + 1 });
               }}
             >
               Add team
@@ -250,10 +262,10 @@ function TeamEditor({
 }: {
   team: DeptStructure["teams"][number];
   busy: boolean;
-  onSave: (input: { name: string; leadName: string; focus: string; goal: string; scope: string; activitySummary: string; projectCount: number; sortOrder: number }) => void;
+  onSave: (input: DeptTeamInput) => void;
   onDelete: () => void;
-  onCreateMember: (input: { name: string; role: string; sortOrder: number }) => void;
-  onUpdateMember: (id: string, input: { name: string; role: string; sortOrder: number }) => void;
+  onCreateMember: (input: DeptMemberInput) => void;
+  onUpdateMember: (id: string, input: DeptMemberInput) => void;
   onDeleteMember: (id: string) => void;
 }) {
   const [form, setForm] = useState({
@@ -278,8 +290,13 @@ function TeamEditor({
         <Field className="full" label="Goal" value={form.goal} onChange={(v) => setForm({ ...form, goal: v })} />
         <Field className="full" label="Scope" value={form.scope} onChange={(v) => setForm({ ...form, scope: v })} />
         <Field className="full" label="Activity summary" value={form.activitySummary} onChange={(v) => setForm({ ...form, activitySummary: v })} />
-        <NumberField label="Projects" value={form.projectCount} onChange={(v) => setForm({ ...form, projectCount: v })} />
-        <NumberField label="Sort order" value={form.sortOrder} onChange={(v) => setForm({ ...form, sortOrder: v })} />
+        <NumberField
+          label="Projects"
+          value={form.projectCount}
+          optional
+          onChange={(v) => setForm({ ...form, projectCount: v })}
+        />
+        <NumberField label="Sort order" value={form.sortOrder} onChange={(v) => setForm({ ...form, sortOrder: v ?? 0 })} />
       </div>
       <div className="form-actions">
         <button type="button" className="primary-button" disabled={busy} onClick={() => onSave(form)}>
@@ -331,7 +348,7 @@ function MemberRow({
 }: {
   member: DeptStructure["teams"][number]["members"][number];
   busy: boolean;
-  onSave: (input: { name: string; role: string; sortOrder: number }) => void;
+  onSave: (input: DeptMemberInput) => void;
   onDelete: () => void;
 }) {
   const [form, setForm] = useState({
@@ -398,15 +415,30 @@ function NumberField({
   label,
   value,
   onChange,
+  optional = false,
 }: {
   label: string;
-  value: number;
-  onChange: (value: number) => void;
+  value: number | null;
+  onChange: (value: number | null) => void;
+  optional?: boolean;
 }) {
   return (
     <div className="form-field">
-      <label>{label}</label>
-      <input type="number" value={value} onChange={(e) => onChange(Number(e.target.value))} />
+      <label>{optional ? `${label} (optional)` : label}</label>
+      <input
+        type="number"
+        min={0}
+        placeholder={optional ? "Leave blank to hide" : undefined}
+        value={value === null || Number.isNaN(value) ? "" : value}
+        onChange={(e) => {
+          const raw = e.target.value;
+          if (raw === "") {
+            onChange(optional ? null : 0);
+            return;
+          }
+          onChange(Number(raw));
+        }}
+      />
     </div>
   );
 }

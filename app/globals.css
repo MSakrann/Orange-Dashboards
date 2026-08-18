@@ -1464,25 +1464,37 @@ footer {
   z-index: 1;
 }
 
-.dept-hero-logo-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 150px;
-  padding: 0.8rem 1.15rem;
-  border-radius: 999px;
-  background: rgba(247, 246, 243, 0.92);
-  box-shadow: 0 16px 50px rgba(29, 16, 7, 0.18);
+.dept-hero-logo-square {
+  position: relative;
+  width: clamp(120px, 16vw, 160px);
+  aspect-ratio: 1 / 1;
+  display: block;
+  background: #ff7900;
+  box-shadow: 0 16px 50px rgba(29, 16, 7, 0.26);
 }
 
-.dept-hero-logo-mark span {
-  color: var(--orange);
+.dept-hero-logo-word {
+  position: absolute;
+  left: 10%;
+  bottom: 8%;
+  color: #fff;
   font-family: var(--dept-display), "Outfit", sans-serif;
-  font-size: 1.6rem;
+  font-size: clamp(2rem, 4vw, 2.9rem);
   font-weight: 800;
   letter-spacing: -0.06em;
-  line-height: 1;
+  line-height: 0.9;
   text-transform: lowercase;
+}
+
+.dept-hero-logo-tm {
+  position: absolute;
+  right: 8%;
+  bottom: 34%;
+  color: #fff;
+  font-family: var(--dept-display), "Outfit", sans-serif;
+  font-size: clamp(0.9rem, 1.4vw, 1.3rem);
+  font-weight: 700;
+  line-height: 1;
 }
 
 @keyframes dept-rise {
@@ -1677,11 +1689,6 @@ footer {
   justify-content: space-between;
   align-items: baseline;
   gap: 1rem;
-}
-
-.dept-team-activity-inline {
-  text-align: right;
-  white-space: nowrap;
 }
 
 .dept-chapter h3 {

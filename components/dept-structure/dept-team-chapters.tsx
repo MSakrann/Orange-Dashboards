@@ -14,9 +14,6 @@ export function DeptTeamChapters({ teams }: { teams: DeptTeam[] }) {
             <article key={team.id} className="dept-chapter">
               <header className="dept-chapter-header">
                 <h3>{team.name}</h3>
-                {team.activitySummary ? (
-                  <p className="dept-team-activity dept-team-activity-inline">{team.activitySummary}</p>
-                ) : null}
               </header>
               <p className="dept-chapter-lead">Led by {team.leadName || "—"}</p>
               <dl className="dept-chapter-facts">
@@ -29,8 +26,8 @@ export function DeptTeamChapters({ teams }: { teams: DeptTeam[] }) {
                   <dd>{team.goal || "—"}</dd>
                 </div>
                 <div className="dept-field-card">
-                  <dt>Scope</dt>
-                  <dd>{team.scope || "—"}</dd>
+                  <dt>Activity</dt>
+                  <dd>{team.activitySummary || "—"}</dd>
                 </div>
                 </dl>
               <div className="dept-field-card dept-members-card">

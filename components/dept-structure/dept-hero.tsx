@@ -3,8 +3,9 @@ import type { DeptProfile } from "@/data/dept-structure";
 function OrangeLogo() {
   return (
     <div className="dept-hero-logo" aria-hidden="true">
-      <div className="dept-hero-logo-mark">
-        <span>orange</span>
+      <div className="dept-hero-logo-square">
+        <span className="dept-hero-logo-word">orange</span>
+        <span className="dept-hero-logo-tm">TM</span>
       </div>
     </div>
   );

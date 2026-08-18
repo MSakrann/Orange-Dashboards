@@ -69,13 +69,14 @@ describe("DeptPortfolio", () => {
       },
       teams: fixtureDeptStructure.teams.map((team) => ({ ...team, projectCount: null })),
     };
-    render(<DeptPortfolio data={emptyCounts} />);
+    const { container } = render(<DeptPortfolio data={emptyCounts} />);
 
     expect(screen.getByText("At a glance")).toBeInTheDocument();
-    expect(screen.getByText("Members")).toBeInTheDocument();
+    expect(container.querySelector(".dept-glance-grid.count-1")).toBeTruthy();
+    expect(container.querySelector(".dept-glance-label")?.textContent).toBe("Members");
     expect(screen.queryByText("Functions")).not.toBeInTheDocument();
     expect(screen.queryByText("Active projects")).not.toBeInTheDocument();
-    expect(screen.queryByText(/project/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/· \d+ projects?/)).not.toBeInTheDocument();
   });
 
   it("hides the glance section when every stat is empty", () => {

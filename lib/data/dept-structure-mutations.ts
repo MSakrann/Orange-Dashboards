@@ -137,7 +137,7 @@ export async function updateDeptProfile(
       stat_teams: value.statTeams,
       stat_members: value.statMembers,
       stat_active_projects: value.statActiveProjects,
-      stat_on_track_pct: value.statOnTrackPct,
+      stat_on_track_pct: value.statOnTrackPct ?? 0,
     })
     .eq("id", profileId)
     .select("*")
@@ -148,6 +148,12 @@ export async function updateDeptProfile(
 
 function missingProjectCountColumn(error: { message: string } | null) {
   return Boolean(error?.message && /project_count/i.test(error.message));
+}
+
+function withoutProjectCount<T extends { project_count?: unknown }>(payload: T) {
+  const rest = { ...payload };
+  delete rest.project_count;
+  return rest;
 }
 
 export async function createDeptTeam(
@@ -175,8 +181,7 @@ export async function createDeptTeam(
   };
   let { data, error } = await supabase.from("dept_teams").insert(payload).select("*").maybeSingle();
   if (missingProjectCountColumn(error)) {
-    const { project_count: _ignored, ...withoutCount } = payload;
-    ({ data, error } = await supabase.from("dept_teams").insert(withoutCount).select("*").maybeSingle());
+    ({ data, error } = await supabase.from("dept_teams").insert(withoutProjectCount(payload)).select("*").maybeSingle());
   }
   if (error || !data) failure("Create team", error);
   return data;
@@ -205,10 +210,9 @@ export async function updateDeptTeam(
     .select("*")
     .maybeSingle();
   if (missingProjectCountColumn(error)) {
-    const { project_count: _ignored, ...withoutCount } = payload;
     ({ data, error } = await supabase
       .from("dept_teams")
-      .update(withoutCount)
+      .update(withoutProjectCount(payload))
       .eq("id", teamId)
       .select("*")
       .maybeSingle());

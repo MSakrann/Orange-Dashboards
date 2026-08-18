@@ -1,15 +1,17 @@
 import type { DeptTeam } from "@/data/dept-structure";
 
+function projectLabel(count: number) {
+  return `${count} ${count === 1 ? "project" : "projects"}`;
+}
+
 export function DeptStructureGrid({
   headName,
   headTitle,
   teams,
-  projectCountByTeam,
 }: {
   headName: string;
   headTitle: string;
   teams: DeptTeam[];
-  projectCountByTeam: Map<string, number>;
 }) {
   const countClass = `dept-team-grid count-${Math.min(Math.max(teams.length, 1), 6)}`;
 
@@ -34,9 +36,9 @@ export function DeptStructureGrid({
                 <h3>{team.name}</h3>
                 <p className="dept-team-lead">Lead: {team.leadName || "—"}</p>
                 <p className="dept-team-meta">
-                  {team.members.length} members · {projectCountByTeam.get(team.id) ?? 0} projects
+                  {team.members.length} members · {projectLabel(team.projectCount)}
                 </p>
-                <p className="dept-team-scope">{team.scope || "—"}</p>
+                {team.scope.trim() ? <p className="dept-team-scope">{team.scope}</p> : null}
               </li>
             ))}
           </ul>

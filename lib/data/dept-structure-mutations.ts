@@ -31,6 +31,7 @@ export interface DeptTeamInput {
   goal: string;
   scope: string;
   activitySummary: string;
+  projectCount: number;
   sortOrder: number;
 }
 
@@ -100,6 +101,7 @@ export function validateTeamInput(input: DeptTeamInput): DeptTeamInput {
     goal: optionalText(input.goal, "Goal", 2000),
     scope: optionalText(input.scope, "Scope", 500),
     activitySummary: optionalText(input.activitySummary, "Activity summary", 500),
+    projectCount: requireInt(input.projectCount, "Project count", 0, 9999),
     sortOrder: requireInt(input.sortOrder, "Sort order", 0, 99),
   };
 }
@@ -161,6 +163,7 @@ export async function createDeptTeam(
       goal: value.goal,
       scope: value.scope,
       activity_summary: value.activitySummary,
+      project_count: value.projectCount,
       sort_order: value.sortOrder,
     })
     .select("*")
@@ -184,6 +187,7 @@ export async function updateDeptTeam(
       goal: value.goal,
       scope: value.scope,
       activity_summary: value.activitySummary,
+      project_count: value.projectCount,
       sort_order: value.sortOrder,
     })
     .eq("id", teamId)

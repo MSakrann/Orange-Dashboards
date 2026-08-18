@@ -16,6 +16,7 @@ describe("DeptPortfolio", () => {
     expect(screen.queryByText("On track")).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Teams" })).toBeInTheDocument();
     expect(screen.getByText("44 active, 24 in development")).toBeInTheDocument();
+    expect(screen.getAllByText(/1 project/).length).toBeGreaterThan(0);
     expect(screen.queryByText("Highlighted projects")).not.toBeInTheDocument();
     expect(screen.queryByText("Project deep-dives")).not.toBeInTheDocument();
     expect(screen.queryByText("Timeline")).not.toBeInTheDocument();
@@ -34,6 +35,7 @@ describe("DeptPortfolio", () => {
           goal: "Guide decisions",
           scope: "Architecture",
           activitySummary: "6 active",
+          projectCount: 2,
           sortOrder: 5,
           members: [],
         },

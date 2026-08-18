@@ -52,6 +52,7 @@ describe("dept-structure mutations validation", () => {
         goal: "",
         scope: "",
         activitySummary: "44 active",
+        projectCount: 0,
         sortOrder: 0,
       }),
     ).toThrow(/Team name is required/);
@@ -64,6 +65,7 @@ describe("dept-structure mutations validation", () => {
         goal: "Goal",
         scope: "Scope",
         activitySummary: "44 active, 24 in development",
+        projectCount: 3,
         sortOrder: 0,
       }).activitySummary,
     ).toBe("44 active, 24 in development");
@@ -82,5 +84,6 @@ describe("loadDeptStructure", () => {
     expect(data.profile.brandName).toBe(fixtureDeptStructure.profile.brandName);
     expect(data.teams).toHaveLength(5);
     expect(data.teams[0]?.activitySummary).toContain("active");
+    expect(data.teams[0]?.projectCount).toBe(1);
   });
 });

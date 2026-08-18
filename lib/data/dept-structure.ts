@@ -125,6 +125,7 @@ export async function loadDeptStructure(
     goal: row.goal,
     scope: row.scope,
     activitySummary: row.activity_summary,
+    projectCount: row.project_count,
     sortOrder: row.sort_order,
     members: membersByTeam.get(row.id) ?? [],
   }));

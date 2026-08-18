@@ -171,8 +171,8 @@ function TeamsSection({
 }: {
   data: DeptStructure;
   busy: boolean;
-  onCreateTeam: (input: { name: string; leadName: string; focus: string; goal: string; scope: string; activitySummary: string; sortOrder: number }) => void;
-  onUpdateTeam: (id: string, input: { name: string; leadName: string; focus: string; goal: string; scope: string; activitySummary: string; sortOrder: number }) => void;
+  onCreateTeam: (input: { name: string; leadName: string; focus: string; goal: string; scope: string; activitySummary: string; projectCount: number; sortOrder: number }) => void;
+  onUpdateTeam: (id: string, input: { name: string; leadName: string; focus: string; goal: string; scope: string; activitySummary: string; projectCount: number; sortOrder: number }) => void;
   onDeleteTeam: (id: string) => void;
   onCreateMember: (teamId: string, input: { name: string; role: string; sortOrder: number }) => void;
   onUpdateMember: (id: string, input: { name: string; role: string; sortOrder: number }) => void;
@@ -185,6 +185,7 @@ function TeamsSection({
     goal: "",
     scope: "",
     activitySummary: "",
+    projectCount: 0,
     sortOrder: data.teams.length,
   });
 
@@ -214,6 +215,7 @@ function TeamsSection({
             <Field className="full" label="Goal" value={draft.goal} onChange={(v) => setDraft({ ...draft, goal: v })} />
             <Field className="full" label="Scope" value={draft.scope} onChange={(v) => setDraft({ ...draft, scope: v })} />
             <Field className="full" label="Activity summary" value={draft.activitySummary} onChange={(v) => setDraft({ ...draft, activitySummary: v })} />
+            <NumberField label="Projects" value={draft.projectCount} onChange={(v) => setDraft({ ...draft, projectCount: v })} />
             <NumberField label="Sort order" value={draft.sortOrder} onChange={(v) => setDraft({ ...draft, sortOrder: v })} />
           </div>
           <div className="form-actions">
@@ -223,7 +225,7 @@ function TeamsSection({
               disabled={busy}
               onClick={() => {
                 onCreateTeam(draft);
-                setDraft({ name: "", leadName: "", focus: "", goal: "", scope: "", activitySummary: "", sortOrder: data.teams.length + 1 });
+                setDraft({ name: "", leadName: "", focus: "", goal: "", scope: "", activitySummary: "", projectCount: 0, sortOrder: data.teams.length + 1 });
               }}
             >
               Add team
@@ -248,7 +250,7 @@ function TeamEditor({
 }: {
   team: DeptStructure["teams"][number];
   busy: boolean;
-  onSave: (input: { name: string; leadName: string; focus: string; goal: string; scope: string; activitySummary: string; sortOrder: number }) => void;
+  onSave: (input: { name: string; leadName: string; focus: string; goal: string; scope: string; activitySummary: string; projectCount: number; sortOrder: number }) => void;
   onDelete: () => void;
   onCreateMember: (input: { name: string; role: string; sortOrder: number }) => void;
   onUpdateMember: (id: string, input: { name: string; role: string; sortOrder: number }) => void;
@@ -261,6 +263,7 @@ function TeamEditor({
     goal: team.goal,
     scope: team.scope,
     activitySummary: team.activitySummary,
+    projectCount: team.projectCount,
     sortOrder: team.sortOrder,
   });
   const [memberDraft, setMemberDraft] = useState({ name: "", role: "", sortOrder: team.members.length });
@@ -275,6 +278,7 @@ function TeamEditor({
         <Field className="full" label="Goal" value={form.goal} onChange={(v) => setForm({ ...form, goal: v })} />
         <Field className="full" label="Scope" value={form.scope} onChange={(v) => setForm({ ...form, scope: v })} />
         <Field className="full" label="Activity summary" value={form.activitySummary} onChange={(v) => setForm({ ...form, activitySummary: v })} />
+        <NumberField label="Projects" value={form.projectCount} onChange={(v) => setForm({ ...form, projectCount: v })} />
         <NumberField label="Sort order" value={form.sortOrder} onChange={(v) => setForm({ ...form, sortOrder: v })} />
       </div>
       <div className="form-actions">

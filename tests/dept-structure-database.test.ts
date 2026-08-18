@@ -45,6 +45,7 @@ describe("dept structure database", () => {
     await db.exec(read("supabase/migrations/0002_security_audit_realtime.sql"));
     await db.exec(read("supabase/migrations/0009_dept_structure.sql"));
     await db.exec(read("supabase/migrations/0010_dept_structure_team_updates.sql"));
+    await db.exec(read("supabase/migrations/0011_dept_team_project_count.sql"));
   });
 
   beforeEach(async () => {
@@ -67,6 +68,11 @@ describe("dept structure database", () => {
       `select activity_summary from public.dept_teams order by sort_order limit 1`,
     );
     expect(sample.rows[0]?.activity_summary).toContain("active");
+
+    const projectCount = await db.query<{ project_count: number }>(
+      `select project_count from public.dept_teams order by sort_order limit 1`,
+    );
+    expect(projectCount.rows[0]?.project_count).toBe(0);
   });
 
   it("allows a sixth team and rejects a seventh", async () => {

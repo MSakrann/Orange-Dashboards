@@ -205,6 +205,7 @@ export type Database = {
           id: string;
           lead_name: string;
           name: string;
+          project_count: number;
           scope: string;
           sort_order: number;
           updated_at: string;
@@ -217,6 +218,7 @@ export type Database = {
           id?: string;
           lead_name?: string;
           name: string;
+          project_count?: number;
           scope?: string;
           sort_order?: number;
           updated_at?: string;
@@ -229,6 +231,7 @@ export type Database = {
           id?: string;
           lead_name?: string;
           name?: string;
+          project_count?: number;
           scope?: string;
           sort_order?: number;
           updated_at?: string;

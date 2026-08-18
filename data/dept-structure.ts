@@ -14,6 +14,7 @@ export interface DeptTeam {
   goal: string;
   scope: string;
   activitySummary: string;
+  projectCount: number;
   sortOrder: number;
   members: DeptMember[];
 }
@@ -100,6 +101,7 @@ export const fixtureDeptStructure: DeptStructure = {
       goal: "Ship PE capabilities with predictable releases and clear ownership.",
       scope: "Core PE product streams",
       activitySummary: "44 active, 24 in development",
+      projectCount: 1,
       sortOrder: 0,
       members: [
         { id: "92000000-0000-4000-8000-000000000001", teamId: "91000000-0000-4000-8000-000000000001", name: "Sara Hassan", role: "Team Lead", sortOrder: 0 },
@@ -115,6 +117,7 @@ export const fixtureDeptStructure: DeptStructure = {
       goal: "Provide stable foundations teams can build on without friction.",
       scope: "Shared platform & DX",
       activitySummary: "18 active, 8 in rollout",
+      projectCount: 1,
       sortOrder: 1,
       members: [
         { id: "92000000-0000-4000-8000-000000000004", teamId: "91000000-0000-4000-8000-000000000002", name: "Omar Khalil", role: "Team Lead", sortOrder: 0 },
@@ -130,6 +133,7 @@ export const fixtureDeptStructure: DeptStructure = {
       goal: "Keep PE services healthy with fast response and clear runbooks.",
       scope: "PE run & escalate",
       activitySummary: "12 active, 4 awaiting closure",
+      projectCount: 0,
       sortOrder: 2,
       members: [
         { id: "92000000-0000-4000-8000-000000000007", teamId: "91000000-0000-4000-8000-000000000003", name: "Nour El-Din", role: "Team Lead", sortOrder: 0 },
@@ -144,6 +148,7 @@ export const fixtureDeptStructure: DeptStructure = {
       goal: "Make every release repeatable, observable, and low-drama.",
       scope: "Build, release, environments",
       activitySummary: "20 active, 6 in release prep",
+      projectCount: 1,
       sortOrder: 3,
       members: [
         { id: "92000000-0000-4000-8000-000000000009", teamId: "91000000-0000-4000-8000-000000000004", name: "Yasmine Farid", role: "Team Lead", sortOrder: 0 },
@@ -158,6 +163,7 @@ export const fixtureDeptStructure: DeptStructure = {
       goal: "Keep lake workloads trustworthy and on-SLA for consumers.",
       scope: "Lake ops & pipelines",
       activitySummary: "9 active, 3 under analysis",
+      projectCount: 1,
       sortOrder: 4,
       members: [
         { id: "92000000-0000-4000-8000-00000000000b", teamId: "91000000-0000-4000-8000-000000000005", name: "Karim Adel", role: "Team Lead", sortOrder: 0 },

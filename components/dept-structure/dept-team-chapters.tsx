@@ -25,10 +25,12 @@ export function DeptTeamChapters({ teams }: { teams: DeptTeam[] }) {
                   <dt>Goal</dt>
                   <dd>{team.goal || "—"}</dd>
                 </div>
-                <div className="dept-field-card">
-                  <dt>Activity</dt>
-                  <dd>{team.activitySummary || "—"}</dd>
-                </div>
+                {team.activitySummary.trim() ? (
+                  <div className="dept-field-card">
+                    <dt>Activity</dt>
+                    <dd>{team.activitySummary}</dd>
+                  </div>
+                ) : null}
                 </dl>
               <div className="dept-field-card dept-members-card">
                 <h4 className="dept-members-heading">Members</h4>

@@ -146,10 +146,9 @@ function ProfileSection({
         <TextArea className="full" label="Mission" value={form.mission} onChange={(v) => setForm({ ...form, mission: v })} />
         <Field label="Department head" value={form.departmentHeadName} onChange={(v) => setForm({ ...form, departmentHeadName: v })} />
         <Field label="Head title" value={form.departmentHeadTitle} onChange={(v) => setForm({ ...form, departmentHeadTitle: v })} />
-        <NumberField label="Teams stat" value={form.statTeams} onChange={(v) => setForm({ ...form, statTeams: v })} />
+        <NumberField label="Functions stat" value={form.statTeams} onChange={(v) => setForm({ ...form, statTeams: v })} />
         <NumberField label="Members stat" value={form.statMembers} onChange={(v) => setForm({ ...form, statMembers: v })} />
         <NumberField label="Active projects stat" value={form.statActiveProjects} onChange={(v) => setForm({ ...form, statActiveProjects: v })} />
-        <NumberField label="On-track %" value={form.statOnTrackPct} onChange={(v) => setForm({ ...form, statOnTrackPct: v })} />
       </div>
       <div className="form-actions">
         <button type="button" className="primary-button" disabled={busy} onClick={() => onSave(form)}>

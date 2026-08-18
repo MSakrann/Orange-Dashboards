@@ -12,7 +12,10 @@ describe("DeptPortfolio", () => {
       "Transformation and Operational Efficiency Department",
     );
     expect(screen.getByText("At a glance")).toBeInTheDocument();
+    expect(screen.getByText("Functions")).toBeInTheDocument();
+    expect(screen.queryByText("On track")).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Teams" })).toBeInTheDocument();
+    expect(screen.getByText("44 active, 24 in development")).toBeInTheDocument();
     expect(screen.queryByText("Highlighted projects")).not.toBeInTheDocument();
     expect(screen.queryByText("Project deep-dives")).not.toBeInTheDocument();
     expect(screen.queryByText("Timeline")).not.toBeInTheDocument();
@@ -38,5 +41,18 @@ describe("DeptPortfolio", () => {
     };
     const { container } = render(<DeptPortfolio data={sixTeams} />);
     expect(container.querySelector(".dept-team-grid.count-6")).toBeTruthy();
+    expect(screen.getByText("6 active")).toBeInTheDocument();
+  });
+
+  it("hides empty activity fields", () => {
+    const emptyActivity = {
+      ...fixtureDeptStructure,
+      teams: fixtureDeptStructure.teams.map((team, index) =>
+        index === 0 ? { ...team, activitySummary: "" } : team,
+      ),
+    };
+    render(<DeptPortfolio data={emptyActivity} />);
+    expect(screen.queryByText("44 active, 24 in development")).not.toBeInTheDocument();
+    expect(screen.getAllByText("Activity")).toHaveLength(4);
   });
 });

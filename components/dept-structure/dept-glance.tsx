@@ -2,10 +2,9 @@ import type { DeptProfile } from "@/data/dept-structure";
 
 export function DeptGlance({ profile }: { profile: DeptProfile }) {
   const stats = [
-    { label: "Teams", value: String(profile.statTeams) },
+    { label: "Functions", value: String(profile.statTeams) },
     { label: "Members", value: String(profile.statMembers) },
     { label: "Active projects", value: String(profile.statActiveProjects) },
-    { label: "On track", value: `${profile.statOnTrackPct}%` },
   ];
 
   return (

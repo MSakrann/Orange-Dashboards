@@ -244,6 +244,15 @@ describe("displayStatusName", () => {
     expect(displayStatusName("pe-operations", "To Do")).toBe("To Do");
     expect(displayStatusName("pe-operations", "In Review")).toBe("In Review");
   });
+
+  it("renames Platforms Development statuses and folds In Review into In Progress", async () => {
+    const { displayStatusName } = await import("@/lib/jira/status-display");
+    expect(displayStatusName("platform-development", "To Do")).toBe("Planning");
+    expect(displayStatusName("platform-development", "In Review")).toBe("In Progress");
+    expect(displayStatusName("platform-development", "In Progress")).toBe("In Progress");
+    expect(displayStatusName("platform-development", "Pending")).toBe("Delayed");
+    expect(displayStatusName("platform-development", "Done")).toBe("Done");
+  });
 });
 
 describe("statusSortUpdates", () => {

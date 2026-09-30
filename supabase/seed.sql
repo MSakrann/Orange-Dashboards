@@ -4,7 +4,7 @@ insert into public.workspaces (id, slug, name, description, sort_order)
 values
   ('10000000-0000-4000-8000-000000000001', 'hot-topics', 'Hot Topics', 'Cross-team operational priorities and escalations.', 0),
   ('10000000-0000-4000-8000-000000000003', 'pe-development', 'PE Development', 'Platform engineering delivery workspace.', 1),
-  ('10000000-0000-4000-8000-000000000002', 'platform-development', 'Platform Development', 'Platform development delivery workspace.', 2),
+  ('10000000-0000-4000-8000-000000000002', 'platform-development', 'Platforms Development', 'Platform development delivery workspace.', 2),
   ('10000000-0000-4000-8000-000000000005', 'development-operations', 'Dev Ops', 'Development operations delivery workspace.', 3),
   ('10000000-0000-4000-8000-000000000004', 'pe-operations', 'PE Operations', 'PE operations delivery workspace.', 4),
   ('10000000-0000-4000-8000-000000000006', 'datalake-operations', 'Data Lake Operations', 'Data lake operations delivery workspace.', 5)

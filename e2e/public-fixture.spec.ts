@@ -28,7 +28,7 @@ test.describe("public fixture workspace", () => {
     await page.getByRole("combobox", { name: "Workspace" }).selectOption("platform-development");
     await expect(page).toHaveURL(/\/platform-development$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      "Platform Development",
+      "Platforms Development",
     );
 
     await page
@@ -56,7 +56,7 @@ test.describe("public fixture workspace", () => {
     expect(optionLabels).toEqual([
       "Hot Topics Daily Follow-up",
       "PE Development",
-      "Platform Development",
+      "Platforms Development",
       "Dev Ops",
       "PE Operations",
       "Data Lake Operations",

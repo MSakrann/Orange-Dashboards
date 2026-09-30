@@ -122,7 +122,7 @@ export const workspaces: Workspace[] = [
   },
   {
     slug: "platform-development",
-    name: "Platform Development",
+    name: "Platforms Development",
     description: "Platform delivery, infrastructure, and operational readiness.",
     projects: workspaceProjects("platform", "Development Team Projects Management"),
   },

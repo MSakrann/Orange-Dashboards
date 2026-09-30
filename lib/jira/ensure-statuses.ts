@@ -63,10 +63,13 @@ export async function ensureJiraNamedStatuses(
     const jiraKey = jiraStatus.name.toLowerCase();
     const label = displayStatusName(workspaceSlug, jiraStatus.name);
     const labelKey = label.toLowerCase();
-    const reportingCategory = inferReportingCategory(
+    let reportingCategory = inferReportingCategory(
       jiraStatus.name,
       jiraStatus.categoryKey,
     );
+    // Display label Delayed should keep delayed KPI coloring even when the
+    // Jira source name would otherwise infer as active.
+    if (labelKey === "delayed") reportingCategory = "delayed";
     const color = colorForReportingCategory(reportingCategory);
 
     const byJiraName = byName.get(jiraKey);

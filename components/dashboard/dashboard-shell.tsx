@@ -730,8 +730,18 @@ export function DashboardShell({
                     <ProjectCard
                       project={project}
                       key={project.id}
-                      showProgress={workspace.slug !== "hot-topics"}
-                      showDetailsButton={workspace.slug !== "hot-topics" || canAdmin}
+                      showOwner={workspace.slug !== "development-operations"}
+                      showProgress={
+                        workspace.slug !== "hot-topics"
+                        && workspace.slug !== "development-operations"
+                      }
+                      showDetailsButton={
+                        workspace.slug === "development-operations"
+                          ? false
+                          : workspace.slug !== "hot-topics" || canAdmin
+                      }
+                      openOnCardClick={workspace.slug === "development-operations"}
+                      showOverdueTag={workspace.slug === "development-operations"}
                       showChildHierarchy={workspace.jiraLinked}
                       onOpen={(selected) => setSelectedProjectId(selected.id)}
                       adminControls={canAdmin ? {

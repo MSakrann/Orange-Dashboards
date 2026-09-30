@@ -1,11 +1,15 @@
+import type { KeyboardEvent, MouseEvent } from "react";
 import type { DashboardProject, DashboardWorkItem } from "@/lib/data/dashboard";
 import { ProgressBar } from "@/components/ui/progress-bar";
 
 interface ProjectCardProps {
   project: DashboardProject;
   onOpen: (project: DashboardProject) => void;
+  showOwner?: boolean;
   showProgress?: boolean;
   showDetailsButton?: boolean;
+  openOnCardClick?: boolean;
+  showOverdueTag?: boolean;
   showChildHierarchy?: boolean;
   adminControls?: {
     onEdit: () => void;
@@ -30,6 +34,15 @@ function formatDate(date?: string) {
   return Number.isNaN(parsed.getTime()) ? "Not scheduled" : dateFormatter.format(parsed);
 }
 
+function isPastTargetDate(endDate?: string) {
+  if (!endDate) return false;
+  const target = new Date(`${endDate}T00:00:00Z`);
+  if (Number.isNaN(target.getTime())) return false;
+  const now = new Date();
+  const todayUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  return target.getTime() < todayUtc;
+}
+
 function initials(name: string) {
   return name
     .split(/\s+/)
@@ -40,10 +53,14 @@ function initials(name: string) {
     .slice(0, 2);
 }
 
+function stopCardActivation(event: MouseEvent | KeyboardEvent) {
+  event.stopPropagation();
+}
+
 function JiraKey({ item }: { item: DashboardWorkItem }) {
   if (!item.jiraIssueKey) return null;
   return (
-    <span className="jira-key">
+    <span className="jira-key" onClick={stopCardActivation} onKeyDown={stopCardActivation}>
       {item.jiraUrl ? (
         <a href={item.jiraUrl} target="_blank" rel="noreferrer">
           {item.jiraIssueKey}
@@ -58,15 +75,36 @@ function JiraKey({ item }: { item: DashboardWorkItem }) {
 export function ProjectCard({
   project,
   onOpen,
+  showOwner = true,
   showProgress = true,
   showDetailsButton = true,
+  openOnCardClick = false,
+  showOverdueTag = false,
   showChildHierarchy = false,
   adminControls,
 }: ProjectCardProps) {
   const childCount = project.subtasks.length;
+  const overdue = showOverdueTag && isPastTargetDate(project.endDate);
+  const cardClassName = openOnCardClick ? "project-card project-card-clickable" : "project-card";
 
   return (
-    <article className="project-card">
+    <article
+      className={cardClassName}
+      role={openOnCardClick ? "button" : undefined}
+      tabIndex={openOnCardClick ? 0 : undefined}
+      aria-label={openOnCardClick ? `View ${project.title} details` : undefined}
+      onClick={openOnCardClick ? () => onOpen(project) : undefined}
+      onKeyDown={
+        openOnCardClick
+          ? (event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onOpen(project);
+              }
+            }
+          : undefined
+      }
+    >
       <div className="project-heading">
         <div>
           <div className="project-meta-row">
@@ -74,6 +112,11 @@ export function ProjectCard({
               <span aria-hidden="true" style={{ backgroundColor: project.statusColor }} />
               {project.statusName}
             </p>
+            {overdue ? (
+              <p className="overdue-badge" aria-label="Target date passed">
+                Delayed
+              </p>
+            ) : null}
             {showChildHierarchy ? (
               <p className="hierarchy-badge" aria-label="Parent work item">
                 Parent
@@ -89,15 +132,17 @@ export function ProjectCard({
         <span className={`priority priority-${project.priority}`}>{project.priority}</span>
       </div>
 
-      <div className="owner">
-        <span className="owner-avatar" aria-hidden="true">
-          {initials(project.owner)}
-        </span>
-        <span>
-          <strong>{project.owner}</strong>
-          <small>{project.ownerRole ?? "Project owner"}</small>
-        </span>
-      </div>
+      {showOwner ? (
+        <div className="owner">
+          <span className="owner-avatar" aria-hidden="true">
+            {initials(project.owner)}
+          </span>
+          <span>
+            <strong>{project.owner}</strong>
+            <small>{project.ownerRole ?? "Project owner"}</small>
+          </span>
+        </div>
+      ) : null}
 
       {showProgress ? (
         <ProgressBar label={`${project.title} progress`} value={project.progress} />
@@ -110,7 +155,7 @@ export function ProjectCard({
         </div>
         <div>
           <dt>Target</dt>
-          <dd>{formatDate(project.endDate)}</dd>
+          <dd className={overdue ? "project-date-overdue" : undefined}>{formatDate(project.endDate)}</dd>
         </div>
       </dl>
 
@@ -154,7 +199,12 @@ export function ProjectCard({
         </button>
       ) : null}
       {adminControls ? (
-        <div className="admin-actions" aria-label={`${project.title} administration`}>
+        <div
+          className="admin-actions"
+          aria-label={`${project.title} administration`}
+          onClick={stopCardActivation}
+          onKeyDown={stopCardActivation}
+        >
           <button type="button" onClick={adminControls.onEdit}>
             Edit {project.title}
           </button>

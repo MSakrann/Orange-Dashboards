@@ -734,18 +734,24 @@ export function DashboardShell({
                         workspace.slug !== "development-operations"
                         && workspace.slug !== "platforms-development"
                         && workspace.slug !== "pe-delivery"
+                        && workspace.slug !== "pe-ops"
+                        && workspace.slug !== "datalake-ops"
                       }
                       showProgress={
                         workspace.slug !== "hot-topics"
                         && workspace.slug !== "development-operations"
                         && workspace.slug !== "platforms-development"
                         && workspace.slug !== "pe-delivery"
+                        && workspace.slug !== "pe-ops"
+                        && workspace.slug !== "datalake-ops"
                       }
                       showDetailsButton={
                         (
                           workspace.slug === "development-operations"
                           || workspace.slug === "platforms-development"
                           || workspace.slug === "pe-delivery"
+                          || workspace.slug === "pe-ops"
+                          || workspace.slug === "datalake-ops"
                         )
                           ? false
                           : workspace.slug !== "hot-topics" || canAdmin
@@ -754,6 +760,8 @@ export function DashboardShell({
                         workspace.slug === "development-operations"
                         || workspace.slug === "platforms-development"
                         || workspace.slug === "pe-delivery"
+                        || workspace.slug === "pe-ops"
+                        || workspace.slug === "datalake-ops"
                       }
                       showOverdueTag={workspace.slug === "development-operations"}
                       showChildHierarchy={workspace.jiraLinked}

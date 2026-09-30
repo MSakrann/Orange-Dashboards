@@ -82,6 +82,8 @@ const manualDeliveryFixtureStatuses: FixtureStatusDefinition[] = [
 const fixtureStatusesBySlug: Record<string, FixtureStatusDefinition[]> = {
   "platforms-development": manualDeliveryFixtureStatuses,
   "pe-delivery": manualDeliveryFixtureStatuses,
+  "pe-ops": manualDeliveryFixtureStatuses,
+  "datalake-ops": manualDeliveryFixtureStatuses,
 };
 
 export function mapFixtureWorkspace(workspace: Workspace): DashboardViewModel {

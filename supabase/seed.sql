@@ -6,10 +6,12 @@ values
   ('10000000-0000-4000-8000-000000000008', 'pe-delivery', 'PE Development', 'Promo engine delivery priorities tracked manually by the team.', 1),
   ('10000000-0000-4000-8000-000000000007', 'platforms-development', 'Platforms Development', 'Platform delivery priorities tracked manually by the team.', 2),
   ('10000000-0000-4000-8000-000000000005', 'development-operations', 'Dev Ops', 'Development operations delivery workspace.', 3),
-  ('10000000-0000-4000-8000-000000000004', 'pe-operations', 'PE Operations', 'PE operations delivery workspace.', 4),
-  ('10000000-0000-4000-8000-000000000006', 'datalake-operations', 'Data Lake Operations', 'Data lake operations delivery workspace.', 5),
+  ('10000000-0000-4000-8000-000000000009', 'pe-ops', 'PE Operations', 'Promo engine operations priorities tracked manually by the team.', 4),
+  ('10000000-0000-4000-8000-00000000000a', 'datalake-ops', 'Data Lake Operations', 'Data lake operations priorities tracked manually by the team.', 5),
   ('10000000-0000-4000-8000-000000000002', 'platform-development', 'Platform Development', 'Platform development delivery workspace (hidden Jira mirror).', 100),
-  ('10000000-0000-4000-8000-000000000003', 'pe-development', 'PE Development Jira', 'PE development delivery workspace (hidden Jira mirror).', 101)
+  ('10000000-0000-4000-8000-000000000003', 'pe-development', 'PE Development Jira', 'PE development delivery workspace (hidden Jira mirror).', 101),
+  ('10000000-0000-4000-8000-000000000004', 'pe-operations', 'PE Operations Jira', 'PE operations delivery workspace (hidden Jira mirror).', 102),
+  ('10000000-0000-4000-8000-000000000006', 'datalake-operations', 'Data Lake Operations Jira', 'Data lake operations delivery workspace (hidden Jira mirror).', 103)
 on conflict (id) do update set
   slug = excluded.slug,
   name = excluded.name,
@@ -51,7 +53,15 @@ values
   ('20000000-0000-4000-8000-00000000001d', '10000000-0000-4000-8000-000000000008', 'Planning', '#23b123', 0, 'active'),
   ('20000000-0000-4000-8000-00000000001e', '10000000-0000-4000-8000-000000000008', 'In Progress', '#23b123', 1, 'active'),
   ('20000000-0000-4000-8000-00000000001f', '10000000-0000-4000-8000-000000000008', 'Done', '#16a34a', 2, 'completed'),
-  ('20000000-0000-4000-8000-000000000020', '10000000-0000-4000-8000-000000000008', 'Delayed', '#ef4444', 3, 'delayed')
+  ('20000000-0000-4000-8000-000000000020', '10000000-0000-4000-8000-000000000008', 'Delayed', '#ef4444', 3, 'delayed'),
+  ('20000000-0000-4000-8000-000000000021', '10000000-0000-4000-8000-000000000009', 'Planning', '#23b123', 0, 'active'),
+  ('20000000-0000-4000-8000-000000000022', '10000000-0000-4000-8000-000000000009', 'In Progress', '#23b123', 1, 'active'),
+  ('20000000-0000-4000-8000-000000000023', '10000000-0000-4000-8000-000000000009', 'Done', '#16a34a', 2, 'completed'),
+  ('20000000-0000-4000-8000-000000000024', '10000000-0000-4000-8000-000000000009', 'Delayed', '#ef4444', 3, 'delayed'),
+  ('20000000-0000-4000-8000-000000000025', '10000000-0000-4000-8000-00000000000a', 'Planning', '#23b123', 0, 'active'),
+  ('20000000-0000-4000-8000-000000000026', '10000000-0000-4000-8000-00000000000a', 'In Progress', '#23b123', 1, 'active'),
+  ('20000000-0000-4000-8000-000000000027', '10000000-0000-4000-8000-00000000000a', 'Done', '#16a34a', 2, 'completed'),
+  ('20000000-0000-4000-8000-000000000028', '10000000-0000-4000-8000-00000000000a', 'Delayed', '#ef4444', 3, 'delayed')
 on conflict (id) do update set
   workspace_id = excluded.workspace_id,
   name = excluded.name,

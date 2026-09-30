@@ -133,16 +133,16 @@ export const workspaces: Workspace[] = [
     projects: workspaceProjects("dev-ops", "Development Operations Priorities"),
   },
   {
-    slug: "pe-operations",
+    slug: "pe-ops",
     name: "PE Operations",
-    description: "Operational delivery health for the promo engine operations team.",
-    projects: workspaceProjects("pe-ops", "PE Operations Priorities"),
+    description: "Promo engine operations priorities tracked manually by the team.",
+    projects: [],
   },
   {
-    slug: "datalake-operations",
+    slug: "datalake-ops",
     name: "Data Lake Operations",
-    description: "Operational delivery health for the data lake operations team.",
-    projects: workspaceProjects("datalake-ops", "Data Lake Operations Priorities"),
+    description: "Data lake operations priorities tracked manually by the team.",
+    projects: [],
   },
 ];
 

@@ -37,14 +37,12 @@ test.describe("public fixture workspace", () => {
     await expect(page).toHaveURL(/\/development-operations$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Dev Ops");
 
-    await page.getByRole("combobox", { name: "Workspace" }).selectOption("pe-operations");
-    await expect(page).toHaveURL(/\/pe-operations$/);
+    await page.getByRole("combobox", { name: "Workspace" }).selectOption("pe-ops");
+    await expect(page).toHaveURL(/\/pe-ops$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("PE Operations");
 
-    await page
-      .getByRole("combobox", { name: "Workspace" })
-      .selectOption("datalake-operations");
-    await expect(page).toHaveURL(/\/datalake-operations$/);
+    await page.getByRole("combobox", { name: "Workspace" }).selectOption("datalake-ops");
+    await expect(page).toHaveURL(/\/datalake-ops$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       "Data Lake Operations",
     );
@@ -63,6 +61,8 @@ test.describe("public fixture workspace", () => {
     ]);
     expect(optionLabels).not.toContain("Platform Development");
     expect(optionLabels).not.toContain("PE Development Jira");
+    expect(optionLabels).not.toContain("PE Operations Jira");
+    expect(optionLabels).not.toContain("Data Lake Operations Jira");
     await expectAccessible(page);
   });
 
@@ -106,14 +106,14 @@ test.describe("public fixture workspace", () => {
   });
 
   test("project dialog is labelled, traps focus, closes, and restores focus", async ({ page }) => {
-    await page.goto("/pe-operations");
+    await page.goto("/development-operations");
     const opener = page.getByRole("button", { name: /View .* details/ }).first();
     await opener.click();
 
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
     await expect(dialog).toHaveAttribute("aria-modal", "true");
-    await expect(dialog).toHaveAccessibleName(/PE Operations Priorities/);
+    await expect(dialog).toHaveAccessibleName(/Development Operations Priorities/);
     await expect(page.locator("main.dashboard")).toHaveAttribute("inert", "");
     await expect(dialog.getByRole("button", { name: "Close project details" })).toBeFocused();
     await expectAccessible(page);

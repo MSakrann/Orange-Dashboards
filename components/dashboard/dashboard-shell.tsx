@@ -619,12 +619,12 @@ export function DashboardShell({
       <main className="dashboard">
         <header className="dashboard-header">
           <div className="brand-lockup">
-            <BrandMark />
-            <div>
-              <p className="eyebrow">Delivery workspace</p>
+            <p className="eyebrow">Delivery workspace</p>
+            <div className="brand-title-row">
+              <BrandMark />
               <h1>{workspace.name}</h1>
-              <p className="workspace-description">{workspace.description}</p>
             </div>
+            <p className="workspace-description">{workspace.description}</p>
           </div>
           <div className="header-tools">
             {isAdmin && source === "database" ? (

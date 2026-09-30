@@ -67,9 +67,20 @@ select:focus-visible {
 }
 
 .brand-lockup {
+  display: grid;
+  gap: 6px;
+}
+
+.brand-title-row {
   display: flex;
-  align-items: flex-start;
-  gap: 16px;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 14px;
+}
+
+.brand-title-row h1 {
+  margin: 0;
+  min-width: 0;
 }
 
 .brand-mark {

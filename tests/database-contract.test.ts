@@ -66,10 +66,17 @@ describe("Supabase core database behavior", () => {
       "hot-topics",
       "pe-development",
       "platform-development",
-      "pe-operations",
       "development-operations",
+      "pe-operations",
       "datalake-operations",
     ]);
+
+    const names = await db.query<{ slug: string; name: string }>(`
+      select slug, name
+        from public.workspaces
+       where slug = 'development-operations'
+    `);
+    expect(names.rows[0]?.name).toBe("Dev Ops");
   });
 
   it("applies the migration and seed with UUID keys, timestamps, foreign keys, and indexes", async () => {

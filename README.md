@@ -210,7 +210,7 @@ Set these in **Production** (and Preview if you test there). Never expose them i
 | `JIRA_PE_*` | PE Development |
 | `JIRA_PLATFORM_*` | Platform Development |
 | `JIRA_PE_OPS_*` | PE Operations |
-| `JIRA_DEV_OPS_*` | Development Operations |
+| `JIRA_DEV_OPS_*` | Dev Ops |
 | `JIRA_DATALAKE_OPS_*` | Data Lake Operations |
 | `SUPABASE_SERVICE_ROLE_KEY` | Sync jobs (server only) |
 | `CRON_SECRET` | Protects `/api/jira/sync` |
@@ -235,7 +235,7 @@ Use a **clean URL** (no `?secret=` query string — Jira often rejects those as 
 | PE Development | `https://<your-app>/api/jira/webhook/pe-development` |
 | Platform Development | `https://<your-app>/api/jira/webhook/platform-development` |
 | PE Operations | `https://<your-app>/api/jira/webhook/pe-operations` |
-| Development Operations | `https://<your-app>/api/jira/webhook/development-operations` |
+| Dev Ops | `https://<your-app>/api/jira/webhook/development-operations` |
 | Data Lake Operations | `https://<your-app>/api/jira/webhook/datalake-operations` |
 
 In the webhook form’s **Secret** field, paste the same value as the matching

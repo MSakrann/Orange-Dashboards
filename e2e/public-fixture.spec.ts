@@ -31,17 +31,15 @@ test.describe("public fixture workspace", () => {
       "Platform Development",
     );
 
-    await page.getByRole("combobox", { name: "Workspace" }).selectOption("pe-operations");
-    await expect(page).toHaveURL(/\/pe-operations$/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("PE Operations");
-
     await page
       .getByRole("combobox", { name: "Workspace" })
       .selectOption("development-operations");
     await expect(page).toHaveURL(/\/development-operations$/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      "Development Operations",
-    );
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Dev Ops");
+
+    await page.getByRole("combobox", { name: "Workspace" }).selectOption("pe-operations");
+    await expect(page).toHaveURL(/\/pe-operations$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("PE Operations");
 
     await page
       .getByRole("combobox", { name: "Workspace" })
@@ -50,6 +48,19 @@ test.describe("public fixture workspace", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       "Data Lake Operations",
     );
+
+    const optionLabels = await page
+      .getByRole("combobox", { name: "Workspace" })
+      .locator("option")
+      .allTextContents();
+    expect(optionLabels).toEqual([
+      "Hot Topics Daily Follow-up",
+      "PE Development",
+      "Platform Development",
+      "Dev Ops",
+      "PE Operations",
+      "Data Lake Operations",
+    ]);
     await expectAccessible(page);
   });
 

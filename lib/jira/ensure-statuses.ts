@@ -4,17 +4,20 @@ import {
   uniqueJiraStatuses,
   type StatusRow,
 } from "@/lib/jira/resolve-status";
+import { displayStatusName } from "@/lib/jira/status-display";
 import { createServiceClient } from "@/lib/supabase/service";
 
 type ServiceClient = ReturnType<typeof createServiceClient>;
 
 /**
- * Create/update workspace statuses so their names match Jira exactly.
- * Reporting category is inferred only for KPIs/filters — the visible label is the Jira name.
+ * Create/update workspace statuses for Jira sync.
+ * Visible labels usually match Jira; some workspaces override labels via display aliases.
+ * Reporting category is still inferred from the Jira status name.
  */
 export async function ensureJiraNamedStatuses(
   supabase: ServiceClient,
   workspaceId: string,
+  workspaceSlug: string,
   existingStatuses: StatusRow[],
   issues: Array<{ jiraStatusName: string; jiraStatusCategoryKey: string | null }>,
 ): Promise<Map<string, string>> {
@@ -26,33 +29,49 @@ export async function ensureJiraNamedStatuses(
   const nameToId = new Map<string, string>();
 
   for (const jiraStatus of uniqueJiraStatuses(issues)) {
-    const key = jiraStatus.name.toLowerCase();
+    const jiraKey = jiraStatus.name.toLowerCase();
+    const label = displayStatusName(workspaceSlug, jiraStatus.name);
+    const labelKey = label.toLowerCase();
     const reportingCategory = inferReportingCategory(
       jiraStatus.name,
       jiraStatus.categoryKey,
     );
     const color = colorForReportingCategory(reportingCategory);
-    const existing = byName.get(key);
+
+    const byJiraName = byName.get(jiraKey);
+    const byLabel = byName.get(labelKey);
+    let existing = byJiraName;
+    if (byJiraName && byLabel && byJiraName.id !== byLabel.id) {
+      // Prefer the already-labelled status so we do not create a name collision.
+      existing = byLabel;
+    } else if (!existing && byLabel) {
+      existing = byLabel;
+    }
 
     if (existing) {
-      if (
-        existing.reporting_category !== reportingCategory
-        || (existing.color && existing.color !== color)
-      ) {
+      const needsUpdate =
+        existing.name !== label
+        || existing.reporting_category !== reportingCategory
+        || (existing.color && existing.color !== color);
+      if (needsUpdate) {
         const { error } = await supabase
           .from("statuses")
           .update({
             reporting_category: reportingCategory,
             color,
-            name: jiraStatus.name,
+            name: label,
           })
           .eq("id", existing.id);
         if (error) throw new Error(error.message);
+        if (existing.name.toLowerCase() !== labelKey) {
+          byName.delete(existing.name.trim().toLowerCase());
+        }
         existing.reporting_category = reportingCategory;
         existing.color = color;
-        existing.name = jiraStatus.name;
+        existing.name = label;
+        byName.set(labelKey, existing);
       }
-      nameToId.set(key, existing.id);
+      nameToId.set(jiraKey, existing.id);
       continue;
     }
 
@@ -62,7 +81,7 @@ export async function ensureJiraNamedStatuses(
       .from("statuses")
       .insert({
         workspace_id: workspaceId,
-        name: jiraStatus.name,
+        name: label,
         color,
         sort_order: sortOrder,
         reporting_category: reportingCategory,
@@ -79,8 +98,8 @@ export async function ensureJiraNamedStatuses(
       color: data.color,
     };
     statuses.push(created);
-    byName.set(key, created);
-    nameToId.set(key, created.id);
+    byName.set(labelKey, created);
+    nameToId.set(jiraKey, created.id);
   }
 
   return nameToId;

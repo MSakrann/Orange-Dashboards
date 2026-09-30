@@ -119,6 +119,7 @@ export async function syncWorkspaceFromJira(
   const statusByJiraName = await ensureJiraNamedStatuses(
     supabase,
     workspace.id,
+    config.workspaceSlug,
     statuses,
     mapped,
   );

@@ -3,10 +3,8 @@ import type { DeptProfile } from "@/data/dept-structure";
 function OrangeLogo() {
   return (
     <div className="dept-hero-logo" aria-hidden="true">
-      <div className="dept-hero-logo-square">
-        <span className="dept-hero-logo-word">orange</span>
-        <span className="dept-hero-logo-tm">TM</span>
-      </div>
+      {/* eslint-disable-next-line @next/next/no-img-element -- static public brand asset */}
+      <img className="dept-hero-logo-square" src="/orange-logo.png" alt="" width={160} height={160} />
     </div>
   );
 }

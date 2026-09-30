@@ -215,6 +215,17 @@ describe("uniqueJiraStatuses", () => {
   });
 });
 
+describe("displayStatusName", () => {
+  it("renames Dev Ops To Do and In Review labels only", async () => {
+    const { displayStatusName } = await import("@/lib/jira/status-display");
+    expect(displayStatusName("development-operations", "To Do")).toBe("Planning");
+    expect(displayStatusName("development-operations", "In Review")).toBe("Delayed");
+    expect(displayStatusName("development-operations", "In Progress")).toBe("In Progress");
+    expect(displayStatusName("pe-operations", "To Do")).toBe("To Do");
+    expect(displayStatusName("pe-operations", "In Review")).toBe("In Review");
+  });
+});
+
 describe("removeUnusedSeedStatuses", () => {
   it("does not delete statuses when the keep set is empty", async () => {
     const { removeUnusedSeedStatuses } = await import("@/lib/jira/ensure-statuses");

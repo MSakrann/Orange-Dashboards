@@ -33,6 +33,7 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { WorkspaceSwitcher } from "@/components/layout/workspace-switcher";
 import { SessionControls } from "@/components/auth/session-controls";
+import { BrandMark } from "@/components/ui/brand-mark";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/view-states";
 import { ModalDialog } from "@/components/ui/modal-dialog";
 import { KpiGrid } from "./kpi-grid";
@@ -618,7 +619,7 @@ export function DashboardShell({
       <main className="dashboard">
         <header className="dashboard-header">
           <div className="brand-lockup">
-            <span className="brand-mark" aria-hidden="true">O</span>
+            <BrandMark />
             <div>
               <p className="eyebrow">Delivery workspace</p>
               <h1>{workspace.name}</h1>

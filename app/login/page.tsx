@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { BrandMark } from "@/components/ui/brand-mark";
 import { safeReturnTo } from "@/lib/auth/return-to";
 import { LoginForm } from "./login-form";
 
@@ -16,9 +17,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <main className="login-page">
       <section className="login-card" aria-labelledby="login-title">
-        <span className="brand-mark" aria-hidden="true">
-          O
-        </span>
+        <BrandMark />
         <p className="eyebrow">Dashboard administration</p>
         <h1 id="login-title">Sign in</h1>
         <p className="login-intro">

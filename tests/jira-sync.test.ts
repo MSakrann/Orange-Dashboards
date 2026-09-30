@@ -245,6 +245,20 @@ describe("displayStatusName", () => {
     expect(displayStatusName("pe-operations", "In Review")).toBe("In Review");
   });
 
+  it("folds PE Development statuses into Planning / In Progress / Done / Delayed", async () => {
+    const { displayStatusName } = await import("@/lib/jira/status-display");
+    expect(displayStatusName("pe-development", "Planning")).toBe("Planning");
+    expect(displayStatusName("pe-development", "Development")).toBe("In Progress");
+    expect(displayStatusName("pe-development", "RFT")).toBe("In Progress");
+    expect(displayStatusName("pe-development", "FUT")).toBe("In Progress");
+    expect(displayStatusName("pe-development", "Review")).toBe("In Progress");
+    expect(displayStatusName("pe-development", "Live")).toBe("Done");
+    expect(displayStatusName("pe-development", "Closed")).toBe("Done");
+    expect(displayStatusName("pe-development", "Pending")).toBe("Delayed");
+    expect(displayStatusName("pe-development", "On Hold")).toBe("Delayed");
+    expect(displayStatusName("pe-development", "Open")).toBe("Delayed");
+    expect(displayStatusName("pe-development", "In Progress")).toBe("In Progress");
+  });
 });
 
 describe("statusSortUpdates", () => {
@@ -265,6 +279,21 @@ describe("statusSortUpdates", () => {
     expect(statusSortUpdates("pe-operations", [
       { id: "a", name: "To Do", sort_order: 0 },
     ])).toEqual([]);
+  });
+
+  it("orders PE Development statuses as Planning, In Progress, Done, Delayed", async () => {
+    const { statusSortUpdates } = await import("@/lib/jira/status-display");
+    expect(statusSortUpdates("pe-development", [
+      { id: "d", name: "Delayed", sort_order: 0 },
+      { id: "done", name: "Done", sort_order: 1 },
+      { id: "ip", name: "In Progress", sort_order: 2 },
+      { id: "p", name: "Planning", sort_order: 3 },
+    ])).toEqual([
+      { id: "p", sort_order: 0 },
+      { id: "ip", sort_order: 1 },
+      { id: "done", sort_order: 2 },
+      { id: "d", sort_order: 3 },
+    ]);
   });
 });
 

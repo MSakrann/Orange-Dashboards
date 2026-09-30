@@ -67,9 +67,10 @@ export async function ensureJiraNamedStatuses(
       jiraStatus.name,
       jiraStatus.categoryKey,
     );
-    // Display label Delayed should keep delayed KPI coloring even when the
-    // Jira source name would otherwise infer as active.
+    // Display labels should keep KPI coloring even when the Jira source name
+    // would otherwise infer a different category.
     if (labelKey === "delayed") reportingCategory = "delayed";
+    if (labelKey === "done") reportingCategory = "completed";
     const color = colorForReportingCategory(reportingCategory);
 
     const byJiraName = byName.get(jiraKey);

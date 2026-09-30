@@ -6,11 +6,24 @@ const STATUS_DISPLAY_ALIASES: Partial<Record<JiraWorkspaceSlug, Record<string, s
     "to do": "Planning",
     "in review": "Delayed",
   },
+  "pe-development": {
+    planning: "Planning",
+    development: "In Progress",
+    rft: "In Progress",
+    fut: "In Progress",
+    review: "In Progress",
+    live: "Done",
+    closed: "Done",
+    pending: "Delayed",
+    "on hold": "Delayed",
+    open: "Delayed",
+  },
 };
 
 /** Preferred KPI/filter order for known status labels (case-insensitive). */
 const STATUS_SORT_ORDER: Partial<Record<JiraWorkspaceSlug, string[]>> = {
   "development-operations": ["Planning", "In Progress", "Done", "Delayed"],
+  "pe-development": ["Planning", "In Progress", "Done", "Delayed"],
 };
 
 export function displayStatusName(workspaceSlug: string, jiraStatusName: string): string {

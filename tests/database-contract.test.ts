@@ -122,6 +122,7 @@ describe("Supabase core database behavior", () => {
       { slug: "datalake-ops", name: "Delayed" },
       { slug: "pe-delivery", name: "Planning" },
       { slug: "pe-delivery", name: "In Progress" },
+      { slug: "pe-delivery", name: "On Hold" },
       { slug: "pe-delivery", name: "Done" },
       { slug: "pe-delivery", name: "Delayed" },
       { slug: "pe-ops", name: "Promos" },

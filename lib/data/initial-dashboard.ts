@@ -63,6 +63,7 @@ type FixtureStatusDefinition = {
   name: string;
   category: ReportingCategory;
   color: string;
+  key?: string;
 };
 
 const defaultFixtureStatusDefinitions: FixtureStatusDefinition[] = [
@@ -79,6 +80,14 @@ const manualDeliveryFixtureStatuses: FixtureStatusDefinition[] = [
   { legacyStatus: "delayed", name: "Delayed", category: "delayed", color: "#b63027" },
 ];
 
+const peDeliveryFixtureStatuses: FixtureStatusDefinition[] = [
+  { legacyStatus: "in-progress", name: "Planning", category: "active", color: "#23b123", key: "planning" },
+  { legacyStatus: "in-progress", name: "In Progress", category: "active", color: "#23b123", key: "in-progress" },
+  { legacyStatus: "at-risk", name: "On Hold", category: "risk", color: "#f59e0b", key: "on-hold" },
+  { legacyStatus: "completed", name: "Done", category: "completed", color: "#16a34a", key: "done" },
+  { legacyStatus: "delayed", name: "Delayed", category: "delayed", color: "#ef4444", key: "delayed" },
+];
+
 const peOpsFixtureStatuses: FixtureStatusDefinition[] = [
   { legacyStatus: "in-progress", name: "Promos", category: "active", color: "#e56f18" },
   { legacyStatus: "at-risk", name: "PE Platform", category: "active", color: "#246a91" },
@@ -88,7 +97,7 @@ const peOpsFixtureStatuses: FixtureStatusDefinition[] = [
 
 const fixtureStatusesBySlug: Record<string, FixtureStatusDefinition[]> = {
   "platforms-development": manualDeliveryFixtureStatuses,
-  "pe-delivery": manualDeliveryFixtureStatuses,
+  "pe-delivery": peDeliveryFixtureStatuses,
   "pe-ops": peOpsFixtureStatuses,
   "datalake-ops": manualDeliveryFixtureStatuses,
 };
@@ -97,7 +106,7 @@ export function mapFixtureWorkspace(workspace: Workspace): DashboardViewModel {
   const fixtureStatusDefinitions =
     fixtureStatusesBySlug[workspace.slug] ?? defaultFixtureStatusDefinitions;
   const statuses: DashboardStatus[] = fixtureStatusDefinitions.map((definition, sortOrder) => ({
-    id: `fixture-${definition.legacyStatus}`,
+    id: `fixture-${definition.key ?? definition.legacyStatus}`,
     name: definition.name,
     color: definition.color,
     sortOrder,

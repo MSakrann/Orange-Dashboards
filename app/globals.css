@@ -69,6 +69,8 @@ select:focus-visible {
 .brand-lockup {
   display: grid;
   gap: 6px;
+  flex: 0 1 auto;
+  min-width: 0;
 }
 
 .brand-title-row {
@@ -76,11 +78,13 @@ select:focus-visible {
   align-items: center;
   flex-wrap: nowrap;
   gap: 14px;
+  min-width: 0;
 }
 
 .brand-title-row h1 {
   margin: 0;
   min-width: 0;
+  white-space: nowrap;
 }
 
 .brand-mark {
@@ -264,7 +268,20 @@ h1 {
 .header-tools {
   display: flex;
   align-items: flex-end;
+  justify-content: flex-end;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
   gap: 10px;
+  min-width: 0;
+}
+
+.header-admin {
+  display: flex;
+  align-items: flex-end;
+  flex: 0 1 auto;
+  flex-wrap: nowrap;
+  gap: 10px;
+  min-width: 0;
 }
 
 .live-variant-filter {
@@ -295,10 +312,12 @@ h1 {
 .workspace-switcher {
   display: grid;
   gap: 6px;
+  flex: 0 0 auto;
 }
 
 .workspace-switcher select {
-  min-width: 220px;
+  width: 240px;
+  max-width: 100%;
   padding: 10px 34px 10px 12px;
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -980,6 +999,10 @@ footer {
     flex-direction: column;
   }
 
+  .brand-title-row h1 {
+    white-space: normal;
+  }
+
   .header-tools {
     width: 100%;
   }
@@ -990,6 +1013,14 @@ footer {
 
   .workspace-switcher select {
     width: 100%;
+  }
+
+  .session-controls {
+    flex-wrap: wrap;
+  }
+
+  .session-controls > span {
+    max-width: none;
   }
 
   .kpi-grid {
@@ -1016,6 +1047,10 @@ footer {
   .header-tools {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .header-admin {
+    flex-wrap: wrap;
   }
 
   .live-indicator {
@@ -1187,15 +1222,23 @@ footer {
 .session-controls {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 10px;
   color: var(--muted);
   font-size: 13px;
 }
 
+.session-controls > span {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .settings-link {
   display: inline-flex;
   align-items: center;
+  flex: 0 0 auto;
   min-height: 42px;
   text-decoration: none;
 }

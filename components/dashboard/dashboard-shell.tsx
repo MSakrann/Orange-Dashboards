@@ -628,7 +628,7 @@ export function DashboardShell({
           </div>
           <div className="header-tools">
             {isAdmin && source === "database" ? (
-              <>
+              <div className="header-admin">
                 {canAdmin ? (
                   <>
                     <Link
@@ -648,7 +648,7 @@ export function DashboardShell({
                 {adminEmail ? (
                   <SessionControls email={adminEmail} returnTo={`/${workspace.slug}`} />
                 ) : null}
-              </>
+              </div>
             ) : null}
             <WorkspaceSwitcher activeSlug={workspace.slug} />
             <div

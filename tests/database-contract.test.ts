@@ -56,7 +56,7 @@ describe("Supabase core database behavior", () => {
     await db.close();
   });
 
-  it("seeds six workspaces in product order", async () => {
+  it("seeds workspaces in product order with Platforms Development manual and Platform Development hidden", async () => {
     const rows = await db.query<{ slug: string; sort_order: number }>(`
       select slug, sort_order
         from public.workspaces
@@ -65,18 +65,38 @@ describe("Supabase core database behavior", () => {
     expect(rows.rows.map((row) => row.slug)).toEqual([
       "hot-topics",
       "pe-development",
-      "platform-development",
+      "platforms-development",
       "development-operations",
       "pe-operations",
       "datalake-operations",
+      "platform-development",
     ]);
 
     const names = await db.query<{ slug: string; name: string }>(`
       select slug, name
         from public.workspaces
-       where slug = 'development-operations'
+       where slug in ('development-operations', 'platforms-development', 'platform-development')
+       order by slug
     `);
-    expect(names.rows[0]?.name).toBe("Dev Ops");
+    expect(names.rows).toEqual([
+      { slug: "development-operations", name: "Dev Ops" },
+      { slug: "platform-development", name: "Platform Development" },
+      { slug: "platforms-development", name: "Platforms Development" },
+    ]);
+
+    const platformsStatuses = await db.query<{ name: string }>(`
+      select s.name
+        from public.statuses s
+        join public.workspaces w on w.id = s.workspace_id
+       where w.slug = 'platforms-development'
+       order by s.sort_order
+    `);
+    expect(platformsStatuses.rows.map((row) => row.name)).toEqual([
+      "Planning",
+      "In Progress",
+      "Done",
+      "Delayed",
+    ]);
   });
 
   it("applies the migration and seed with UUID keys, timestamps, foreign keys, and indexes", async () => {

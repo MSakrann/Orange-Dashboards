@@ -25,8 +25,8 @@ test.describe("public fixture workspace", () => {
     await expect(page).toHaveURL(/\/pe-development$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("PE Development");
 
-    await page.getByRole("combobox", { name: "Workspace" }).selectOption("platform-development");
-    await expect(page).toHaveURL(/\/platform-development$/);
+    await page.getByRole("combobox", { name: "Workspace" }).selectOption("platforms-development");
+    await expect(page).toHaveURL(/\/platforms-development$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       "Platforms Development",
     );
@@ -61,6 +61,7 @@ test.describe("public fixture workspace", () => {
       "PE Operations",
       "Data Lake Operations",
     ]);
+    expect(optionLabels).not.toContain("Platform Development");
     await expectAccessible(page);
   });
 

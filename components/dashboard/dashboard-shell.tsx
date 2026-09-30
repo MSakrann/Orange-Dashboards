@@ -732,24 +732,24 @@ export function DashboardShell({
                       key={project.id}
                       showOwner={
                         workspace.slug !== "development-operations"
-                        && workspace.slug !== "platform-development"
+                        && workspace.slug !== "platforms-development"
                       }
                       showProgress={
                         workspace.slug !== "hot-topics"
                         && workspace.slug !== "development-operations"
-                        && workspace.slug !== "platform-development"
+                        && workspace.slug !== "platforms-development"
                       }
                       showDetailsButton={
                         (
                           workspace.slug === "development-operations"
-                          || workspace.slug === "platform-development"
+                          || workspace.slug === "platforms-development"
                         )
                           ? false
                           : workspace.slug !== "hot-topics" || canAdmin
                       }
                       openOnCardClick={
                         workspace.slug === "development-operations"
-                        || workspace.slug === "platform-development"
+                        || workspace.slug === "platforms-development"
                       }
                       showOverdueTag={workspace.slug === "development-operations"}
                       showChildHierarchy={workspace.jiraLinked}

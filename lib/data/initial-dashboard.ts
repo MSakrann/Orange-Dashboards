@@ -58,19 +58,32 @@ export async function resolveInitialDashboard<Client>(
   };
 }
 
-const fixtureStatusDefinitions: Array<{
+type FixtureStatusDefinition = {
   legacyStatus: DashboardProject["status"];
   name: string;
   category: ReportingCategory;
   color: string;
-}> = [
+};
+
+const defaultFixtureStatusDefinitions: FixtureStatusDefinition[] = [
   { legacyStatus: "in-progress", name: "In Progress", category: "active", color: "#237b4b" },
   { legacyStatus: "at-risk", name: "At Risk", category: "risk", color: "#a94806" },
   { legacyStatus: "delayed", name: "Delayed", category: "delayed", color: "#b63027" },
   { legacyStatus: "completed", name: "Completed", category: "completed", color: "#246a91" },
 ];
 
+const fixtureStatusesBySlug: Record<string, FixtureStatusDefinition[]> = {
+  "platforms-development": [
+    { legacyStatus: "in-progress", name: "Planning", category: "active", color: "#237b4b" },
+    { legacyStatus: "at-risk", name: "In Progress", category: "active", color: "#237b4b" },
+    { legacyStatus: "completed", name: "Done", category: "completed", color: "#246a91" },
+    { legacyStatus: "delayed", name: "Delayed", category: "delayed", color: "#b63027" },
+  ],
+};
+
 export function mapFixtureWorkspace(workspace: Workspace): DashboardViewModel {
+  const fixtureStatusDefinitions =
+    fixtureStatusesBySlug[workspace.slug] ?? defaultFixtureStatusDefinitions;
   const statuses: DashboardStatus[] = fixtureStatusDefinitions.map((definition, sortOrder) => ({
     id: `fixture-${definition.legacyStatus}`,
     name: definition.name,

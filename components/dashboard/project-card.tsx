@@ -4,7 +4,8 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 interface ProjectCardProps {
   project: DashboardProject;
   onOpen: (project: DashboardProject) => void;
-  showInlineDetails?: boolean;
+  showProgress?: boolean;
+  showDetailsButton?: boolean;
   showChildHierarchy?: boolean;
   adminControls?: {
     onEdit: () => void;
@@ -23,21 +24,10 @@ const dateFormatter = new Intl.DateTimeFormat("en", {
   timeZone: "UTC",
 });
 
-const commentDateFormatter = new Intl.DateTimeFormat("en", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-});
-
 function formatDate(date?: string) {
   if (!date) return "Not scheduled";
   const parsed = new Date(`${date}T00:00:00Z`);
   return Number.isNaN(parsed.getTime()) ? "Not scheduled" : dateFormatter.format(parsed);
-}
-
-function formatCommentDate(value: string) {
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? "" : commentDateFormatter.format(parsed);
 }
 
 function initials(name: string) {
@@ -68,7 +58,8 @@ function JiraKey({ item }: { item: DashboardWorkItem }) {
 export function ProjectCard({
   project,
   onOpen,
-  showInlineDetails = false,
+  showProgress = true,
+  showDetailsButton = true,
   showChildHierarchy = false,
   adminControls,
 }: ProjectCardProps) {
@@ -108,16 +99,9 @@ export function ProjectCard({
         </span>
       </div>
 
-      {showInlineDetails && project.description.trim() ? (
-        <section className="project-card-description" aria-label={`${project.title} description`}>
-          <h3>Description</h3>
-          <div className="project-card-description-body">
-            <p>{project.description}</p>
-          </div>
-        </section>
+      {showProgress ? (
+        <ProgressBar label={`${project.title} progress`} value={project.progress} />
       ) : null}
-
-      <ProgressBar label={`${project.title} progress`} value={project.progress} />
 
       <dl className="project-dates">
         <div>
@@ -164,30 +148,11 @@ export function ProjectCard({
         </section>
       ) : null}
 
-      {showInlineDetails ? (
-        <section className="project-card-comments" aria-label={`${project.title} comments`}>
-          <h3>Comments</h3>
-          {project.comments.length ? (
-            <ul>
-              {project.comments.map((comment) => (
-                <li key={comment.id}>
-                  <p>{comment.text}</p>
-                  <cite>
-                    {comment.author}
-                    {comment.createdAt ? ` · ${formatCommentDate(comment.createdAt)}` : ""}
-                  </cite>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="project-card-comments-empty">No comments yet.</p>
-          )}
-        </section>
+      {showDetailsButton ? (
+        <button className="details-button" type="button" onClick={() => onOpen(project)}>
+          View {project.title} details
+        </button>
       ) : null}
-
-      <button className="details-button" type="button" onClick={() => onOpen(project)}>
-        View {project.title} details
-      </button>
       {adminControls ? (
         <div className="admin-actions" aria-label={`${project.title} administration`}>
           <button type="button" onClick={adminControls.onEdit}>

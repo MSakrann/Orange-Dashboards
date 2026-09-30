@@ -84,24 +84,23 @@ test.describe("public fixture workspace", () => {
     const box = await card.boundingBox();
     expect(box?.width ?? 0).toBeLessThanOrEqual(350);
 
-    await page.getByRole("button", { name: /View .* details/ }).first().click();
-    const dialog = page.getByRole("dialog");
-    await expect(dialog).toBeVisible();
-    await expect(dialog.getByRole("button", { name: "Close project details" })).toHaveText("x");
+    await expect(page.getByRole("button", { name: /View .* details/ })).toHaveCount(0);
+    await expect(page.getByText("Description")).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Comments" })).toHaveCount(0);
 
     const controlText = await page.getByRole("button").allTextContents();
     expect(controlText.join("")).not.toMatch(/\p{Extended_Pictographic}/u);
   });
 
   test("project dialog is labelled, traps focus, closes, and restores focus", async ({ page }) => {
-    await page.goto("/hot-topics");
+    await page.goto("/pe-development");
     const opener = page.getByRole("button", { name: /View .* details/ }).first();
     await opener.click();
 
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
     await expect(dialog).toHaveAttribute("aria-modal", "true");
-    await expect(dialog).toHaveAccessibleName(/Daily Priority Follow-ups/);
+    await expect(dialog).toHaveAccessibleName(/PE Team Projects Management/);
     await expect(page.locator("main.dashboard")).toHaveAttribute("inert", "");
     await expect(dialog.getByRole("button", { name: "Close project details" })).toBeFocused();
     await expectAccessible(page);

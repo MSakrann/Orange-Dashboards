@@ -729,7 +729,8 @@ export function DashboardShell({
                     <ProjectCard
                       project={project}
                       key={project.id}
-                      showInlineDetails={workspace.slug === "hot-topics"}
+                      showProgress={workspace.slug !== "hot-topics"}
+                      showDetailsButton={workspace.slug !== "hot-topics" || canAdmin}
                       showChildHierarchy={workspace.jiraLinked}
                       onOpen={(selected) => setSelectedProjectId(selected.id)}
                       adminControls={canAdmin ? {

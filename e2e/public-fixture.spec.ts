@@ -21,8 +21,8 @@ test.describe("public fixture workspace", () => {
     await expect(page.getByRole("link", { name: "History" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Status Settings" })).toHaveCount(0);
 
-    await page.getByRole("combobox", { name: "Workspace" }).selectOption("pe-development");
-    await expect(page).toHaveURL(/\/pe-development$/);
+    await page.getByRole("combobox", { name: "Workspace" }).selectOption("pe-delivery");
+    await expect(page).toHaveURL(/\/pe-delivery$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("PE Development");
 
     await page.getByRole("combobox", { name: "Workspace" }).selectOption("platforms-development");
@@ -62,6 +62,7 @@ test.describe("public fixture workspace", () => {
       "Data Lake Operations",
     ]);
     expect(optionLabels).not.toContain("Platform Development");
+    expect(optionLabels).not.toContain("PE Development Jira");
     await expectAccessible(page);
   });
 
@@ -105,14 +106,14 @@ test.describe("public fixture workspace", () => {
   });
 
   test("project dialog is labelled, traps focus, closes, and restores focus", async ({ page }) => {
-    await page.goto("/pe-development");
+    await page.goto("/pe-operations");
     const opener = page.getByRole("button", { name: /View .* details/ }).first();
     await opener.click();
 
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
     await expect(dialog).toHaveAttribute("aria-modal", "true");
-    await expect(dialog).toHaveAccessibleName(/PE Team Projects Management/);
+    await expect(dialog).toHaveAccessibleName(/PE Operations Priorities/);
     await expect(page.locator("main.dashboard")).toHaveAttribute("inert", "");
     await expect(dialog.getByRole("button", { name: "Close project details" })).toBeFocused();
     await expectAccessible(page);

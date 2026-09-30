@@ -56,7 +56,7 @@ describe("Supabase core database behavior", () => {
     await db.close();
   });
 
-  it("seeds workspaces in product order with Platforms Development manual and Platform Development hidden", async () => {
+  it("seeds manual PE/Platforms workspaces and hides Jira PE/Platform mirrors", async () => {
     const rows = await db.query<{ slug: string; sort_order: number }>(`
       select slug, sort_order
         from public.workspaces
@@ -64,38 +64,51 @@ describe("Supabase core database behavior", () => {
     `);
     expect(rows.rows.map((row) => row.slug)).toEqual([
       "hot-topics",
-      "pe-development",
+      "pe-delivery",
       "platforms-development",
       "development-operations",
       "pe-operations",
       "datalake-operations",
       "platform-development",
+      "pe-development",
     ]);
 
     const names = await db.query<{ slug: string; name: string }>(`
       select slug, name
         from public.workspaces
-       where slug in ('development-operations', 'platforms-development', 'platform-development')
+       where slug in (
+         'development-operations',
+         'platforms-development',
+         'platform-development',
+         'pe-delivery',
+         'pe-development'
+       )
        order by slug
     `);
     expect(names.rows).toEqual([
       { slug: "development-operations", name: "Dev Ops" },
+      { slug: "pe-delivery", name: "PE Development" },
+      { slug: "pe-development", name: "PE Development Jira" },
       { slug: "platform-development", name: "Platform Development" },
       { slug: "platforms-development", name: "Platforms Development" },
     ]);
 
-    const platformsStatuses = await db.query<{ name: string }>(`
-      select s.name
+    const manualStatuses = await db.query<{ slug: string; name: string }>(`
+      select w.slug, s.name
         from public.statuses s
         join public.workspaces w on w.id = s.workspace_id
-       where w.slug = 'platforms-development'
-       order by s.sort_order
+       where w.slug in ('platforms-development', 'pe-delivery')
+       order by w.slug, s.sort_order
     `);
-    expect(platformsStatuses.rows.map((row) => row.name)).toEqual([
-      "Planning",
-      "In Progress",
-      "Done",
-      "Delayed",
+    expect(manualStatuses.rows).toEqual([
+      { slug: "pe-delivery", name: "Planning" },
+      { slug: "pe-delivery", name: "In Progress" },
+      { slug: "pe-delivery", name: "Done" },
+      { slug: "pe-delivery", name: "Delayed" },
+      { slug: "platforms-development", name: "Planning" },
+      { slug: "platforms-development", name: "In Progress" },
+      { slug: "platforms-development", name: "Done" },
+      { slug: "platforms-development", name: "Delayed" },
     ]);
   });
 

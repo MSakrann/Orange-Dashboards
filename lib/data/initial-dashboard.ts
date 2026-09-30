@@ -72,13 +72,16 @@ const defaultFixtureStatusDefinitions: FixtureStatusDefinition[] = [
   { legacyStatus: "completed", name: "Completed", category: "completed", color: "#246a91" },
 ];
 
+const manualDeliveryFixtureStatuses: FixtureStatusDefinition[] = [
+  { legacyStatus: "in-progress", name: "Planning", category: "active", color: "#237b4b" },
+  { legacyStatus: "at-risk", name: "In Progress", category: "active", color: "#237b4b" },
+  { legacyStatus: "completed", name: "Done", category: "completed", color: "#246a91" },
+  { legacyStatus: "delayed", name: "Delayed", category: "delayed", color: "#b63027" },
+];
+
 const fixtureStatusesBySlug: Record<string, FixtureStatusDefinition[]> = {
-  "platforms-development": [
-    { legacyStatus: "in-progress", name: "Planning", category: "active", color: "#237b4b" },
-    { legacyStatus: "at-risk", name: "In Progress", category: "active", color: "#237b4b" },
-    { legacyStatus: "completed", name: "Done", category: "completed", color: "#246a91" },
-    { legacyStatus: "delayed", name: "Delayed", category: "delayed", color: "#b63027" },
-  ],
+  "platforms-development": manualDeliveryFixtureStatuses,
+  "pe-delivery": manualDeliveryFixtureStatuses,
 };
 
 export function mapFixtureWorkspace(workspace: Workspace): DashboardViewModel {

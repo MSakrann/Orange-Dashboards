@@ -4,10 +4,41 @@ import {
   uniqueJiraStatuses,
   type StatusRow,
 } from "@/lib/jira/resolve-status";
-import { displayStatusName } from "@/lib/jira/status-display";
+import { displayStatusName, statusSortUpdates } from "@/lib/jira/status-display";
 import { createServiceClient } from "@/lib/supabase/service";
 
 type ServiceClient = ReturnType<typeof createServiceClient>;
+
+async function applyPreferredStatusOrder(
+  supabase: ServiceClient,
+  workspaceId: string,
+  workspaceSlug: string,
+  statuses: StatusRow[],
+) {
+  const updates = statusSortUpdates(workspaceSlug, statuses);
+  if (!updates.length) return;
+
+  // Avoid unique (workspace_id, sort_order) collisions while swapping.
+  for (const [index, status] of statuses.entries()) {
+    const { error } = await supabase
+      .from("statuses")
+      .update({ sort_order: 1000 + index })
+      .eq("id", status.id)
+      .eq("workspace_id", workspaceId);
+    if (error) throw new Error(error.message);
+  }
+
+  for (const update of updates) {
+    const { error } = await supabase
+      .from("statuses")
+      .update({ sort_order: update.sort_order })
+      .eq("id", update.id)
+      .eq("workspace_id", workspaceId);
+    if (error) throw new Error(error.message);
+    const row = statuses.find((status) => status.id === update.id);
+    if (row) row.sort_order = update.sort_order;
+  }
+}
 
 /**
  * Create/update workspace statuses for Jira sync.
@@ -102,6 +133,7 @@ export async function ensureJiraNamedStatuses(
     nameToId.set(jiraKey, created.id);
   }
 
+  await applyPreferredStatusOrder(supabase, workspaceId, workspaceSlug, statuses);
   return nameToId;
 }
 

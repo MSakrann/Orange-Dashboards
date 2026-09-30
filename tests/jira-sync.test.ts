@@ -226,6 +226,27 @@ describe("displayStatusName", () => {
   });
 });
 
+describe("statusSortUpdates", () => {
+  it("orders Dev Ops statuses as Planning, In Progress, Done, Delayed", async () => {
+    const { statusSortUpdates } = await import("@/lib/jira/status-display");
+    const updates = statusSortUpdates("development-operations", [
+      { id: "d", name: "Delayed", sort_order: 0 },
+      { id: "p", name: "Planning", sort_order: 1 },
+      { id: "done", name: "Done", sort_order: 2 },
+      { id: "ip", name: "In Progress", sort_order: 3 },
+      { id: "extra", name: "Blocked", sort_order: 4 },
+    ]);
+    expect(updates).toEqual([
+      { id: "p", sort_order: 0 },
+      { id: "ip", sort_order: 1 },
+      { id: "d", sort_order: 3 },
+    ]);
+    expect(statusSortUpdates("pe-operations", [
+      { id: "a", name: "To Do", sort_order: 0 },
+    ])).toEqual([]);
+  });
+});
+
 describe("removeUnusedSeedStatuses", () => {
   it("does not delete statuses when the keep set is empty", async () => {
     const { removeUnusedSeedStatuses } = await import("@/lib/jira/ensure-statuses");

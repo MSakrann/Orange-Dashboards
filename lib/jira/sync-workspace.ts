@@ -1,6 +1,7 @@
 import {
   fetchJiraIssue,
   resolveEpicLinkFieldId,
+  resolveTargetEndFieldId,
   searchJiraIssues,
 } from "@/lib/jira/client";
 import { ensureJiraNamedStatuses, removeUnusedSeedStatuses } from "@/lib/jira/ensure-statuses";
@@ -89,7 +90,10 @@ export async function syncWorkspaceFromJira(
   options?: { issueKey?: string },
 ): Promise<SyncResult> {
   const { supabase, workspace, statuses } = await loadWorkspaceContext(config.workspaceSlug);
-  const epicLinkFieldId = await resolveEpicLinkFieldId(config);
+  const [epicLinkFieldId, targetEndFieldId] = await Promise.all([
+    resolveEpicLinkFieldId(config),
+    resolveTargetEndFieldId(config),
+  ]);
   let issues: JiraIssue[] = options?.issueKey
     ? [await fetchJiraIssue(config, options.issueKey)]
     : await searchJiraIssues(config);
@@ -115,7 +119,9 @@ export async function syncWorkspaceFromJira(
 
   await beginJiraSync(supabase);
 
-  const mapped = issues.map((issue) => mapJiraIssue(issue, config, { epicLinkFieldId }));
+  const mapped = issues.map((issue) =>
+    mapJiraIssue(issue, config, { epicLinkFieldId, targetEndFieldId }),
+  );
   const statusByJiraName = await ensureJiraNamedStatuses(
     supabase,
     workspace.id,
@@ -180,6 +186,8 @@ export async function syncWorkspaceFromJira(
   ) {
     seenJiraIds.add(issue.jiraIssueId);
     const existing = existingByJiraId.get(issue.jiraIssueId);
+    // Never blank out a stored target date when Jira returns no due/target end.
+    const endDate = issue.endDate ?? existing?.end_date ?? null;
     const payload = {
       workspace_id: workspace.id,
       parent_id: parentId,
@@ -189,7 +197,7 @@ export async function syncWorkspaceFromJira(
       priority: issue.priority,
       progress: issue.progress,
       start_date: issue.startDate,
-      end_date: issue.endDate,
+      end_date: endDate,
       assignee: issue.assignee,
       sort_order: allocateSortOrder(parentId, existing),
       sync_source: "jira" as const,

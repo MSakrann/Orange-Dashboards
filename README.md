@@ -223,6 +223,7 @@ See `.env.example` for the full list. Each Jira instance needs:
 - `JQL` — which issues to mirror, e.g. `project = PE ORDER BY updated DESC`
 - `WEBHOOK_SECRET` — a long random string you choose; used to validate incoming webhooks
 - `PROGRESS_FIELD_ID` — optional custom field for progress percentage
+- `TARGET_DATE_FIELD_ID` — optional custom field for Target end / target date (auto-detects “Target end” when omitted; falls back to Due Date)
 
 ### Jira webhooks (one per instance)
 

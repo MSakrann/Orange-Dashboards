@@ -13,6 +13,8 @@ export interface JiraConnectionConfig {
   jql: string;
   webhookSecret: string;
   progressFieldId?: string;
+  /** Optional custom field id for target/end date (e.g. Advanced Roadmaps Target end). */
+  targetDateFieldId?: string;
 }
 
 export interface JiraIssueFields {

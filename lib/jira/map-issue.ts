@@ -64,10 +64,37 @@ function readEpicLinkKey(issue: JiraIssue, epicLinkFieldId?: string | null): str
   return null;
 }
 
+function asDateOnly(value: unknown): string | null {
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value.trim())) {
+    return value.trim().slice(0, 10);
+  }
+  if (value && typeof value === "object") {
+    const record = value as { value?: unknown; startDate?: unknown; endDate?: unknown };
+    for (const candidate of [record.value, record.endDate, record.startDate]) {
+      const parsed = asDateOnly(candidate);
+      if (parsed) return parsed;
+    }
+  }
+  return null;
+}
+
+function readTargetEndDate(
+  issue: JiraIssue,
+  config: JiraConnectionConfig,
+  targetEndFieldId?: string | null,
+): string | null {
+  const fieldId = targetEndFieldId || config.targetDateFieldId;
+  if (fieldId) {
+    const fromCustom = asDateOnly(issue.fields[fieldId]);
+    if (fromCustom) return fromCustom;
+  }
+  return asDateOnly(issue.fields.duedate);
+}
+
 export function mapJiraIssue(
   issue: JiraIssue,
   config: JiraConnectionConfig,
-  options?: { epicLinkFieldId?: string | null },
+  options?: { epicLinkFieldId?: string | null; targetEndFieldId?: string | null },
 ): MappedJiraIssue {
   const created = issue.fields.created?.slice(0, 10) ?? null;
   const progress =
@@ -87,7 +114,7 @@ export function mapJiraIssue(
     title: issue.fields.summary?.trim() || issue.key,
     description: extractDescription(issue.fields.description),
     assignee: issue.fields.assignee?.displayName?.trim() || null,
-    endDate: issue.fields.duedate ?? null,
+    endDate: readTargetEndDate(issue, config, options?.targetEndFieldId),
     startDate: created,
     priority: mapPriority(issue.fields.priority?.name),
     progress,

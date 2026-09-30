@@ -25,6 +25,9 @@ function baseIssueFields(config: JiraConnectionConfig) {
   if (config.progressFieldId) {
     fields.push(config.progressFieldId);
   }
+  if (config.targetDateFieldId) {
+    fields.push(config.targetDateFieldId);
+  }
   return fields;
 }
 
@@ -60,6 +63,7 @@ interface JiraFieldDescriptor {
 }
 
 let epicLinkFieldCache = new Map<string, string | null>();
+let targetEndFieldCache = new Map<string, string | null>();
 
 /** Resolve the company-managed "Epic Link" custom field id for a Jira site. */
 export async function resolveEpicLinkFieldId(
@@ -83,20 +87,64 @@ export async function resolveEpicLinkFieldId(
   return fieldId;
 }
 
-/** Test helper — clears the Epic Link field cache. */
-export function clearEpicLinkFieldCache() {
-  epicLinkFieldCache = new Map();
+/**
+ * Resolve Advanced Roadmaps / planning "Target end" custom field when present.
+ * Falls back to null so callers can use the standard Due Date field.
+ */
+export async function resolveTargetEndFieldId(
+  config: JiraConnectionConfig,
+): Promise<string | null> {
+  if (config.targetDateFieldId) return config.targetDateFieldId;
+
+  const cached = targetEndFieldCache.get(config.baseUrl);
+  if (cached !== undefined) return cached;
+
+  const fields = await jiraRequest<JiraFieldDescriptor[]>(config, "/rest/api/3/field");
+  const match = fields.find((field) => {
+    const name = (field.name ?? "").toLowerCase().trim();
+    const clauses = (field.clauseNames ?? []).map((clause) => clause.toLowerCase());
+    return name === "target end"
+      || name === "target end date"
+      || name === "target date"
+      || clauses.includes("target end")
+      || clauses.includes("target end date");
+  });
+
+  const fieldId = match?.id ?? null;
+  targetEndFieldCache.set(config.baseUrl, fieldId);
+  return fieldId;
 }
 
-function issueFields(config: JiraConnectionConfig, epicLinkFieldId?: string | null) {
+/** Test helper — clears the Epic Link / Target end field caches. */
+export function clearEpicLinkFieldCache() {
+  epicLinkFieldCache = new Map();
+  targetEndFieldCache = new Map();
+}
+
+function issueFields(
+  config: JiraConnectionConfig,
+  epicLinkFieldId?: string | null,
+  targetEndFieldId?: string | null,
+) {
   const fields = baseIssueFields(config);
   if (epicLinkFieldId) fields.push(epicLinkFieldId);
+  if (targetEndFieldId && !fields.includes(targetEndFieldId)) {
+    fields.push(targetEndFieldId);
+  }
   return fields;
 }
 
+async function resolveIssueFieldIds(config: JiraConnectionConfig) {
+  const [epicLinkFieldId, targetEndFieldId] = await Promise.all([
+    resolveEpicLinkFieldId(config),
+    resolveTargetEndFieldId(config),
+  ]);
+  return { epicLinkFieldId, targetEndFieldId };
+}
+
 export async function searchJiraIssues(config: JiraConnectionConfig): Promise<JiraIssue[]> {
-  const epicLinkFieldId = await resolveEpicLinkFieldId(config);
-  const fields = issueFields(config, epicLinkFieldId);
+  const { epicLinkFieldId, targetEndFieldId } = await resolveIssueFieldIds(config);
+  const fields = issueFields(config, epicLinkFieldId, targetEndFieldId);
   const issues: JiraIssue[] = [];
   let nextPageToken: string | undefined;
 
@@ -129,9 +177,9 @@ export async function fetchJiraIssue(
   config: JiraConnectionConfig,
   issueKey: string,
 ): Promise<JiraIssue> {
-  const epicLinkFieldId = await resolveEpicLinkFieldId(config);
+  const { epicLinkFieldId, targetEndFieldId } = await resolveIssueFieldIds(config);
   const params = new URLSearchParams({
-    fields: issueFields(config, epicLinkFieldId).join(","),
+    fields: issueFields(config, epicLinkFieldId, targetEndFieldId).join(","),
   });
   return jiraRequest<JiraIssue>(
     config,

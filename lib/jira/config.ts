@@ -34,6 +34,7 @@ export function getJiraConnectionForSlug(slug: string): JiraConnectionConfig | n
   const jql = process.env[`${prefix}_JQL`];
   const webhookSecret = process.env[`${prefix}_WEBHOOK_SECRET`];
   const progressFieldId = process.env[`${prefix}_PROGRESS_FIELD_ID`];
+  const targetDateFieldId = process.env[`${prefix}_TARGET_DATE_FIELD_ID`];
 
   if (!baseUrl || !email || !apiToken || !jql || !webhookSecret) {
     return null;
@@ -47,6 +48,7 @@ export function getJiraConnectionForSlug(slug: string): JiraConnectionConfig | n
     jql,
     webhookSecret,
     ...(progressFieldId ? { progressFieldId } : {}),
+    ...(targetDateFieldId ? { targetDateFieldId } : {}),
   };
 }
 

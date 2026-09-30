@@ -55,8 +55,28 @@ describe("mapJiraIssue", () => {
     expect(mapped.assignee).toBe("Alex Owner");
     expect(mapped.progress).toBe(50);
     expect(mapped.priority).toBe("high");
+    expect(mapped.endDate).toBe("2026-08-01");
     expect(mapped.parentJiraIssueId).toBeNull();
     expect(mapped.issueTypeName).toBe("Story");
+  });
+
+  it("prefers Target end custom field over Due Date for endDate", () => {
+    const issue: JiraIssue = {
+      id: "10011",
+      key: "SCRUM-11",
+      fields: {
+        summary: "Tools Upgrade",
+        status: { name: "Planning", statusCategory: { key: "new" } },
+        duedate: null,
+        created: "2026-08-06T10:00:00.000Z",
+        updated: "2026-08-06T12:00:00.000Z",
+        customfield_10050: "2026-09-15",
+      },
+    };
+
+    const mapped = mapJiraIssue(issue, config, { targetEndFieldId: "customfield_10050" });
+    expect(mapped.endDate).toBe("2026-09-15");
+    expect(mapped.startDate).toBe("2026-08-06");
   });
 
   it("resolves Epic Link custom field when parent is absent", () => {

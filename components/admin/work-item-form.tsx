@@ -2,7 +2,11 @@
 
 import { useRef, useState, type FormEvent } from "react";
 import type { ProjectPriority } from "@/data/workspaces";
-import type { DashboardStatus, DashboardWorkItem } from "@/lib/data/dashboard";
+import type {
+  DashboardStatus,
+  DashboardWorkItem,
+  OpsHealthStatus,
+} from "@/lib/data/dashboard";
 
 export interface WorkItemDraftFields {
   title: string;
@@ -12,6 +16,8 @@ export interface WorkItemDraftFields {
   progress: string;
   startDate: string;
   endDate: string;
+  lastWeekStatus: string;
+  currentStatus: string;
   assignee: string;
 }
 
@@ -23,12 +29,23 @@ export interface WorkItemFormValue {
   progress: number;
   startDate: string | null;
   endDate: string | null;
+  lastWeekStatus: OpsHealthStatus | null;
+  currentStatus: OpsHealthStatus | null;
   assignee: string | null;
 }
 
 export type WorkItemFormErrors = Partial<Record<keyof WorkItemDraftFields, string>>;
 
-export function validateWorkItemDraft(fields: WorkItemDraftFields): WorkItemFormErrors {
+const OPS_HEALTH_OPTIONS: OpsHealthStatus[] = ["Active", "Impacted"];
+
+function asOpsHealthStatus(value: string): OpsHealthStatus | null {
+  return value === "Active" || value === "Impacted" ? value : null;
+}
+
+export function validateWorkItemDraft(
+  fields: WorkItemDraftFields,
+  scheduleMode: "dates" | "ops-health" = "dates",
+): WorkItemFormErrors {
   const errors: WorkItemFormErrors = {};
   if (!fields.title.trim()) errors.title = "Title is required.";
   else if (fields.title.trim().length > 200) errors.title = "Title must be 200 characters or fewer.";
@@ -47,8 +64,17 @@ export function validateWorkItemDraft(fields: WorkItemDraftFields): WorkItemForm
   } else if (!Number.isInteger(progress) || progress < 0 || progress > 100) {
     errors.progress = "Progress must be a whole number from 0 to 100.";
   }
-  if (fields.startDate && fields.endDate && fields.endDate < fields.startDate) {
-    errors.endDate = "End date must be on or after the start date.";
+  if (scheduleMode === "dates") {
+    if (fields.startDate && fields.endDate && fields.endDate < fields.startDate) {
+      errors.endDate = "End date must be on or after the start date.";
+    }
+  } else {
+    if (fields.lastWeekStatus && !asOpsHealthStatus(fields.lastWeekStatus)) {
+      errors.lastWeekStatus = "Choose Active or Impacted.";
+    }
+    if (fields.currentStatus && !asOpsHealthStatus(fields.currentStatus)) {
+      errors.currentStatus = "Choose Active or Impacted.";
+    }
   }
   return errors;
 }
@@ -65,6 +91,8 @@ function initialFields(
     progress: String(value?.progress ?? 0),
     startDate: value?.startDate ?? "",
     endDate: value?.endDate ?? "",
+    lastWeekStatus: value?.lastWeekStatus ?? "",
+    currentStatus: value?.currentStatus ?? "",
     assignee: value?.owner === "Unassigned" ? "" : value?.owner ?? "",
   };
 }
@@ -73,6 +101,7 @@ interface WorkItemFormProps {
   kind: "project" | "subtask";
   statuses: DashboardStatus[];
   initialValue?: DashboardWorkItem;
+  scheduleMode?: "dates" | "ops-health";
   onSubmit: (value: WorkItemFormValue) => Promise<void>;
   onCancel: () => void;
 }
@@ -81,6 +110,7 @@ export function WorkItemForm({
   kind,
   statuses,
   initialValue,
+  scheduleMode = "dates",
   onSubmit,
   onCancel,
 }: WorkItemFormProps) {
@@ -105,7 +135,7 @@ export function WorkItemForm({
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (submittingRef.current) return;
-    const nextErrors = validateWorkItemDraft(fields);
+    const nextErrors = validateWorkItemDraft(fields, scheduleMode);
     setErrors(nextErrors);
     setSubmitError(null);
     if (Object.keys(nextErrors).length) return;
@@ -119,8 +149,14 @@ export function WorkItemForm({
         statusId: fields.statusId,
         priority: fields.priority,
         progress: Number(fields.progress),
-        startDate: fields.startDate || null,
-        endDate: fields.endDate || null,
+        startDate: scheduleMode === "dates" ? fields.startDate || null : null,
+        endDate: scheduleMode === "dates" ? fields.endDate || null : null,
+        lastWeekStatus: scheduleMode === "ops-health"
+          ? asOpsHealthStatus(fields.lastWeekStatus)
+          : null,
+        currentStatus: scheduleMode === "ops-health"
+          ? asOpsHealthStatus(fields.currentStatus)
+          : null,
         assignee: fields.assignee.trim() || null,
       });
     } catch (error) {
@@ -210,29 +246,74 @@ export function WorkItemForm({
         {errors.progress ? <p className="form-error" id="work-item-progress-error">{errors.progress}</p> : null}
       </div>
 
-      <div className="form-row">
-        <div className="form-field">
-          <label htmlFor="work-item-start">Start date</label>
-          <input
-            id="work-item-start"
-            type="date"
-            value={fields.startDate}
-            onChange={(event) => setField("startDate", event.target.value)}
-          />
+      {scheduleMode === "ops-health" ? (
+        <div className="form-row">
+          <div className="form-field">
+            <label htmlFor="work-item-last-week-status">Last Week Status</label>
+            <select
+              id="work-item-last-week-status"
+              value={fields.lastWeekStatus}
+              onChange={(event) => setField("lastWeekStatus", event.target.value)}
+              aria-invalid={Boolean(errors.lastWeekStatus)}
+              aria-describedby={errors.lastWeekStatus ? "work-item-last-week-status-error" : undefined}
+            >
+              <option value="">Not set</option>
+              {OPS_HEALTH_OPTIONS.map((option) => (
+                <option key={option} value={option}>{option}</option>
+              ))}
+            </select>
+            {errors.lastWeekStatus ? (
+              <p className="form-error" id="work-item-last-week-status-error">
+                {errors.lastWeekStatus}
+              </p>
+            ) : null}
+          </div>
+          <div className="form-field">
+            <label htmlFor="work-item-current-status">Current Status</label>
+            <select
+              id="work-item-current-status"
+              value={fields.currentStatus}
+              onChange={(event) => setField("currentStatus", event.target.value)}
+              aria-invalid={Boolean(errors.currentStatus)}
+              aria-describedby={errors.currentStatus ? "work-item-current-status-error" : undefined}
+            >
+              <option value="">Not set</option>
+              {OPS_HEALTH_OPTIONS.map((option) => (
+                <option key={option} value={option}>{option}</option>
+              ))}
+            </select>
+            {errors.currentStatus ? (
+              <p className="form-error" id="work-item-current-status-error">
+                {errors.currentStatus}
+              </p>
+            ) : null}
+          </div>
         </div>
-        <div className="form-field">
-          <label htmlFor="work-item-end">End date</label>
-          <input
-            id="work-item-end"
-            type="date"
-            value={fields.endDate}
-            onChange={(event) => setField("endDate", event.target.value)}
-            aria-invalid={Boolean(errors.endDate)}
-            aria-describedby={errors.endDate ? "work-item-end-error" : undefined}
-          />
-          {errors.endDate ? <p className="form-error" id="work-item-end-error">{errors.endDate}</p> : null}
+      ) : (
+        <div className="form-row">
+          <div className="form-field">
+            <label htmlFor="work-item-start">Start date</label>
+            <input
+              id="work-item-start"
+              type="date"
+              value={fields.startDate}
+              onChange={(event) => setField("startDate", event.target.value)}
+            />
+          </div>
+          <div className="form-field">
+            <label htmlFor="work-item-end">End date</label>
+            <input
+              id="work-item-end"
+              type="date"
+              value={fields.endDate}
+              onChange={(event) => setField("endDate", event.target.value)}
+              aria-invalid={Boolean(errors.endDate)}
+              aria-describedby={errors.endDate ? "work-item-end-error" : undefined}
+            />
+            {errors.endDate ? <p className="form-error" id="work-item-end-error">{errors.endDate}</p> : null}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="form-field">
         <label htmlFor="work-item-assignee">Assignee</label>

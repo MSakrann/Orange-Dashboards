@@ -1,5 +1,9 @@
 import type { KeyboardEvent, MouseEvent } from "react";
-import type { DashboardProject, DashboardWorkItem } from "@/lib/data/dashboard";
+import type {
+  DashboardProject,
+  DashboardWorkItem,
+  OpsHealthStatus,
+} from "@/lib/data/dashboard";
 import { ProgressBar } from "@/components/ui/progress-bar";
 
 interface ProjectCardProps {
@@ -8,9 +12,11 @@ interface ProjectCardProps {
   showOwner?: boolean;
   showProgress?: boolean;
   showDetailsButton?: boolean;
+  showDescription?: boolean;
   openOnCardClick?: boolean;
   showOverdueTag?: boolean;
   showChildHierarchy?: boolean;
+  scheduleMode?: "dates" | "ops-health";
   adminControls?: {
     onEdit: () => void;
     onDelete: () => void;
@@ -53,6 +59,10 @@ function initials(name: string) {
     .slice(0, 2);
 }
 
+function formatOpsHealthStatus(value?: OpsHealthStatus) {
+  return value ?? "Not set";
+}
+
 function stopCardActivation(event: MouseEvent | KeyboardEvent) {
   event.stopPropagation();
 }
@@ -78,9 +88,11 @@ export function ProjectCard({
   showOwner = true,
   showProgress = true,
   showDetailsButton = true,
+  showDescription = false,
   openOnCardClick = false,
   showOverdueTag = false,
   showChildHierarchy = false,
+  scheduleMode = "dates",
   adminControls,
 }: ProjectCardProps) {
   const childCount = project.subtasks.length;
@@ -144,19 +156,49 @@ export function ProjectCard({
         </div>
       ) : null}
 
+      {showDescription && project.description.trim() ? (
+        <section className="project-card-description" aria-label={`${project.title} description`}>
+          <h3>Description</h3>
+          <div className="project-card-description-body">
+            <p>{project.description}</p>
+          </div>
+        </section>
+      ) : null}
+
       {showProgress ? (
         <ProgressBar label={`${project.title} progress`} value={project.progress} />
       ) : null}
 
       <dl className="project-dates">
-        <div>
-          <dt>Start</dt>
-          <dd>{formatDate(project.startDate)}</dd>
-        </div>
-        <div>
-          <dt>Target</dt>
-          <dd className={overdue ? "project-date-overdue" : undefined}>{formatDate(project.endDate)}</dd>
-        </div>
+        {scheduleMode === "ops-health" ? (
+          <>
+            <div>
+              <dt>Last Week Status</dt>
+              <dd data-ops-health={project.lastWeekStatus ?? "unset"}>
+                {formatOpsHealthStatus(project.lastWeekStatus)}
+              </dd>
+            </div>
+            <div>
+              <dt>Current Status</dt>
+              <dd data-ops-health={project.currentStatus ?? "unset"}>
+                {formatOpsHealthStatus(project.currentStatus)}
+              </dd>
+            </div>
+          </>
+        ) : (
+          <>
+            <div>
+              <dt>Start</dt>
+              <dd>{formatDate(project.startDate)}</dd>
+            </div>
+            <div>
+              <dt>Target</dt>
+              <dd className={overdue ? "project-date-overdue" : undefined}>
+                {formatDate(project.endDate)}
+              </dd>
+            </div>
+          </>
+        )}
       </dl>
 
       {showChildHierarchy ? (

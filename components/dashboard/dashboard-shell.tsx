@@ -134,6 +134,8 @@ function optimisticItem(
     progress: value.progress,
     ...(value.startDate ? { startDate: value.startDate } : {}),
     ...(value.endDate ? { endDate: value.endDate } : {}),
+    ...(value.lastWeekStatus ? { lastWeekStatus: value.lastWeekStatus } : {}),
+    ...(value.currentStatus ? { currentStatus: value.currentStatus } : {}),
     sortOrder,
     updatedAt,
     syncSource: "local",
@@ -194,6 +196,7 @@ function EditorDialog({
         kind={editor.kind}
         statuses={dashboard.statuses}
         initialValue={editor.item}
+        scheduleMode={dashboard.slug === "pe-ops" ? "ops-health" : "dates"}
         onSubmit={onSubmit}
         onCancel={onClose}
       />
@@ -745,6 +748,7 @@ export function DashboardShell({
                         && workspace.slug !== "pe-ops"
                         && workspace.slug !== "datalake-ops"
                       }
+                      showDescription={workspace.slug === "pe-ops"}
                       showDetailsButton={
                         (
                           workspace.slug === "development-operations"
@@ -763,6 +767,7 @@ export function DashboardShell({
                         || workspace.slug === "pe-ops"
                         || workspace.slug === "datalake-ops"
                       }
+                      scheduleMode={workspace.slug === "pe-ops" ? "ops-health" : "dates"}
                       showOverdueTag={workspace.slug === "development-operations"}
                       showChildHierarchy={workspace.jiraLinked}
                       onOpen={(selected) => setSelectedProjectId(selected.id)}

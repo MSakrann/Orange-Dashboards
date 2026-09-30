@@ -79,10 +79,17 @@ const manualDeliveryFixtureStatuses: FixtureStatusDefinition[] = [
   { legacyStatus: "delayed", name: "Delayed", category: "delayed", color: "#b63027" },
 ];
 
+const peOpsFixtureStatuses: FixtureStatusDefinition[] = [
+  { legacyStatus: "in-progress", name: "Promos", category: "active", color: "#e56f18" },
+  { legacyStatus: "at-risk", name: "PE Platform", category: "active", color: "#246a91" },
+  { legacyStatus: "completed", name: "Plot", category: "active", color: "#237b4b" },
+  { legacyStatus: "delayed", name: "Connect", category: "active", color: "#a94806" },
+];
+
 const fixtureStatusesBySlug: Record<string, FixtureStatusDefinition[]> = {
   "platforms-development": manualDeliveryFixtureStatuses,
   "pe-delivery": manualDeliveryFixtureStatuses,
-  "pe-ops": manualDeliveryFixtureStatuses,
+  "pe-ops": peOpsFixtureStatuses,
   "datalake-ops": manualDeliveryFixtureStatuses,
 };
 

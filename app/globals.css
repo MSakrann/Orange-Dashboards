@@ -737,6 +737,14 @@ h1 {
   font-weight: 650;
 }
 
+.project-dates dd[data-ops-health="Active"] {
+  color: var(--green);
+}
+
+.project-dates dd[data-ops-health="Impacted"] {
+  color: var(--red);
+}
+
 .project-card-description {
   margin: 0 0 16px;
   padding-top: 16px;

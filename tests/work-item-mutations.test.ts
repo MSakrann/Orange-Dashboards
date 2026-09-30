@@ -17,6 +17,8 @@ const draft = {
   progress: 45,
   startDate: "2026-07-01",
   endDate: "2026-07-31",
+  lastWeekStatus: null,
+  currentStatus: null,
   assignee: "Avery",
 };
 
@@ -33,6 +35,8 @@ describe("work item payloads", () => {
       progress: 45,
       start_date: "2026-07-01",
       end_date: "2026-07-31",
+      last_week_status: null,
+      current_status: null,
       assignee: "Avery",
       sort_order: 2,
     });

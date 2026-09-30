@@ -513,12 +513,14 @@ export type Database = {
         Row: {
           assignee: string | null;
           created_at: string;
+          current_status: string | null;
           description: string | null;
           end_date: string | null;
           id: string;
           jira_issue_id: string | null;
           jira_issue_key: string | null;
           jira_updated_at: string | null;
+          last_week_status: string | null;
           parent_id: string | null;
           priority: string;
           progress: number;
@@ -533,12 +535,14 @@ export type Database = {
         Insert: {
           assignee?: string | null;
           created_at?: string;
+          current_status?: string | null;
           description?: string | null;
           end_date?: string | null;
           id?: string;
           jira_issue_id?: string | null;
           jira_issue_key?: string | null;
           jira_updated_at?: string | null;
+          last_week_status?: string | null;
           parent_id?: string | null;
           priority?: string;
           progress?: number;
@@ -553,12 +557,14 @@ export type Database = {
         Update: {
           assignee?: string | null;
           created_at?: string;
+          current_status?: string | null;
           description?: string | null;
           end_date?: string | null;
           id?: string;
           jira_issue_id?: string | null;
           jira_issue_key?: string | null;
           jira_updated_at?: string | null;
+          last_week_status?: string | null;
           parent_id?: string | null;
           priority?: string;
           progress?: number;

@@ -32,6 +32,8 @@ export interface DashboardComment {
   updatedAt: string;
 }
 
+export type OpsHealthStatus = "Active" | "Impacted";
+
 export interface DashboardWorkItem {
   id: string;
   title: string;
@@ -47,6 +49,8 @@ export interface DashboardWorkItem {
   progress: number;
   startDate?: string;
   endDate?: string;
+  lastWeekStatus?: OpsHealthStatus;
+  currentStatus?: OpsHealthStatus;
   sortOrder: number;
   updatedAt: string;
   syncSource: "local" | "jira";
@@ -99,6 +103,11 @@ function asReportingCategory(value: string): ReportingCategory {
 function asPriority(value: string): ProjectPriority {
   if (value === "low" || value === "medium" || value === "high") return value;
   throw new Error(`Unsupported project priority: ${value}`);
+}
+
+function asOpsHealthStatus(value: string | null | undefined): OpsHealthStatus | undefined {
+  if (value === "Active" || value === "Impacted") return value;
+  return undefined;
 }
 
 function projectStatus(category: ReportingCategory): ProjectStatus {
@@ -208,6 +217,12 @@ export function mapDashboardRows(
       progress: item.progress,
       ...(item.start_date ? { startDate: item.start_date } : {}),
       ...(item.end_date ? { endDate: item.end_date } : {}),
+      ...(asOpsHealthStatus(item.last_week_status)
+        ? { lastWeekStatus: asOpsHealthStatus(item.last_week_status) }
+        : {}),
+      ...(asOpsHealthStatus(item.current_status)
+        ? { currentStatus: asOpsHealthStatus(item.current_status) }
+        : {}),
       sortOrder: item.sort_order,
       updatedAt: item.updated_at,
       syncSource: item.sync_source === "jira" ? "jira" : "local",

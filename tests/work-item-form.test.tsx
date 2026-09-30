@@ -13,17 +13,26 @@ const statuses = [
   },
 ];
 
+const emptyDraft = {
+  title: "Project",
+  description: "",
+  statusId: "status-a",
+  priority: "medium" as const,
+  progress: "10",
+  startDate: "",
+  endDate: "",
+  lastWeekStatus: "",
+  currentStatus: "",
+  assignee: "",
+};
+
 describe("validateWorkItemDraft", () => {
   it("requires a title and status", () => {
     expect(validateWorkItemDraft({
+      ...emptyDraft,
       title: " ",
-      description: "",
       statusId: "",
-      priority: "medium",
       progress: "0",
-      startDate: "",
-      endDate: "",
-      assignee: "",
     })).toEqual({
       title: "Title is required.",
       statusId: "Status is required.",
@@ -32,54 +41,28 @@ describe("validateWorkItemDraft", () => {
 
   it.each(["-1", "101", "not-a-number"])("rejects invalid progress %s", (progress) => {
     expect(validateWorkItemDraft({
-      title: "Project",
-      description: "",
-      statusId: "status-a",
-      priority: "medium",
+      ...emptyDraft,
       progress,
-      startDate: "",
-      endDate: "",
-      assignee: "",
     }).progress).toBe("Progress must be a whole number from 0 to 100.");
   });
 
   it("treats blank progress as required instead of coercing it to zero", () => {
     expect(validateWorkItemDraft({
-      title: "Project",
-      description: "",
-      statusId: "status-a",
-      priority: "medium",
+      ...emptyDraft,
       progress: "   ",
-      startDate: "",
-      endDate: "",
-      assignee: "",
     }).progress).toBe("Progress is required.");
   });
 
   it("rejects an end date before the start date", () => {
     expect(validateWorkItemDraft({
-      title: "Project",
-      description: "",
-      statusId: "status-a",
-      priority: "medium",
-      progress: "10",
+      ...emptyDraft,
       startDate: "2026-07-20",
       endDate: "2026-07-19",
-      assignee: "",
     }).endDate).toBe("End date must be on or after the start date.");
   });
 
   it("enforces work-item text bounds", () => {
-    const base = {
-      title: "Project",
-      description: "",
-      statusId: "status-a",
-      priority: "medium" as const,
-      progress: "10",
-      startDate: "",
-      endDate: "",
-      assignee: "",
-    };
+    const base = emptyDraft;
     expect(validateWorkItemDraft({ ...base, title: "x".repeat(201) }).title)
       .toMatch(/200 characters/i);
     expect(validateWorkItemDraft({ ...base, assignee: "x".repeat(201) }).assignee)
@@ -122,6 +105,8 @@ describe("WorkItemForm", () => {
       progress: 35,
       startDate: null,
       endDate: null,
+      lastWeekStatus: null,
+      currentStatus: null,
       assignee: "Avery",
     });
     resolveSubmit();

@@ -64,4 +64,31 @@ describe("ProjectCard Dev Ops options", () => {
     );
     expect(screen.queryByLabelText("Target date passed")).not.toBeInTheDocument();
   });
+
+  it("shows PE Ops week statuses and description", () => {
+    render(
+      <ProjectCard
+        project={makeProject({
+          description: "Ops notes for this week",
+          lastWeekStatus: "Active",
+          currentStatus: "Impacted",
+        })}
+        onOpen={() => undefined}
+        showOwner={false}
+        showProgress={false}
+        showDetailsButton={false}
+        showDescription
+        scheduleMode="ops-health"
+        openOnCardClick
+      />,
+    );
+
+    expect(screen.getByText("Last Week Status")).toBeInTheDocument();
+    expect(screen.getByText("Current Status")).toBeInTheDocument();
+    expect(screen.getByText("Active")).toBeInTheDocument();
+    expect(screen.getByText("Impacted")).toBeInTheDocument();
+    expect(screen.getByText("Ops notes for this week")).toBeInTheDocument();
+    expect(screen.queryByText("Start")).not.toBeInTheDocument();
+    expect(screen.queryByText("Target")).not.toBeInTheDocument();
+  });
 });

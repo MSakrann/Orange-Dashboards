@@ -41,6 +41,8 @@ export function buildWorkItemPayload(
     progress: value.progress,
     start_date: value.startDate,
     end_date: value.endDate,
+    last_week_status: value.lastWeekStatus,
+    current_status: value.currentStatus,
     assignee: value.assignee,
     sort_order: sortOrder,
   };
@@ -55,6 +57,8 @@ function updatePayload(value: WorkItemFormValue): TablesUpdate<"work_items"> {
     progress: value.progress,
     start_date: value.startDate,
     end_date: value.endDate,
+    last_week_status: value.lastWeekStatus,
+    current_status: value.currentStatus,
     assignee: value.assignee,
   };
 }

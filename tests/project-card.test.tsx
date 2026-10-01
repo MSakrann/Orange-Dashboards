@@ -91,4 +91,20 @@ describe("ProjectCard Dev Ops options", () => {
     expect(screen.queryByText("Start")).not.toBeInTheDocument();
     expect(screen.queryByText("Target")).not.toBeInTheDocument();
   });
+
+  it("labels the description block as Comments for Data Lake Ops", () => {
+    render(
+      <ProjectCard
+        project={makeProject({ description: "Feed delay notes" })}
+        onOpen={() => undefined}
+        showDescription
+        descriptionLabel="Comments"
+        scheduleMode="ops-health"
+      />,
+    );
+
+    expect(screen.getByText("Comments")).toBeInTheDocument();
+    expect(screen.getByText("Feed delay notes")).toBeInTheDocument();
+    expect(screen.queryByText("Description")).not.toBeInTheDocument();
+  });
 });

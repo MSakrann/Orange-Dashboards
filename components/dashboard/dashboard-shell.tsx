@@ -196,7 +196,12 @@ function EditorDialog({
         kind={editor.kind}
         statuses={dashboard.statuses}
         initialValue={editor.item}
-        scheduleMode={dashboard.slug === "pe-ops" ? "ops-health" : "dates"}
+        scheduleMode={
+          dashboard.slug === "pe-ops" || dashboard.slug === "datalake-ops"
+            ? "ops-health"
+            : "dates"
+        }
+        descriptionLabel={dashboard.slug === "datalake-ops" ? "Comments" : "Description"}
         onSubmit={onSubmit}
         onCancel={onClose}
       />
@@ -748,7 +753,13 @@ export function DashboardShell({
                         && workspace.slug !== "pe-ops"
                         && workspace.slug !== "datalake-ops"
                       }
-                      showDescription={workspace.slug === "pe-ops"}
+                      showDescription={
+                        workspace.slug === "pe-ops"
+                        || workspace.slug === "datalake-ops"
+                      }
+                      descriptionLabel={
+                        workspace.slug === "datalake-ops" ? "Comments" : "Description"
+                      }
                       showDetailsButton={
                         (
                           workspace.slug === "development-operations"
@@ -767,7 +778,11 @@ export function DashboardShell({
                         || workspace.slug === "pe-ops"
                         || workspace.slug === "datalake-ops"
                       }
-                      scheduleMode={workspace.slug === "pe-ops" ? "ops-health" : "dates"}
+                      scheduleMode={
+                        workspace.slug === "pe-ops" || workspace.slug === "datalake-ops"
+                          ? "ops-health"
+                          : "dates"
+                      }
                       showOverdueTag={workspace.slug === "development-operations"}
                       showChildHierarchy={workspace.jiraLinked}
                       onOpen={(selected) => setSelectedProjectId(selected.id)}

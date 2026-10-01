@@ -102,6 +102,7 @@ interface WorkItemFormProps {
   statuses: DashboardStatus[];
   initialValue?: DashboardWorkItem;
   scheduleMode?: "dates" | "ops-health";
+  descriptionLabel?: string;
   onSubmit: (value: WorkItemFormValue) => Promise<void>;
   onCancel: () => void;
 }
@@ -111,6 +112,7 @@ export function WorkItemForm({
   statuses,
   initialValue,
   scheduleMode = "dates",
+  descriptionLabel = "Description",
   onSubmit,
   onCancel,
 }: WorkItemFormProps) {
@@ -184,7 +186,7 @@ export function WorkItemForm({
       </div>
 
       <div className="form-field">
-        <label htmlFor="work-item-description">Description</label>
+        <label htmlFor="work-item-description">{descriptionLabel}</label>
         <textarea
           id="work-item-description"
           value={fields.description}

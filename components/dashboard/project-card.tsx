@@ -13,6 +13,7 @@ interface ProjectCardProps {
   showProgress?: boolean;
   showDetailsButton?: boolean;
   showDescription?: boolean;
+  descriptionLabel?: string;
   openOnCardClick?: boolean;
   showOverdueTag?: boolean;
   showChildHierarchy?: boolean;
@@ -89,6 +90,7 @@ export function ProjectCard({
   showProgress = true,
   showDetailsButton = true,
   showDescription = false,
+  descriptionLabel = "Description",
   openOnCardClick = false,
   showOverdueTag = false,
   showChildHierarchy = false,
@@ -157,8 +159,11 @@ export function ProjectCard({
       ) : null}
 
       {showDescription && project.description.trim() ? (
-        <section className="project-card-description" aria-label={`${project.title} description`}>
-          <h3>Description</h3>
+        <section
+          className="project-card-description"
+          aria-label={`${project.title} ${descriptionLabel.toLowerCase()}`}
+        >
+          <h3>{descriptionLabel}</h3>
           <div className="project-card-description-body">
             <p>{project.description}</p>
           </div>

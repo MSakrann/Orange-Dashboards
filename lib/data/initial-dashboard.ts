@@ -96,11 +96,19 @@ const peOpsFixtureStatuses: FixtureStatusDefinition[] = [
   { legacyStatus: "delayed", name: "Connect", category: "active", color: "#a94806" },
 ];
 
+const datalakeOpsFixtureStatuses: FixtureStatusDefinition[] = [
+  { legacyStatus: "in-progress", name: "Data Ingestion", category: "active", color: "#e56f18", key: "data-ingestion" },
+  { legacyStatus: "at-risk", name: "DAG Monitoring", category: "active", color: "#246a91", key: "dag-monitoring" },
+  { legacyStatus: "completed", name: "Segmentation Files", category: "active", color: "#237b4b", key: "segmentation-files" },
+  { legacyStatus: "delayed", name: "Reporting Delivery", category: "active", color: "#a94806", key: "reporting-delivery" },
+  { legacyStatus: "in-progress", name: "Feeds", category: "active", color: "#0e7490", key: "feeds" },
+];
+
 const fixtureStatusesBySlug: Record<string, FixtureStatusDefinition[]> = {
   "platforms-development": manualDeliveryFixtureStatuses,
   "pe-delivery": peDeliveryFixtureStatuses,
   "pe-ops": peOpsFixtureStatuses,
-  "datalake-ops": manualDeliveryFixtureStatuses,
+  "datalake-ops": datalakeOpsFixtureStatuses,
 };
 
 export function mapFixtureWorkspace(workspace: Workspace): DashboardViewModel {

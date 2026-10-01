@@ -116,10 +116,11 @@ describe("Supabase core database behavior", () => {
        order by w.slug, s.sort_order
     `);
     expect(manualStatuses.rows).toEqual([
-      { slug: "datalake-ops", name: "Planning" },
-      { slug: "datalake-ops", name: "In Progress" },
-      { slug: "datalake-ops", name: "Done" },
-      { slug: "datalake-ops", name: "Delayed" },
+      { slug: "datalake-ops", name: "Data Ingestion" },
+      { slug: "datalake-ops", name: "DAG Monitoring" },
+      { slug: "datalake-ops", name: "Segmentation Files" },
+      { slug: "datalake-ops", name: "Reporting Delivery" },
+      { slug: "datalake-ops", name: "Feeds" },
       { slug: "pe-delivery", name: "Planning" },
       { slug: "pe-delivery", name: "In Progress" },
       { slug: "pe-delivery", name: "On Hold" },

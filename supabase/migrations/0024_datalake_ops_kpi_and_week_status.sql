@@ -65,14 +65,6 @@ on conflict (id) do update set
 -- Preferred order
 with ws as (
   select id from public.workspaces where slug = 'datalake-ops'
-)
-update public.statuses s
-   set sort_order = s.sort_order + 1000
-  from ws
- where s.workspace_id = ws.id;
-
-with ws as (
-  select id from public.workspaces where slug = 'datalake-ops'
 ),
 ordered as (
   select

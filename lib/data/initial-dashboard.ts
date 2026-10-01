@@ -102,6 +102,7 @@ const datalakeOpsFixtureStatuses: FixtureStatusDefinition[] = [
   { legacyStatus: "completed", name: "Segmentation Files", category: "active", color: "#237b4b", key: "segmentation-files" },
   { legacyStatus: "delayed", name: "Reporting Delivery", category: "active", color: "#a94806", key: "reporting-delivery" },
   { legacyStatus: "in-progress", name: "Feeds", category: "active", color: "#0e7490", key: "feeds" },
+  { legacyStatus: "in-progress", name: "Deployments", category: "active", color: "#475569", key: "deployments" },
 ];
 
 const fixtureStatusesBySlug: Record<string, FixtureStatusDefinition[]> = {

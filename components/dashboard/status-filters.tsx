@@ -6,11 +6,17 @@ interface StatusFiltersProps {
   activeFilter: StatusFilter;
   statuses: DashboardStatus[];
   onChange: (filter: StatusFilter) => void;
+  allLabel?: string;
 }
 
-export function StatusFilters({ activeFilter, statuses, onChange }: StatusFiltersProps) {
+export function StatusFilters({
+  activeFilter,
+  statuses,
+  onChange,
+  allLabel = "All Projects",
+}: StatusFiltersProps) {
   const filters: Array<{ value: StatusFilter; label: string }> = [
-    { value: "all", label: "All Projects" },
+    { value: "all", label: allLabel },
     ...statuses.map((status) => ({ value: status.id, label: status.name })),
   ];
   return (

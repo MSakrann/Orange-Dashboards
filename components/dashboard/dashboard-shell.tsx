@@ -676,6 +676,7 @@ export function DashboardShell({
           projects={workspace.projects}
           activeFilter={effectiveFilter}
           onSelect={setActiveFilter}
+          allLabel={workspace.slug === "datalake-ops" ? "All Tasks" : "All Projects"}
         />
 
         {isPeLiveFilter ? (
@@ -727,6 +728,7 @@ export function DashboardShell({
                 activeFilter={effectiveFilter}
                 statuses={workspace.statuses}
                 onChange={setActiveFilter}
+                allLabel={workspace.slug === "datalake-ops" ? "All Tasks" : "All Projects"}
               />
               {visibleProjects.length ? (
                 <div className="projects-grid">

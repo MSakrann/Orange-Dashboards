@@ -121,6 +121,7 @@ describe("Supabase core database behavior", () => {
       { slug: "datalake-ops", name: "Segmentation Files" },
       { slug: "datalake-ops", name: "Reporting Delivery" },
       { slug: "datalake-ops", name: "Feeds" },
+      { slug: "datalake-ops", name: "Deployments" },
       { slug: "pe-delivery", name: "Planning" },
       { slug: "pe-delivery", name: "In Progress" },
       { slug: "pe-delivery", name: "On Hold" },

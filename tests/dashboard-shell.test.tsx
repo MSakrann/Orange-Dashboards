@@ -267,6 +267,25 @@ describe("DashboardShell", () => {
     expect(dot).toHaveStyle({ backgroundColor: dashboard.projects[0].statusColor });
     expect(dot).toHaveAttribute("aria-hidden", "true");
   });
+
+  it("labels the all filter as All Tasks and shows Deployments for Data Lake Ops", () => {
+    const datalakeDashboard = mapFixtureWorkspace({
+      slug: "datalake-ops",
+      name: "Data Lake Operations",
+      description: "Data lake operations priorities tracked manually by the team.",
+      projects: [],
+    });
+    render(<DashboardShell initialDashboard={datalakeDashboard} source="fixture" />);
+
+    const overview = screen.getByRole("region", { name: "Workspace status overview" });
+    expect(within(overview).getByRole("button", { name: /All Tasks/i })).toBeInTheDocument();
+    expect(within(overview).queryByRole("button", { name: /All Projects/i })).not.toBeInTheDocument();
+    expect(within(overview).getByRole("button", { name: /Deployments/i })).toBeInTheDocument();
+
+    const filters = screen.getByLabelText("Filter projects by status");
+    expect(within(filters).getByRole("button", { name: "All Tasks" })).toBeInTheDocument();
+    expect(within(filters).getByRole("button", { name: "Deployments" })).toBeInTheDocument();
+  });
 });
 
 describe("view states", () => {

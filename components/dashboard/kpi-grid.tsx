@@ -6,6 +6,7 @@ interface KpiGridProps {
   projects: DashboardProject[];
   activeFilter: StatusFilter;
   onSelect: (filter: StatusFilter) => void;
+  allLabel?: string;
 }
 
 export function KpiGrid({
@@ -13,13 +14,14 @@ export function KpiGrid({
   projects,
   activeFilter,
   onSelect,
+  allLabel = "All Projects",
 }: KpiGridProps) {
   // Derived from live workspace.statuses / projects so admin add/rename/reorder
   // and realtime updates show up in the KPI cards automatically.
   const metrics = [
     {
       value: "all" as StatusFilter,
-      label: "All Projects",
+      label: allLabel,
       count: projects.length,
       color: "var(--orange)",
       meta: "Across this workspace",

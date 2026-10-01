@@ -36,10 +36,10 @@ export interface WorkItemFormValue {
 
 export type WorkItemFormErrors = Partial<Record<keyof WorkItemDraftFields, string>>;
 
-const OPS_HEALTH_OPTIONS: OpsHealthStatus[] = ["Active", "Impacted"];
+const OPS_HEALTH_OPTIONS: OpsHealthStatus[] = ["Clear", "Delayed"];
 
 function asOpsHealthStatus(value: string): OpsHealthStatus | null {
-  return value === "Active" || value === "Impacted" ? value : null;
+  return value === "Clear" || value === "Delayed" ? value : null;
 }
 
 export function validateWorkItemDraft(
@@ -70,10 +70,10 @@ export function validateWorkItemDraft(
     }
   } else {
     if (fields.lastWeekStatus && !asOpsHealthStatus(fields.lastWeekStatus)) {
-      errors.lastWeekStatus = "Choose Active or Impacted.";
+      errors.lastWeekStatus = "Choose Clear or Delayed.";
     }
     if (fields.currentStatus && !asOpsHealthStatus(fields.currentStatus)) {
-      errors.currentStatus = "Choose Active or Impacted.";
+      errors.currentStatus = "Choose Clear or Delayed.";
     }
   }
   return errors;

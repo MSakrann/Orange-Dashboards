@@ -32,7 +32,7 @@ export interface DashboardComment {
   updatedAt: string;
 }
 
-export type OpsHealthStatus = "Active" | "Impacted";
+export type OpsHealthStatus = "Clear" | "Delayed";
 
 export interface DashboardWorkItem {
   id: string;
@@ -106,7 +106,7 @@ function asPriority(value: string): ProjectPriority {
 }
 
 function asOpsHealthStatus(value: string | null | undefined): OpsHealthStatus | undefined {
-  if (value === "Active" || value === "Impacted") return value;
+  if (value === "Clear" || value === "Delayed") return value;
   return undefined;
 }
 

@@ -737,11 +737,11 @@ h1 {
   font-weight: 650;
 }
 
-.project-dates dd[data-ops-health="Active"] {
+.project-dates dd[data-ops-health="Clear"] {
   color: var(--green);
 }
 
-.project-dates dd[data-ops-health="Impacted"] {
+.project-dates dd[data-ops-health="Delayed"] {
   color: var(--red);
 }
 

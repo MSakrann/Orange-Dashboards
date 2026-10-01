@@ -70,8 +70,8 @@ describe("ProjectCard Dev Ops options", () => {
       <ProjectCard
         project={makeProject({
           description: "Ops notes for this week",
-          lastWeekStatus: "Active",
-          currentStatus: "Impacted",
+          lastWeekStatus: "Clear",
+          currentStatus: "Delayed",
         })}
         onOpen={() => undefined}
         showOwner={false}
@@ -85,8 +85,8 @@ describe("ProjectCard Dev Ops options", () => {
 
     expect(screen.getByText("Last Week Status")).toBeInTheDocument();
     expect(screen.getByText("Current Status")).toBeInTheDocument();
-    expect(screen.getByText("Active")).toBeInTheDocument();
-    expect(screen.getByText("Impacted")).toBeInTheDocument();
+    expect(screen.getByText("Clear")).toBeInTheDocument();
+    expect(screen.getAllByText("Delayed").length).toBeGreaterThan(0);
     expect(screen.getByText("Ops notes for this week")).toBeInTheDocument();
     expect(screen.queryByText("Start")).not.toBeInTheDocument();
     expect(screen.queryByText("Target")).not.toBeInTheDocument();

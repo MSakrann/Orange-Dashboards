@@ -286,6 +286,49 @@ describe("DashboardShell", () => {
     expect(within(filters).getByRole("button", { name: "All Tasks" })).toBeInTheDocument();
     expect(within(filters).getByRole("button", { name: "Deployments" })).toBeInTheDocument();
   });
+
+  it("shows Digital KPI statuses and Action Owner card layout", () => {
+    const digitalDashboard = {
+      ...mapFixtureWorkspace({
+        slug: "digital",
+        name: "Digital",
+        description: "Digital delivery priorities tracked manually by the team.",
+        projects: [],
+      }),
+      projects: [
+        {
+          ...dashboard.projects[0],
+          statusId: "fixture-in-progress",
+          statusName: "In Progress",
+          statusColor: "#237b4b",
+          owner: "Sam Digital",
+          releaseTag: "R12",
+          startDate: "2026-03-01",
+          endDate: "2026-04-15",
+          subtasks: [],
+        },
+      ],
+    };
+    // Align status ids with fixture naming from mapFixtureWorkspace.
+    digitalDashboard.statuses = digitalDashboard.statuses.map((status) => status);
+    digitalDashboard.projects[0].statusId = digitalDashboard.statuses[0].id;
+    digitalDashboard.projects[0].statusName = digitalDashboard.statuses[0].name;
+
+    render(<DashboardShell initialDashboard={digitalDashboard} source="fixture" />);
+
+    const overview = screen.getByRole("region", { name: "Workspace status overview" });
+    expect(within(overview).getByRole("button", { name: /In Progress/i })).toBeInTheDocument();
+    expect(within(overview).getByRole("button", { name: /Pending/i })).toBeInTheDocument();
+    expect(within(overview).getByRole("button", { name: /Cancelled/i })).toBeInTheDocument();
+    expect(within(overview).getByRole("button", { name: /Live/i })).toBeInTheDocument();
+
+    expect(screen.getByText("Sam Digital")).toBeInTheDocument();
+    expect(screen.getByText("Action Owner")).toBeInTheDocument();
+    expect(screen.getByText("Start Date")).toBeInTheDocument();
+    expect(screen.getByText("RFT Date")).toBeInTheDocument();
+    expect(screen.getByLabelText("Release R12")).toHaveTextContent("R12");
+    expect(screen.queryByText("Last Week Status")).not.toBeInTheDocument();
+  });
 });
 
 describe("view states", () => {

@@ -44,6 +44,7 @@ export function buildWorkItemPayload(
     last_week_status: value.lastWeekStatus,
     current_status: value.currentStatus,
     assignee: value.assignee,
+    release_tag: value.releaseTag,
     sort_order: sortOrder,
   };
 }
@@ -60,6 +61,7 @@ function updatePayload(value: WorkItemFormValue): TablesUpdate<"work_items"> {
     last_week_status: value.lastWeekStatus,
     current_status: value.currentStatus,
     assignee: value.assignee,
+    release_tag: value.releaseTag,
   };
 }
 

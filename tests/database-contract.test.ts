@@ -41,6 +41,7 @@ describe("Supabase core database behavior", () => {
     db = new PGlite();
     await db.exec("create schema auth; create table auth.users (id uuid primary key);");
     await db.exec(migration);
+    await db.exec(read("supabase/migrations/0027_digital_dashboard.sql"));
     await db.exec(seed);
   });
 
@@ -69,6 +70,7 @@ describe("Supabase core database behavior", () => {
       "development-operations",
       "pe-ops",
       "datalake-ops",
+      "digital",
       "platform-development",
       "pe-development",
       "pe-operations",
@@ -87,7 +89,8 @@ describe("Supabase core database behavior", () => {
          'pe-ops',
          'pe-operations',
          'datalake-ops',
-         'datalake-operations'
+         'datalake-operations',
+         'digital'
        )
        order by slug
     `);
@@ -95,6 +98,7 @@ describe("Supabase core database behavior", () => {
       { slug: "datalake-operations", name: "Data Lake Operations Jira" },
       { slug: "datalake-ops", name: "Data Lake Operations" },
       { slug: "development-operations", name: "Dev Ops" },
+      { slug: "digital", name: "Digital" },
       { slug: "pe-delivery", name: "PE Development" },
       { slug: "pe-development", name: "PE Development Jira" },
       { slug: "pe-operations", name: "PE Operations Jira" },
@@ -111,7 +115,8 @@ describe("Supabase core database behavior", () => {
          'platforms-development',
          'pe-delivery',
          'pe-ops',
-         'datalake-ops'
+         'datalake-ops',
+         'digital'
        )
        order by w.slug, s.sort_order
     `);
@@ -122,6 +127,10 @@ describe("Supabase core database behavior", () => {
       { slug: "datalake-ops", name: "Reporting Delivery" },
       { slug: "datalake-ops", name: "Feeds" },
       { slug: "datalake-ops", name: "Deployments" },
+      { slug: "digital", name: "In Progress" },
+      { slug: "digital", name: "Pending" },
+      { slug: "digital", name: "Cancelled" },
+      { slug: "digital", name: "Live" },
       { slug: "pe-delivery", name: "Planning" },
       { slug: "pe-delivery", name: "In Progress" },
       { slug: "pe-delivery", name: "On Hold" },
@@ -137,6 +146,15 @@ describe("Supabase core database behavior", () => {
       { slug: "platforms-development", name: "Done" },
       { slug: "platforms-development", name: "Delayed" },
     ]);
+
+    const releaseColumn = await db.query<{ column_name: string }>(`
+      select column_name
+        from information_schema.columns
+       where table_schema = 'public'
+         and table_name = 'work_items'
+         and column_name = 'release_tag'
+    `);
+    expect(releaseColumn.rows).toEqual([{ column_name: "release_tag" }]);
   });
 
   it("applies the migration and seed with UUID keys, timestamps, foreign keys, and indexes", async () => {

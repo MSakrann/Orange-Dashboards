@@ -10,6 +10,7 @@ interface ProjectCardProps {
   project: DashboardProject;
   onOpen: (project: DashboardProject) => void;
   showOwner?: boolean;
+  ownerRoleLabel?: string;
   showProgress?: boolean;
   showDetailsButton?: boolean;
   showDescription?: boolean;
@@ -17,7 +18,10 @@ interface ProjectCardProps {
   openOnCardClick?: boolean;
   showOverdueTag?: boolean;
   showChildHierarchy?: boolean;
+  showReleaseTag?: boolean;
   scheduleMode?: "dates" | "ops-health";
+  startDateLabel?: string;
+  endDateLabel?: string;
   adminControls?: {
     onEdit: () => void;
     onDelete: () => void;
@@ -87,6 +91,7 @@ export function ProjectCard({
   project,
   onOpen,
   showOwner = true,
+  ownerRoleLabel = "Project owner",
   showProgress = true,
   showDetailsButton = true,
   showDescription = false,
@@ -94,12 +99,16 @@ export function ProjectCard({
   openOnCardClick = false,
   showOverdueTag = false,
   showChildHierarchy = false,
+  showReleaseTag = false,
   scheduleMode = "dates",
+  startDateLabel = "Start",
+  endDateLabel = "Target",
   adminControls,
 }: ProjectCardProps) {
   const childCount = project.subtasks.length;
   const overdue = showOverdueTag && isPastTargetDate(project.endDate);
   const cardClassName = openOnCardClick ? "project-card project-card-clickable" : "project-card";
+  const releaseTag = project.releaseTag?.trim();
 
   return (
     <article
@@ -126,6 +135,11 @@ export function ProjectCard({
               <span aria-hidden="true" style={{ backgroundColor: project.statusColor }} />
               {project.statusName}
             </p>
+            {showReleaseTag && releaseTag ? (
+              <p className="release-tag" aria-label={`Release ${releaseTag}`}>
+                {releaseTag}
+              </p>
+            ) : null}
             {overdue ? (
               <p className="overdue-badge" aria-label="Target date passed">
                 Delayed
@@ -153,7 +167,11 @@ export function ProjectCard({
           </span>
           <span>
             <strong>{project.owner}</strong>
-            <small>{project.ownerRole ?? "Project owner"}</small>
+            <small>
+              {ownerRoleLabel !== "Project owner"
+                ? ownerRoleLabel
+                : (project.ownerRole ?? ownerRoleLabel)}
+            </small>
           </span>
         </div>
       ) : null}
@@ -193,11 +211,11 @@ export function ProjectCard({
         ) : (
           <>
             <div>
-              <dt>Start</dt>
+              <dt>{startDateLabel}</dt>
               <dd>{formatDate(project.startDate)}</dd>
             </div>
             <div>
-              <dt>Target</dt>
+              <dt>{endDateLabel}</dt>
               <dd className={overdue ? "project-date-overdue" : undefined}>
                 {formatDate(project.endDate)}
               </dd>

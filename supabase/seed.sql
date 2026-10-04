@@ -8,6 +8,7 @@ values
   ('10000000-0000-4000-8000-000000000005', 'development-operations', 'Dev Ops', 'Development operations delivery workspace.', 3),
   ('10000000-0000-4000-8000-000000000009', 'pe-ops', 'PE Operations', 'Promo engine operations priorities tracked manually by the team.', 4),
   ('10000000-0000-4000-8000-00000000000a', 'datalake-ops', 'Data Lake Operations', 'Data lake operations priorities tracked manually by the team.', 5),
+  ('10000000-0000-4000-8000-00000000000b', 'digital', 'Digital', 'Digital delivery priorities tracked manually by the team.', 6),
   ('10000000-0000-4000-8000-000000000002', 'platform-development', 'Platform Development', 'Platform development delivery workspace (hidden Jira mirror).', 100),
   ('10000000-0000-4000-8000-000000000003', 'pe-development', 'PE Development Jira', 'PE development delivery workspace (hidden Jira mirror).', 101),
   ('10000000-0000-4000-8000-000000000004', 'pe-operations', 'PE Operations Jira', 'PE operations delivery workspace (hidden Jira mirror).', 102),
@@ -65,7 +66,11 @@ values
   ('20000000-0000-4000-8000-000000000027', '10000000-0000-4000-8000-00000000000a', 'Segmentation Files', '#237b4b', 2, 'active'),
   ('20000000-0000-4000-8000-000000000028', '10000000-0000-4000-8000-00000000000a', 'Reporting Delivery', '#a94806', 3, 'active'),
   ('20000000-0000-4000-8000-00000000002b', '10000000-0000-4000-8000-00000000000a', 'Feeds', '#0e7490', 4, 'active'),
-  ('20000000-0000-4000-8000-00000000002c', '10000000-0000-4000-8000-00000000000a', 'Deployments', '#475569', 5, 'active')
+  ('20000000-0000-4000-8000-00000000002c', '10000000-0000-4000-8000-00000000000a', 'Deployments', '#475569', 5, 'active'),
+  ('20000000-0000-4000-8000-00000000002d', '10000000-0000-4000-8000-00000000000b', 'In Progress', '#237b4b', 0, 'active'),
+  ('20000000-0000-4000-8000-00000000002e', '10000000-0000-4000-8000-00000000000b', 'Pending', '#f59e0b', 1, 'risk'),
+  ('20000000-0000-4000-8000-00000000002f', '10000000-0000-4000-8000-00000000000b', 'Cancelled', '#64748b', 2, 'delayed'),
+  ('20000000-0000-4000-8000-000000000030', '10000000-0000-4000-8000-00000000000b', 'Live', '#16a34a', 3, 'completed')
 on conflict (id) do update set
   workspace_id = excluded.workspace_id,
   name = excluded.name,

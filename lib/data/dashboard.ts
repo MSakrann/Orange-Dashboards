@@ -51,6 +51,7 @@ export interface DashboardWorkItem {
   endDate?: string;
   lastWeekStatus?: OpsHealthStatus;
   currentStatus?: OpsHealthStatus;
+  releaseTag?: string;
   sortOrder: number;
   updatedAt: string;
   syncSource: "local" | "jira";
@@ -223,6 +224,7 @@ export function mapDashboardRows(
       ...(asOpsHealthStatus(item.current_status)
         ? { currentStatus: asOpsHealthStatus(item.current_status) }
         : {}),
+      ...(item.release_tag ? { releaseTag: item.release_tag } : {}),
       sortOrder: item.sort_order,
       updatedAt: item.updated_at,
       syncSource: item.sync_source === "jira" ? "jira" : "local",

@@ -202,6 +202,12 @@ function EditorDialog({
             : "dates"
         }
         descriptionLabel={dashboard.slug === "datalake-ops" ? "Comments" : "Description"}
+        assigneeLabel={dashboard.slug === "digital" ? "Action Owner" : "Assignee"}
+        startDateLabel={dashboard.slug === "digital" ? "Start Date" : "Start date"}
+        endDateLabel={dashboard.slug === "digital" ? "RFT Date" : "End date"}
+        showDescription={dashboard.slug !== "digital"}
+        showProgress={dashboard.slug !== "digital"}
+        showRelease={dashboard.slug === "digital"}
         onSubmit={onSubmit}
         onCancel={onClose}
       />
@@ -741,11 +747,17 @@ export function DashboardShell({
                       project={project}
                       key={project.id}
                       showOwner={
-                        workspace.slug !== "development-operations"
-                        && workspace.slug !== "platforms-development"
-                        && workspace.slug !== "pe-delivery"
-                        && workspace.slug !== "pe-ops"
-                        && workspace.slug !== "datalake-ops"
+                        workspace.slug === "digital"
+                        || (
+                          workspace.slug !== "development-operations"
+                          && workspace.slug !== "platforms-development"
+                          && workspace.slug !== "pe-delivery"
+                          && workspace.slug !== "pe-ops"
+                          && workspace.slug !== "datalake-ops"
+                        )
+                      }
+                      ownerRoleLabel={
+                        workspace.slug === "digital" ? "Action Owner" : "Project owner"
                       }
                       showProgress={
                         workspace.slug !== "hot-topics"
@@ -754,6 +766,7 @@ export function DashboardShell({
                         && workspace.slug !== "pe-delivery"
                         && workspace.slug !== "pe-ops"
                         && workspace.slug !== "datalake-ops"
+                        && workspace.slug !== "digital"
                       }
                       showDescription={
                         workspace.slug === "pe-ops"
@@ -769,6 +782,7 @@ export function DashboardShell({
                           || workspace.slug === "pe-delivery"
                           || workspace.slug === "pe-ops"
                           || workspace.slug === "datalake-ops"
+                          || workspace.slug === "digital"
                         )
                           ? false
                           : workspace.slug !== "hot-topics" || canAdmin
@@ -779,12 +793,16 @@ export function DashboardShell({
                         || workspace.slug === "pe-delivery"
                         || workspace.slug === "pe-ops"
                         || workspace.slug === "datalake-ops"
+                        || workspace.slug === "digital"
                       }
                       scheduleMode={
                         workspace.slug === "pe-ops" || workspace.slug === "datalake-ops"
                           ? "ops-health"
                           : "dates"
                       }
+                      startDateLabel={workspace.slug === "digital" ? "Start Date" : "Start"}
+                      endDateLabel={workspace.slug === "digital" ? "RFT Date" : "Target"}
+                      showReleaseTag={workspace.slug === "digital"}
                       showOverdueTag={workspace.slug === "development-operations"}
                       showChildHierarchy={workspace.jiraLinked}
                       onOpen={(selected) => setSelectedProjectId(selected.id)}

@@ -19,6 +19,7 @@ export interface WorkItemDraftFields {
   lastWeekStatus: string;
   currentStatus: string;
   assignee: string;
+  releaseTag: string;
 }
 
 export interface WorkItemFormValue {
@@ -32,6 +33,7 @@ export interface WorkItemFormValue {
   lastWeekStatus: OpsHealthStatus | null;
   currentStatus: OpsHealthStatus | null;
   assignee: string | null;
+  releaseTag: string | null;
 }
 
 export type WorkItemFormErrors = Partial<Record<keyof WorkItemDraftFields, string>>;
@@ -45,7 +47,9 @@ function asOpsHealthStatus(value: string): OpsHealthStatus | null {
 export function validateWorkItemDraft(
   fields: WorkItemDraftFields,
   scheduleMode: "dates" | "ops-health" = "dates",
+  options: { requireProgress?: boolean } = {},
 ): WorkItemFormErrors {
+  const requireProgress = options.requireProgress ?? true;
   const errors: WorkItemFormErrors = {};
   if (!fields.title.trim()) errors.title = "Title is required.";
   else if (fields.title.trim().length > 200) errors.title = "Title must be 200 characters or fewer.";
@@ -55,13 +59,23 @@ export function validateWorkItemDraft(
   if (fields.assignee.trim().length > 200) {
     errors.assignee = "Assignee must be 200 characters or fewer.";
   }
+  if (fields.releaseTag.trim().length > 100) {
+    errors.releaseTag = "Release must be 100 characters or fewer.";
+  }
   if (!fields.statusId) errors.statusId = "Status is required.";
 
   const progressText = fields.progress.trim();
   const progress = Number(progressText);
-  if (!progressText) {
-    errors.progress = "Progress is required.";
-  } else if (!Number.isInteger(progress) || progress < 0 || progress > 100) {
+  if (requireProgress) {
+    if (!progressText) {
+      errors.progress = "Progress is required.";
+    } else if (!Number.isInteger(progress) || progress < 0 || progress > 100) {
+      errors.progress = "Progress must be a whole number from 0 to 100.";
+    }
+  } else if (
+    progressText
+    && (!Number.isInteger(progress) || progress < 0 || progress > 100)
+  ) {
     errors.progress = "Progress must be a whole number from 0 to 100.";
   }
   if (scheduleMode === "dates") {
@@ -94,6 +108,7 @@ function initialFields(
     lastWeekStatus: value?.lastWeekStatus ?? "",
     currentStatus: value?.currentStatus ?? "",
     assignee: value?.owner === "Unassigned" ? "" : value?.owner ?? "",
+    releaseTag: value?.releaseTag ?? "",
   };
 }
 
@@ -103,6 +118,12 @@ interface WorkItemFormProps {
   initialValue?: DashboardWorkItem;
   scheduleMode?: "dates" | "ops-health";
   descriptionLabel?: string;
+  assigneeLabel?: string;
+  startDateLabel?: string;
+  endDateLabel?: string;
+  showDescription?: boolean;
+  showProgress?: boolean;
+  showRelease?: boolean;
   onSubmit: (value: WorkItemFormValue) => Promise<void>;
   onCancel: () => void;
 }
@@ -113,6 +134,12 @@ export function WorkItemForm({
   initialValue,
   scheduleMode = "dates",
   descriptionLabel = "Description",
+  assigneeLabel = "Assignee",
+  startDateLabel = "Start date",
+  endDateLabel = "End date",
+  showDescription = true,
+  showProgress = true,
+  showRelease = false,
   onSubmit,
   onCancel,
 }: WorkItemFormProps) {
@@ -137,7 +164,9 @@ export function WorkItemForm({
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (submittingRef.current) return;
-    const nextErrors = validateWorkItemDraft(fields, scheduleMode);
+    const nextErrors = validateWorkItemDraft(fields, scheduleMode, {
+      requireProgress: showProgress,
+    });
     setErrors(nextErrors);
     setSubmitError(null);
     if (Object.keys(nextErrors).length) return;
@@ -147,10 +176,10 @@ export function WorkItemForm({
     try {
       await onSubmit({
         title: fields.title.trim(),
-        description: fields.description.trim(),
+        description: showDescription ? fields.description.trim() : fields.description.trim(),
         statusId: fields.statusId,
         priority: fields.priority,
-        progress: Number(fields.progress),
+        progress: showProgress ? Number(fields.progress) : Number(fields.progress || 0),
         startDate: scheduleMode === "dates" ? fields.startDate || null : null,
         endDate: scheduleMode === "dates" ? fields.endDate || null : null,
         lastWeekStatus: scheduleMode === "ops-health"
@@ -160,6 +189,7 @@ export function WorkItemForm({
           ? asOpsHealthStatus(fields.currentStatus)
           : null,
         assignee: fields.assignee.trim() || null,
+        releaseTag: showRelease ? fields.releaseTag.trim() || null : fields.releaseTag.trim() || null,
       });
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "Unable to save this work item.");
@@ -185,21 +215,23 @@ export function WorkItemForm({
         {errors.title ? <p className="form-error" id="work-item-title-error">{errors.title}</p> : null}
       </div>
 
-      <div className="form-field">
-        <label htmlFor="work-item-description">{descriptionLabel}</label>
-        <textarea
-          id="work-item-description"
-          value={fields.description}
-          maxLength={10_000}
-          onChange={(event) => setField("description", event.target.value)}
-          aria-invalid={Boolean(errors.description)}
-          aria-describedby={errors.description ? "work-item-description-error" : undefined}
-          rows={4}
-        />
-        {errors.description ? (
-          <p className="form-error" id="work-item-description-error">{errors.description}</p>
-        ) : null}
-      </div>
+      {showDescription ? (
+        <div className="form-field">
+          <label htmlFor="work-item-description">{descriptionLabel}</label>
+          <textarea
+            id="work-item-description"
+            value={fields.description}
+            maxLength={10_000}
+            onChange={(event) => setField("description", event.target.value)}
+            aria-invalid={Boolean(errors.description)}
+            aria-describedby={errors.description ? "work-item-description-error" : undefined}
+            rows={4}
+          />
+          {errors.description ? (
+            <p className="form-error" id="work-item-description-error">{errors.description}</p>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="form-row">
         <div className="form-field">
@@ -232,21 +264,23 @@ export function WorkItemForm({
         </div>
       </div>
 
-      <div className="form-field">
-        <label htmlFor="work-item-progress">Progress</label>
-        <input
-          id="work-item-progress"
-          type="number"
-          min="0"
-          max="100"
-          step="1"
-          value={fields.progress}
-          onChange={(event) => setField("progress", event.target.value)}
-          aria-invalid={Boolean(errors.progress)}
-          aria-describedby={errors.progress ? "work-item-progress-error" : undefined}
-        />
-        {errors.progress ? <p className="form-error" id="work-item-progress-error">{errors.progress}</p> : null}
-      </div>
+      {showProgress ? (
+        <div className="form-field">
+          <label htmlFor="work-item-progress">Progress</label>
+          <input
+            id="work-item-progress"
+            type="number"
+            min="0"
+            max="100"
+            step="1"
+            value={fields.progress}
+            onChange={(event) => setField("progress", event.target.value)}
+            aria-invalid={Boolean(errors.progress)}
+            aria-describedby={errors.progress ? "work-item-progress-error" : undefined}
+          />
+          {errors.progress ? <p className="form-error" id="work-item-progress-error">{errors.progress}</p> : null}
+        </div>
+      ) : null}
 
       {scheduleMode === "ops-health" ? (
         <div className="form-row">
@@ -294,7 +328,7 @@ export function WorkItemForm({
       ) : (
         <div className="form-row">
           <div className="form-field">
-            <label htmlFor="work-item-start">Start date</label>
+            <label htmlFor="work-item-start">{startDateLabel}</label>
             <input
               id="work-item-start"
               type="date"
@@ -303,7 +337,7 @@ export function WorkItemForm({
             />
           </div>
           <div className="form-field">
-            <label htmlFor="work-item-end">End date</label>
+            <label htmlFor="work-item-end">{endDateLabel}</label>
             <input
               id="work-item-end"
               type="date"
@@ -318,7 +352,7 @@ export function WorkItemForm({
       )}
 
       <div className="form-field">
-        <label htmlFor="work-item-assignee">Assignee</label>
+        <label htmlFor="work-item-assignee">{assigneeLabel}</label>
         <input
           id="work-item-assignee"
           value={fields.assignee}
@@ -331,6 +365,24 @@ export function WorkItemForm({
           <p className="form-error" id="work-item-assignee-error">{errors.assignee}</p>
         ) : null}
       </div>
+
+      {showRelease ? (
+        <div className="form-field">
+          <label htmlFor="work-item-release">Release</label>
+          <input
+            id="work-item-release"
+            value={fields.releaseTag}
+            maxLength={100}
+            onChange={(event) => setField("releaseTag", event.target.value)}
+            aria-invalid={Boolean(errors.releaseTag)}
+            aria-describedby={errors.releaseTag ? "work-item-release-error" : undefined}
+            placeholder="e.g. R12, Q3 launch"
+          />
+          {errors.releaseTag ? (
+            <p className="form-error" id="work-item-release-error">{errors.releaseTag}</p>
+          ) : null}
+        </div>
+      ) : null}
 
       {submitError ? <p className="form-error" role="alert">{submitError}</p> : null}
       <div className="form-actions">

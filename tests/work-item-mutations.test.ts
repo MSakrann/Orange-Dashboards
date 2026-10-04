@@ -20,6 +20,7 @@ const draft = {
   lastWeekStatus: null,
   currentStatus: null,
   assignee: "Avery",
+  releaseTag: null,
 };
 
 describe("work item payloads", () => {
@@ -38,6 +39,7 @@ describe("work item payloads", () => {
       last_week_status: null,
       current_status: null,
       assignee: "Avery",
+      release_tag: null,
       sort_order: 2,
     });
     expect(buildWorkItemPayload("workspace-a", "project-a", draft, 0, "subtask-a").parent_id)

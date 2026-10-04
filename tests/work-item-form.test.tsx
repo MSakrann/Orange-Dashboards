@@ -24,6 +24,7 @@ const emptyDraft = {
   lastWeekStatus: "",
   currentStatus: "",
   assignee: "",
+  releaseTag: "",
 };
 
 describe("validateWorkItemDraft", () => {
@@ -108,6 +109,7 @@ describe("WorkItemForm", () => {
       lastWeekStatus: null,
       currentStatus: null,
       assignee: "Avery",
+      releaseTag: null,
     });
     resolveSubmit();
   });

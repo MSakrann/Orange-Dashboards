@@ -524,6 +524,7 @@ export type Database = {
           parent_id: string | null;
           priority: string;
           progress: number;
+          release_tag: string | null;
           sort_order: number;
           start_date: string | null;
           status_id: string;
@@ -546,6 +547,7 @@ export type Database = {
           parent_id?: string | null;
           priority?: string;
           progress?: number;
+          release_tag?: string | null;
           sort_order?: number;
           start_date?: string | null;
           status_id: string;
@@ -568,6 +570,7 @@ export type Database = {
           parent_id?: string | null;
           priority?: string;
           progress?: number;
+          release_tag?: string | null;
           sort_order?: number;
           start_date?: string | null;
           status_id?: string;

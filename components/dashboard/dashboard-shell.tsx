@@ -201,11 +201,14 @@ function EditorDialog({
             ? "ops-health"
             : "dates"
         }
-        descriptionLabel={dashboard.slug === "datalake-ops" ? "Comments" : "Description"}
+        descriptionLabel={
+          dashboard.slug === "datalake-ops" || dashboard.slug === "digital"
+            ? "Comments"
+            : "Description"
+        }
         assigneeLabel={dashboard.slug === "digital" ? "Action Owner" : "Assignee"}
         startDateLabel={dashboard.slug === "digital" ? "Start Date" : "Start date"}
         endDateLabel={dashboard.slug === "digital" ? "RFT Date" : "End date"}
-        showDescription={dashboard.slug !== "digital"}
         showProgress={dashboard.slug !== "digital"}
         showRelease={dashboard.slug === "digital"}
         onSubmit={onSubmit}
@@ -771,9 +774,12 @@ export function DashboardShell({
                       showDescription={
                         workspace.slug === "pe-ops"
                         || workspace.slug === "datalake-ops"
+                        || workspace.slug === "digital"
                       }
                       descriptionLabel={
-                        workspace.slug === "datalake-ops" ? "Comments" : "Description"
+                        workspace.slug === "datalake-ops" || workspace.slug === "digital"
+                          ? "Comments"
+                          : "Description"
                       }
                       showDetailsButton={
                         (

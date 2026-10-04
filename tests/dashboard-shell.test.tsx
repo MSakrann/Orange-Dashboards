@@ -305,6 +305,7 @@ describe("DashboardShell", () => {
           releaseTag: "R12",
           startDate: "2026-03-01",
           endDate: "2026-04-15",
+          description: "Waiting on creative assets",
           subtasks: [],
         },
       ],
@@ -327,6 +328,8 @@ describe("DashboardShell", () => {
     expect(screen.getByText("Start Date")).toBeInTheDocument();
     expect(screen.getByText("RFT Date")).toBeInTheDocument();
     expect(screen.getByLabelText("Release R12")).toHaveTextContent("R12");
+    expect(screen.getByText("Comments")).toBeInTheDocument();
+    expect(screen.getByText("Waiting on creative assets")).toBeInTheDocument();
     expect(screen.queryByText("Last Week Status")).not.toBeInTheDocument();
   });
 });

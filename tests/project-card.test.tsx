@@ -108,7 +108,7 @@ describe("ProjectCard Dev Ops options", () => {
     expect(screen.queryByText("Description")).not.toBeInTheDocument();
   });
 
-  it("shows Digital card fields: Action Owner, Start/RFT dates, and Release tag", () => {
+  it("shows Digital card fields: Action Owner, Start/RFT dates, Release tag, and Comments", () => {
     render(
       <ProjectCard
         project={makeProject({
@@ -117,12 +117,15 @@ describe("ProjectCard Dev Ops options", () => {
           releaseTag: "R12",
           startDate: "2026-03-01",
           endDate: "2026-04-15",
+          description: "Waiting on creative assets",
         })}
         onOpen={() => undefined}
         showOwner
         ownerRoleLabel="Action Owner"
         showProgress={false}
         showDetailsButton={false}
+        showDescription
+        descriptionLabel="Comments"
         showReleaseTag
         startDateLabel="Start Date"
         endDateLabel="RFT Date"
@@ -135,6 +138,8 @@ describe("ProjectCard Dev Ops options", () => {
     expect(screen.getByText("Start Date")).toBeInTheDocument();
     expect(screen.getByText("RFT Date")).toBeInTheDocument();
     expect(screen.getByLabelText("Release R12")).toHaveTextContent("R12");
+    expect(screen.getByText("Comments")).toBeInTheDocument();
+    expect(screen.getByText("Waiting on creative assets")).toBeInTheDocument();
     expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
     expect(screen.queryByText("Last Week Status")).not.toBeInTheDocument();
   });

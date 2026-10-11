@@ -14,6 +14,7 @@ import {
 } from "@/lib/data/dashboard";
 import {
   isDigitalStyleWorkspace,
+  usesActionOwner,
   usesTeamTracks,
 } from "@/lib/dashboard/workspace-style";
 import {
@@ -228,7 +229,7 @@ function EditorDialog({
             ? "Comments"
             : "Description"
         }
-        assigneeLabel={isDigitalStyleWorkspace(dashboard.slug) ? "Action Owner" : "Assignee"}
+        assigneeLabel={usesActionOwner(dashboard.slug) ? "Action Owner" : "Assignee"}
         startDateLabel={dashboard.slug === "digital" ? "Start Date" : "Start date"}
         endDateLabel={dashboard.slug === "digital" ? "RFT Date" : "End date"}
         showProgress={!isDigitalStyleWorkspace(dashboard.slug)}
@@ -784,7 +785,7 @@ export function DashboardShell({
                       project={project}
                       key={project.id}
                       showOwner={
-                        isDigitalStyleWorkspace(workspace.slug)
+                        usesActionOwner(workspace.slug)
                         || (
                           workspace.slug !== "development-operations"
                           && workspace.slug !== "platforms-development"
@@ -794,7 +795,7 @@ export function DashboardShell({
                         )
                       }
                       ownerRoleLabel={
-                        isDigitalStyleWorkspace(workspace.slug)
+                        usesActionOwner(workspace.slug)
                           ? "Action Owner"
                           : "Project owner"
                       }

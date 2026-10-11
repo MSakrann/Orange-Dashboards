@@ -342,6 +342,34 @@ describe("DashboardShell", () => {
     expect(screen.getByLabelText("Release R1")).toHaveTextContent("R1");
   });
 
+  it("shows Action Owner on PE Development cards", () => {
+    const peDashboard = mapFixtureWorkspace({
+      slug: "pe-delivery",
+      name: "PE Development",
+      description: "Promo engine delivery priorities tracked manually by the team.",
+      projects: [],
+    });
+    const project = {
+      ...dashboard.projects[0],
+      statusId: peDashboard.statuses[0].id,
+      statusName: peDashboard.statuses[0].name,
+      statusColor: peDashboard.statuses[0].color,
+      owner: "Alex Owner",
+      ownerRole: undefined,
+      subtasks: [],
+    };
+    render(
+      <DashboardShell
+        initialDashboard={{ ...peDashboard, projects: [project] }}
+        source="fixture"
+      />,
+    );
+
+    expect(screen.getByText("Alex Owner")).toBeInTheDocument();
+    expect(screen.getByText("Action Owner")).toBeInTheDocument();
+    expect(screen.queryByText("Project owner")).not.toBeInTheDocument();
+  });
+
   it("shows Digital KPI statuses and Action Owner card layout", () => {
     const digitalDashboard = {
       ...mapFixtureWorkspace({

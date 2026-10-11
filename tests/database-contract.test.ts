@@ -55,6 +55,7 @@ describe("Supabase core database behavior", () => {
     await db.exec(migration);
     await db.exec(read("supabase/migrations/0027_digital_dashboard.sql"));
     await db.exec(read("supabase/migrations/0028_data_lake_dashboard.sql"));
+    await db.exec(read("supabase/migrations/0029_data_lake_on_hold_done.sql"));
     await db.exec(seed);
   });
 
@@ -140,8 +141,9 @@ describe("Supabase core database behavior", () => {
     expect(manualStatuses.rows).toEqual([
       { slug: "data-lake", name: "In Progress" },
       { slug: "data-lake", name: "Pending" },
+      { slug: "data-lake", name: "On Hold" },
       { slug: "data-lake", name: "Cancelled" },
-      { slug: "data-lake", name: "Live" },
+      { slug: "data-lake", name: "Done" },
       { slug: "datalake-ops", name: "Data Ingestion" },
       { slug: "datalake-ops", name: "DAG Monitoring" },
       { slug: "datalake-ops", name: "Segmentation Files" },

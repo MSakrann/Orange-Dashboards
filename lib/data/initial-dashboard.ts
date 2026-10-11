@@ -112,13 +112,21 @@ const digitalFixtureStatuses: FixtureStatusDefinition[] = [
   { legacyStatus: "completed", name: "Live", category: "completed", color: "#16a34a", key: "live" },
 ];
 
+const dataLakeFixtureStatuses: FixtureStatusDefinition[] = [
+  { legacyStatus: "in-progress", name: "In Progress", category: "active", color: "#237b4b", key: "in-progress" },
+  { legacyStatus: "at-risk", name: "Pending", category: "risk", color: "#f59e0b", key: "pending" },
+  { legacyStatus: "at-risk", name: "On Hold", category: "risk", color: "#f59e0b", key: "on-hold" },
+  { legacyStatus: "delayed", name: "Cancelled", category: "delayed", color: "#64748b", key: "cancelled" },
+  { legacyStatus: "completed", name: "Done", category: "completed", color: "#16a34a", key: "done" },
+];
+
 const fixtureStatusesBySlug: Record<string, FixtureStatusDefinition[]> = {
   "platforms-development": manualDeliveryFixtureStatuses,
   "pe-delivery": peDeliveryFixtureStatuses,
   "pe-ops": peOpsFixtureStatuses,
   "datalake-ops": datalakeOpsFixtureStatuses,
   digital: digitalFixtureStatuses,
-  "data-lake": digitalFixtureStatuses,
+  "data-lake": dataLakeFixtureStatuses,
 };
 
 export function mapFixtureWorkspace(workspace: Workspace): DashboardViewModel {

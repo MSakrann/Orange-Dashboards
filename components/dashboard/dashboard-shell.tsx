@@ -225,7 +225,7 @@ function EditorDialog({
             : "dates"
         }
         descriptionLabel={
-          dashboard.slug === "datalake-ops" || isDigitalStyleWorkspace(dashboard.slug)
+          dashboard.slug === "datalake-ops" || dashboard.slug === "digital"
             ? "Comments"
             : "Description"
         }
@@ -814,8 +814,7 @@ export function DashboardShell({
                         || isDigitalStyleWorkspace(workspace.slug)
                       }
                       descriptionLabel={
-                        workspace.slug === "datalake-ops"
-                        || isDigitalStyleWorkspace(workspace.slug)
+                        workspace.slug === "datalake-ops" || workspace.slug === "digital"
                           ? "Comments"
                           : "Description"
                       }

@@ -345,6 +345,9 @@ describe("DashboardShell", () => {
     expect(screen.getByText("Analytics End Date")).toBeInTheDocument();
     expect(screen.getByText("Action Owner")).toBeInTheDocument();
     expect(screen.getByLabelText("Release R1")).toHaveTextContent("R1");
+    expect(screen.getByText("Description")).toBeInTheDocument();
+    expect(screen.getByText("Cross-team rollout")).toBeInTheDocument();
+    expect(screen.queryByText("Comments")).not.toBeInTheDocument();
   });
 
   it("shows Action Owner on PE Development cards", () => {

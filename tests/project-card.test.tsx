@@ -156,6 +156,35 @@ describe("ProjectCard Dev Ops options", () => {
     expect(screen.queryByText("RFT Date")).not.toBeInTheDocument();
   });
 
+  it("hides team date fields when both start and end dates are empty", () => {
+    render(
+      <ProjectCard
+        project={makeProject({
+          teamTracks: [
+            {
+              id: "t1",
+              teamName: "Analytics",
+              statusId: "s-pending",
+              statusName: "Pending",
+              statusColor: "#f59e0b",
+              sortOrder: 0,
+            },
+          ],
+        })}
+        onOpen={() => undefined}
+        showProgress={false}
+        showDetailsButton={false}
+        openOnCardClick
+      />,
+    );
+
+    expect(screen.getByText("Analytics")).toBeInTheDocument();
+    expect(screen.getByText("Pending")).toBeInTheDocument();
+    expect(screen.queryByText("Analytics Start Date")).not.toBeInTheDocument();
+    expect(screen.queryByText("Analytics End Date")).not.toBeInTheDocument();
+    expect(screen.queryByText("Not scheduled")).not.toBeInTheDocument();
+  });
+
   it("shows Digital card fields: Action Owner, Start/RFT dates, Release tag, and Comments", () => {
     render(
       <ProjectCard

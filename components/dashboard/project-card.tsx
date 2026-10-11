@@ -199,7 +199,9 @@ export function ProjectCard({
         >
           <h3>Teams</h3>
           <ul>
-            {project.teamTracks.map((track) => (
+            {project.teamTracks.map((track) => {
+              const hasSchedule = Boolean(track.startDate || track.endDate);
+              return (
               <li key={track.id}>
                 <div className="project-team-track-heading">
                   <strong>{track.teamName}</strong>
@@ -208,18 +210,21 @@ export function ProjectCard({
                     {track.statusName}
                   </p>
                 </div>
-                <dl className="project-dates project-dates-compact">
-                  <div>
-                    <dt>{`${track.teamName} Start Date`}</dt>
-                    <dd>{formatDate(track.startDate)}</dd>
-                  </div>
-                  <div>
-                    <dt>{`${track.teamName} End Date`}</dt>
-                    <dd>{formatDate(track.endDate)}</dd>
-                  </div>
-                </dl>
+                {hasSchedule ? (
+                  <dl className="project-dates project-dates-compact">
+                    <div>
+                      <dt>{`${track.teamName} Start Date`}</dt>
+                      <dd>{formatDate(track.startDate)}</dd>
+                    </div>
+                    <div>
+                      <dt>{`${track.teamName} End Date`}</dt>
+                      <dd>{formatDate(track.endDate)}</dd>
+                    </div>
+                  </dl>
+                ) : null}
               </li>
-            ))}
+              );
+            })}
           </ul>
         </section>
       ) : (

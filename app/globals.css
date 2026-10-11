@@ -103,6 +103,8 @@ select:focus-visible {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* Nudge the wordmark off the bottom edge; gap shows brand-mark orange. */
+  transform: translateY(-4px);
 }
 
 .eyebrow,

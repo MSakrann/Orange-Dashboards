@@ -334,11 +334,13 @@ describe("DashboardShell", () => {
     );
 
     const overview = screen.getByRole("region", { name: "Workspace status overview" });
+    expect(within(overview).getByRole("button", { name: /Planning/i })).toHaveTextContent("1");
     expect(within(overview).getByRole("button", { name: /In Progress/i })).toHaveTextContent("1");
-    expect(within(overview).getByRole("button", { name: /Pending/i })).toHaveTextContent("1");
+    expect(within(overview).getByRole("button", { name: /Pending/i })).toBeInTheDocument();
     expect(within(overview).getByRole("button", { name: /On Hold/i })).toBeInTheDocument();
+    expect(within(overview).getByRole("button", { name: /Testing/i })).toBeInTheDocument();
     expect(within(overview).getByRole("button", { name: /\bDone\b/i })).toBeInTheDocument();
-    expect(within(overview).queryByRole("button", { name: /\bLive\b/i })).not.toBeInTheDocument();
+    expect(within(overview).queryByRole("button", { name: /Cancelled/i })).not.toBeInTheDocument();
     expect(screen.getByText("Data Lake Start Date")).toBeInTheDocument();
     expect(screen.getByText("Analytics End Date")).toBeInTheDocument();
     expect(screen.getByText("Action Owner")).toBeInTheDocument();

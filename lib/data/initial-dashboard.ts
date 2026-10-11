@@ -113,10 +113,11 @@ const digitalFixtureStatuses: FixtureStatusDefinition[] = [
 ];
 
 const dataLakeFixtureStatuses: FixtureStatusDefinition[] = [
+  { legacyStatus: "in-progress", name: "Planning", category: "active", color: "#237b4b", key: "planning" },
   { legacyStatus: "in-progress", name: "In Progress", category: "active", color: "#237b4b", key: "in-progress" },
   { legacyStatus: "at-risk", name: "Pending", category: "risk", color: "#f59e0b", key: "pending" },
   { legacyStatus: "at-risk", name: "On Hold", category: "risk", color: "#f59e0b", key: "on-hold" },
-  { legacyStatus: "delayed", name: "Cancelled", category: "delayed", color: "#64748b", key: "cancelled" },
+  { legacyStatus: "in-progress", name: "Testing", category: "active", color: "#246a91", key: "testing" },
   { legacyStatus: "completed", name: "Done", category: "completed", color: "#16a34a", key: "done" },
 ];
 

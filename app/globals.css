@@ -758,6 +758,89 @@ h1 {
   color: var(--red);
 }
 
+.project-team-tracks {
+  margin: 17px 0;
+}
+
+.project-team-tracks h3,
+.team-tracks-editor-heading h3 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.project-team-tracks ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.project-team-tracks li {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-soft);
+}
+
+.project-team-track-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.project-team-track-heading strong {
+  font-size: 13px;
+}
+
+.project-dates-compact {
+  margin: 0;
+}
+
+.team-tracks-editor {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.team-tracks-editor-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.team-track-card {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-soft);
+  display: grid;
+  gap: 10px;
+}
+
+.team-track-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.team-track-card-heading p {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 .project-card-description {
   margin: 0 0 16px;
   padding-top: 16px;

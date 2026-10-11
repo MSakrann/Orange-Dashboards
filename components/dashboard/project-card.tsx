@@ -192,37 +192,69 @@ export function ProjectCard({
         <ProgressBar label={`${project.title} progress`} value={project.progress} />
       ) : null}
 
-      <dl className="project-dates">
-        {scheduleMode === "ops-health" ? (
-          <>
-            <div>
-              <dt>Last Week Status</dt>
-              <dd data-ops-health={project.lastWeekStatus ?? "unset"}>
-                {formatOpsHealthStatus(project.lastWeekStatus)}
-              </dd>
-            </div>
-            <div>
-              <dt>Current Status</dt>
-              <dd data-ops-health={project.currentStatus ?? "unset"}>
-                {formatOpsHealthStatus(project.currentStatus)}
-              </dd>
-            </div>
-          </>
-        ) : (
-          <>
-            <div>
-              <dt>{startDateLabel}</dt>
-              <dd>{formatDate(project.startDate)}</dd>
-            </div>
-            <div>
-              <dt>{endDateLabel}</dt>
-              <dd className={overdue ? "project-date-overdue" : undefined}>
-                {formatDate(project.endDate)}
-              </dd>
-            </div>
-          </>
-        )}
-      </dl>
+      {project.teamTracks?.length ? (
+        <section
+          className="project-team-tracks"
+          aria-label={`${project.title} team schedules`}
+        >
+          <h3>Teams</h3>
+          <ul>
+            {project.teamTracks.map((track) => (
+              <li key={track.id}>
+                <div className="project-team-track-heading">
+                  <strong>{track.teamName}</strong>
+                  <p className="status-badge">
+                    <span aria-hidden="true" style={{ backgroundColor: track.statusColor }} />
+                    {track.statusName}
+                  </p>
+                </div>
+                <dl className="project-dates project-dates-compact">
+                  <div>
+                    <dt>{`${track.teamName} Start Date`}</dt>
+                    <dd>{formatDate(track.startDate)}</dd>
+                  </div>
+                  <div>
+                    <dt>{`${track.teamName} End Date`}</dt>
+                    <dd>{formatDate(track.endDate)}</dd>
+                  </div>
+                </dl>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : (
+        <dl className="project-dates">
+          {scheduleMode === "ops-health" ? (
+            <>
+              <div>
+                <dt>Last Week Status</dt>
+                <dd data-ops-health={project.lastWeekStatus ?? "unset"}>
+                  {formatOpsHealthStatus(project.lastWeekStatus)}
+                </dd>
+              </div>
+              <div>
+                <dt>Current Status</dt>
+                <dd data-ops-health={project.currentStatus ?? "unset"}>
+                  {formatOpsHealthStatus(project.currentStatus)}
+                </dd>
+              </div>
+            </>
+          ) : (
+            <>
+              <div>
+                <dt>{startDateLabel}</dt>
+                <dd>{formatDate(project.startDate)}</dd>
+              </div>
+              <div>
+                <dt>{endDateLabel}</dt>
+                <dd className={overdue ? "project-date-overdue" : undefined}>
+                  {formatDate(project.endDate)}
+                </dd>
+              </div>
+            </>
+          )}
+        </dl>
+      )}
 
       {showChildHierarchy ? (
         <section

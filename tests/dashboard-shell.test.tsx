@@ -287,6 +287,61 @@ describe("DashboardShell", () => {
     expect(within(filters).getByRole("button", { name: "Deployments" })).toBeInTheDocument();
   });
 
+  it("shows Data Lake team-track dates and KPI statuses", () => {
+    const dataLakeDashboard = mapFixtureWorkspace({
+      slug: "data-lake",
+      name: "Data Lake",
+      description: "Data Lake delivery priorities tracked manually by the team.",
+      projects: [],
+    });
+    const project = {
+      ...dashboard.projects[0],
+      statusId: dataLakeDashboard.statuses[0].id,
+      statusName: dataLakeDashboard.statuses[0].name,
+      statusColor: dataLakeDashboard.statuses[0].color,
+      owner: "Sam Digital",
+      releaseTag: "R1",
+      description: "Cross-team rollout",
+      teamTracks: [
+        {
+          id: "t1",
+          teamName: "Data Lake",
+          statusId: dataLakeDashboard.statuses[0].id,
+          statusName: dataLakeDashboard.statuses[0].name,
+          statusColor: dataLakeDashboard.statuses[0].color,
+          startDate: "2026-03-01",
+          endDate: "2026-04-15",
+          sortOrder: 0,
+        },
+        {
+          id: "t2",
+          teamName: "Analytics",
+          statusId: dataLakeDashboard.statuses[1].id,
+          statusName: dataLakeDashboard.statuses[1].name,
+          statusColor: dataLakeDashboard.statuses[1].color,
+          startDate: "2026-03-10",
+          endDate: "2026-05-01",
+          sortOrder: 1,
+        },
+      ],
+      subtasks: [],
+    };
+    render(
+      <DashboardShell
+        initialDashboard={{ ...dataLakeDashboard, projects: [project] }}
+        source="fixture"
+      />,
+    );
+
+    const overview = screen.getByRole("region", { name: "Workspace status overview" });
+    expect(within(overview).getByRole("button", { name: /In Progress/i })).toHaveTextContent("1");
+    expect(within(overview).getByRole("button", { name: /Pending/i })).toHaveTextContent("1");
+    expect(screen.getByText("Data Lake Start Date")).toBeInTheDocument();
+    expect(screen.getByText("Analytics End Date")).toBeInTheDocument();
+    expect(screen.getByText("Action Owner")).toBeInTheDocument();
+    expect(screen.getByLabelText("Release R1")).toHaveTextContent("R1");
+  });
+
   it("shows Digital KPI statuses and Action Owner card layout", () => {
     const digitalDashboard = {
       ...mapFixtureWorkspace({

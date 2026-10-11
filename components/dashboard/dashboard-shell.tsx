@@ -6,11 +6,16 @@ import { useWorkspaceRealtime } from "@/hooks/use-workspace-realtime";
 import type { DashboardSource } from "@/lib/data/initial-dashboard";
 import {
   aggregateKpis,
+  projectMatchesStatusFilter,
   type DashboardComment,
   type DashboardProject,
   type DashboardViewModel,
   type DashboardWorkItem,
 } from "@/lib/data/dashboard";
+import {
+  isDigitalStyleWorkspace,
+  usesTeamTracks,
+} from "@/lib/dashboard/workspace-style";
 import {
   WorkItemForm,
   type WorkItemFormValue,
@@ -20,6 +25,7 @@ import {
   createWorkItem,
   deleteWorkItem,
   reorderWorkItems,
+  replaceWorkItemTeamTracks,
   updateWorkItem,
   WORK_ITEM_CONFLICT_CODE,
   WorkItemMutationError,
@@ -120,6 +126,20 @@ function optimisticItem(
     delayed: "delayed",
     completed: "completed",
   }[status.reportingCategory] as DashboardWorkItem["status"];
+  const teamTracks = value.teamTracks?.map((track, index) => {
+    const trackStatus = dashboard.statuses.find((candidate) => candidate.id === track.statusId);
+    if (!trackStatus) throw new Error("A team status no longer exists.");
+    return {
+      id: `optimistic-track-${id}-${index}`,
+      teamName: track.teamName,
+      statusId: trackStatus.id,
+      statusName: trackStatus.name,
+      statusColor: trackStatus.color,
+      ...(track.startDate ? { startDate: track.startDate } : {}),
+      ...(track.endDate ? { endDate: track.endDate } : {}),
+      sortOrder: index,
+    };
+  });
   return {
     id,
     title: value.title,
@@ -136,6 +156,8 @@ function optimisticItem(
     ...(value.endDate ? { endDate: value.endDate } : {}),
     ...(value.lastWeekStatus ? { lastWeekStatus: value.lastWeekStatus } : {}),
     ...(value.currentStatus ? { currentStatus: value.currentStatus } : {}),
+    ...(value.releaseTag ? { releaseTag: value.releaseTag } : {}),
+    ...(teamTracks?.length ? { teamTracks } : {}),
     sortOrder,
     updatedAt,
     syncSource: "local",
@@ -202,15 +224,16 @@ function EditorDialog({
             : "dates"
         }
         descriptionLabel={
-          dashboard.slug === "datalake-ops" || dashboard.slug === "digital"
+          dashboard.slug === "datalake-ops" || isDigitalStyleWorkspace(dashboard.slug)
             ? "Comments"
             : "Description"
         }
-        assigneeLabel={dashboard.slug === "digital" ? "Action Owner" : "Assignee"}
+        assigneeLabel={isDigitalStyleWorkspace(dashboard.slug) ? "Action Owner" : "Assignee"}
         startDateLabel={dashboard.slug === "digital" ? "Start Date" : "Start date"}
         endDateLabel={dashboard.slug === "digital" ? "RFT Date" : "End date"}
-        showProgress={dashboard.slug !== "digital"}
-        showRelease={dashboard.slug === "digital"}
+        showProgress={!isDigitalStyleWorkspace(dashboard.slug)}
+        showRelease={isDigitalStyleWorkspace(dashboard.slug)}
+        useTeamTracks={usesTeamTracks(dashboard.slug)}
         onSubmit={onSubmit}
         onCancel={onClose}
       />
@@ -367,7 +390,12 @@ export function DashboardShell({
           }
           return withProjects(dashboard, [...dashboard.projects, { ...created, subtasks: [] }]);
         },
-        execute: () => createWorkItem(supabase, payload),
+        execute: async () => {
+          await createWorkItem(supabase, payload);
+          if (intent.value.teamTracks) {
+            await replaceWorkItemTeamTracks(supabase, intent.itemId, intent.value.teamTracks);
+          }
+        },
       });
       return;
     }
@@ -396,13 +424,18 @@ export function DashboardShell({
             };
           }));
         },
-        execute: () => updateWorkItem(
-          supabase,
-          base.id,
-          intent.itemId,
-          intent.expectedUpdatedAt,
-          intent.value,
-        ),
+        execute: async () => {
+          await updateWorkItem(
+            supabase,
+            base.id,
+            intent.itemId,
+            intent.expectedUpdatedAt,
+            intent.value,
+          );
+          if (intent.value.teamTracks) {
+            await replaceWorkItemTeamTracks(supabase, intent.itemId, intent.value.teamTracks);
+          }
+        },
       });
       return;
     }
@@ -613,7 +646,8 @@ export function DashboardShell({
   const visibleProjects = useMemo(() => {
     const byStatus = effectiveFilter === "all"
       ? workspace.projects
-      : workspace.projects.filter((project) => project.statusId === effectiveFilter);
+      : workspace.projects.filter((project) =>
+          projectMatchesStatusFilter(project, effectiveFilter));
 
     if (!isPeLiveFilter || !liveStatus) return byStatus;
 
@@ -750,7 +784,7 @@ export function DashboardShell({
                       project={project}
                       key={project.id}
                       showOwner={
-                        workspace.slug === "digital"
+                        isDigitalStyleWorkspace(workspace.slug)
                         || (
                           workspace.slug !== "development-operations"
                           && workspace.slug !== "platforms-development"
@@ -760,7 +794,9 @@ export function DashboardShell({
                         )
                       }
                       ownerRoleLabel={
-                        workspace.slug === "digital" ? "Action Owner" : "Project owner"
+                        isDigitalStyleWorkspace(workspace.slug)
+                          ? "Action Owner"
+                          : "Project owner"
                       }
                       showProgress={
                         workspace.slug !== "hot-topics"
@@ -769,15 +805,16 @@ export function DashboardShell({
                         && workspace.slug !== "pe-delivery"
                         && workspace.slug !== "pe-ops"
                         && workspace.slug !== "datalake-ops"
-                        && workspace.slug !== "digital"
+                        && !isDigitalStyleWorkspace(workspace.slug)
                       }
                       showDescription={
                         workspace.slug === "pe-ops"
                         || workspace.slug === "datalake-ops"
-                        || workspace.slug === "digital"
+                        || isDigitalStyleWorkspace(workspace.slug)
                       }
                       descriptionLabel={
-                        workspace.slug === "datalake-ops" || workspace.slug === "digital"
+                        workspace.slug === "datalake-ops"
+                        || isDigitalStyleWorkspace(workspace.slug)
                           ? "Comments"
                           : "Description"
                       }
@@ -788,7 +825,7 @@ export function DashboardShell({
                           || workspace.slug === "pe-delivery"
                           || workspace.slug === "pe-ops"
                           || workspace.slug === "datalake-ops"
-                          || workspace.slug === "digital"
+                          || isDigitalStyleWorkspace(workspace.slug)
                         )
                           ? false
                           : workspace.slug !== "hot-topics" || canAdmin
@@ -799,7 +836,7 @@ export function DashboardShell({
                         || workspace.slug === "pe-delivery"
                         || workspace.slug === "pe-ops"
                         || workspace.slug === "datalake-ops"
-                        || workspace.slug === "digital"
+                        || isDigitalStyleWorkspace(workspace.slug)
                       }
                       scheduleMode={
                         workspace.slug === "pe-ops" || workspace.slug === "datalake-ops"
@@ -808,7 +845,7 @@ export function DashboardShell({
                       }
                       startDateLabel={workspace.slug === "digital" ? "Start Date" : "Start"}
                       endDateLabel={workspace.slug === "digital" ? "RFT Date" : "Target"}
-                      showReleaseTag={workspace.slug === "digital"}
+                      showReleaseTag={isDigitalStyleWorkspace(workspace.slug)}
                       showOverdueTag={workspace.slug === "development-operations"}
                       showChildHierarchy={workspace.jiraLinked}
                       onOpen={(selected) => setSelectedProjectId(selected.id)}

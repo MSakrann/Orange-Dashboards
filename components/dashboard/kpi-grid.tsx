@@ -1,4 +1,5 @@
 import type { DashboardProject, DashboardStatus } from "@/lib/data/dashboard";
+import { projectMatchesStatusFilter } from "@/lib/data/dashboard";
 import type { StatusFilter } from "@/components/dashboard/status-filters";
 
 interface KpiGridProps {
@@ -29,7 +30,7 @@ export function KpiGrid({
     ...statuses.map((status) => ({
       value: status.id as StatusFilter,
       label: status.name,
-      count: projects.filter((project) => project.statusId === status.id).length,
+      count: projects.filter((project) => projectMatchesStatusFilter(project, status.id)).length,
       color: status.color,
       meta: "Matching this status",
     })),

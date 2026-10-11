@@ -151,3 +151,31 @@ export async function reorderWorkItems(
   }
   mutationFailure("Reorder", error);
 }
+
+export async function replaceWorkItemTeamTracks(
+  supabase: SupabaseClient<Database>,
+  workItemId: string,
+  tracks: NonNullable<WorkItemFormValue["teamTracks"]>,
+): Promise<void> {
+  const { error: deleteError } = await supabase
+    .from("work_item_team_tracks")
+    .delete()
+    .eq("work_item_id", workItemId);
+  if (deleteError) mutationFailure("Replace team tracks", deleteError);
+
+  if (!tracks.length) return;
+
+  const rows: TablesInsert<"work_item_team_tracks">[] = tracks.map((track, index) => ({
+    work_item_id: workItemId,
+    team_name: track.teamName,
+    status_id: track.statusId,
+    start_date: track.startDate,
+    end_date: track.endDate,
+    sort_order: index,
+  }));
+
+  const { error: insertError } = await supabase
+    .from("work_item_team_tracks")
+    .insert(rows);
+  if (insertError) mutationFailure("Replace team tracks", insertError);
+}

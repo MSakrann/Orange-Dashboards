@@ -108,6 +108,54 @@ describe("ProjectCard Dev Ops options", () => {
     expect(screen.queryByText("Description")).not.toBeInTheDocument();
   });
 
+  it("shows per-team status and dated fields for Data Lake cards", () => {
+    render(
+      <ProjectCard
+        project={makeProject({
+          statusName: "In Progress",
+          owner: "Sam Digital",
+          teamTracks: [
+            {
+              id: "t1",
+              teamName: "Data Lake",
+              statusId: "s-progress",
+              statusName: "In Progress",
+              statusColor: "#237b4b",
+              startDate: "2026-03-01",
+              endDate: "2026-04-15",
+              sortOrder: 0,
+            },
+            {
+              id: "t2",
+              teamName: "Analytics",
+              statusId: "s-pending",
+              statusName: "Pending",
+              statusColor: "#f59e0b",
+              startDate: "2026-03-10",
+              endDate: "2026-05-01",
+              sortOrder: 1,
+            },
+          ],
+        })}
+        onOpen={() => undefined}
+        showOwner
+        ownerRoleLabel="Action Owner"
+        showProgress={false}
+        showDetailsButton={false}
+        openOnCardClick
+      />,
+    );
+
+    expect(screen.getByText("Data Lake Start Date")).toBeInTheDocument();
+    expect(screen.getByText("Data Lake End Date")).toBeInTheDocument();
+    expect(screen.getByText("Analytics Start Date")).toBeInTheDocument();
+    expect(screen.getByText("Analytics End Date")).toBeInTheDocument();
+    expect(screen.getAllByText("In Progress").length).toBeGreaterThan(0);
+    expect(screen.getByText("Pending")).toBeInTheDocument();
+    expect(screen.queryByText("Start Date")).not.toBeInTheDocument();
+    expect(screen.queryByText("RFT Date")).not.toBeInTheDocument();
+  });
+
   it("shows Digital card fields: Action Owner, Start/RFT dates, Release tag, and Comments", () => {
     render(
       <ProjectCard

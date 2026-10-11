@@ -603,6 +603,57 @@ export type Database = {
           },
         ];
       };
+      work_item_team_tracks: {
+        Row: {
+          created_at: string;
+          end_date: string | null;
+          id: string;
+          sort_order: number;
+          start_date: string | null;
+          status_id: string;
+          team_name: string;
+          updated_at: string;
+          work_item_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          end_date?: string | null;
+          id?: string;
+          sort_order?: number;
+          start_date?: string | null;
+          status_id: string;
+          team_name: string;
+          updated_at?: string;
+          work_item_id: string;
+        };
+        Update: {
+          created_at?: string;
+          end_date?: string | null;
+          id?: string;
+          sort_order?: number;
+          start_date?: string | null;
+          status_id?: string;
+          team_name?: string;
+          updated_at?: string;
+          work_item_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "work_item_team_tracks_work_item_id_fkey";
+            columns: ["work_item_id"];
+            isOneToOne: false;
+            referencedRelation: "work_items";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "work_item_team_tracks_status_id_fkey";
+            columns: ["status_id"];
+            isOneToOne: false;
+            referencedRelation: "statuses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       workspaces: {
         Row: {
           created_at: string;

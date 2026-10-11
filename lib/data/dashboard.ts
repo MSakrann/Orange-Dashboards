@@ -7,12 +7,25 @@ export type WorkspaceRow = Tables<"workspaces">;
 export type StatusRow = Tables<"statuses">;
 export type WorkItemRow = Tables<"work_items">;
 export type CommentRow = Tables<"comments">;
+export type TeamTrackRow = Tables<"work_item_team_tracks">;
 
 export interface DashboardRows {
   workspace: WorkspaceRow;
   statuses: StatusRow[];
   workItems: WorkItemRow[];
   comments: CommentRow[];
+  teamTracks?: TeamTrackRow[];
+}
+
+export interface DashboardTeamTrack {
+  id: string;
+  teamName: string;
+  statusId: string;
+  statusName: string;
+  statusColor: string;
+  startDate?: string;
+  endDate?: string;
+  sortOrder: number;
 }
 
 export interface DashboardStatus {
@@ -52,12 +65,23 @@ export interface DashboardWorkItem {
   lastWeekStatus?: OpsHealthStatus;
   currentStatus?: OpsHealthStatus;
   releaseTag?: string;
+  teamTracks?: DashboardTeamTrack[];
   sortOrder: number;
   updatedAt: string;
   syncSource: "local" | "jira";
   jiraIssueKey?: string;
   jiraUrl?: string;
   comments: DashboardComment[];
+}
+
+export function projectMatchesStatusFilter(
+  project: DashboardProject,
+  statusId: string,
+): boolean {
+  if (project.teamTracks?.length) {
+    return project.teamTracks.some((track) => track.statusId === statusId);
+  }
+  return project.statusId === statusId;
 }
 
 export interface DashboardProject extends DashboardWorkItem {
@@ -181,6 +205,7 @@ export function mapDashboardRows(
     .sort((a, b) => a.sort_order - b.sort_order);
   const itemIds = new Set(workItems.map((item) => item.id));
   const commentsByItem = new Map<string, DashboardComment[]>();
+  const teamTracksByItem = new Map<string, DashboardTeamTrack[]>();
 
   rows.comments
     .filter((comment) => itemIds.has(comment.work_item_id))
@@ -200,9 +225,35 @@ export function mapDashboardRows(
       commentsByItem.set(comment.work_item_id, comments);
     });
 
+  (rows.teamTracks ?? [])
+    .filter((track) => itemIds.has(track.work_item_id) && statusesById.has(track.status_id))
+    .sort(
+      (a, b) =>
+        a.sort_order - b.sort_order
+        || a.team_name.localeCompare(b.team_name)
+        || a.id.localeCompare(b.id),
+    )
+    .forEach((track) => {
+      const status = statusesById.get(track.status_id);
+      if (!status) return;
+      const tracks = teamTracksByItem.get(track.work_item_id) ?? [];
+      tracks.push({
+        id: track.id,
+        teamName: track.team_name,
+        statusId: status.id,
+        statusName: status.name,
+        statusColor: status.color,
+        ...(track.start_date ? { startDate: track.start_date } : {}),
+        ...(track.end_date ? { endDate: track.end_date } : {}),
+        sortOrder: track.sort_order,
+      });
+      teamTracksByItem.set(track.work_item_id, tracks);
+    });
+
   function mapItem(item: WorkItemRow): DashboardWorkItem {
     const status = statusesById.get(item.status_id);
     if (!status) throw new Error(`Missing status ${item.status_id} for work item ${item.id}`);
+    const teamTracks = teamTracksByItem.get(item.id);
 
     return {
       id: item.id,
@@ -225,6 +276,7 @@ export function mapDashboardRows(
         ? { currentStatus: asOpsHealthStatus(item.current_status) }
         : {}),
       ...(item.release_tag ? { releaseTag: item.release_tag } : {}),
+      ...(teamTracks?.length ? { teamTracks } : {}),
       sortOrder: item.sort_order,
       updatedAt: item.updated_at,
       syncSource: item.sync_source === "jira" ? "jira" : "local",
@@ -309,19 +361,34 @@ export async function loadDashboard(
   const workItems = dataOrThrow(workItemsResult.data, workItemsResult.error, "work items");
   const itemIds = workItems.map((item) => item.id);
   let comments: CommentRow[] = [];
+  let teamTracks: TeamTrackRow[] = [];
 
   if (itemIds.length) {
-    const commentsResult = await supabase
-      .from("comments")
-      .select("*")
-      .in("work_item_id", itemIds)
-      .order("created_at", { ascending: true })
-      .order("id", { ascending: true });
+    const [commentsResult, teamTracksResult] = await Promise.all([
+      supabase
+        .from("comments")
+        .select("*")
+        .in("work_item_id", itemIds)
+        .order("created_at", { ascending: true })
+        .order("id", { ascending: true }),
+      supabase
+        .from("work_item_team_tracks")
+        .select("*")
+        .in("work_item_id", itemIds)
+        .order("sort_order", { ascending: true })
+        .order("id", { ascending: true }),
+    ]);
     comments = dataOrThrow(commentsResult.data, commentsResult.error, "comments");
+    // Older environments may not have the team-tracks table yet.
+    if (!teamTracksResult.error) {
+      teamTracks = teamTracksResult.data ?? [];
+    } else if (!/work_item_team_tracks|schema cache/i.test(teamTracksResult.error.message)) {
+      throw new Error(`Unable to load team tracks: ${teamTracksResult.error.message}`);
+    }
   }
 
   return mapDashboardRows(
-    { workspace, statuses, workItems, comments },
+    { workspace, statuses, workItems, comments, teamTracks },
     {
       jiraLinked: Boolean(jiraSettingsResult.data?.enabled),
       jiraBrowseBaseUrl: resolveJiraBrowseBaseUrl(workspace.slug),

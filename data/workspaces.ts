@@ -150,6 +150,12 @@ export const workspaces: Workspace[] = [
     description: "Digital delivery priorities tracked manually by the team.",
     projects: [],
   },
+  {
+    slug: "data-lake",
+    name: "Data Lake",
+    description: "Data Lake delivery priorities tracked manually by the team.",
+    projects: [],
+  },
 ];
 
 export function getWorkspace(slug: string): Workspace | undefined {

@@ -8,6 +8,14 @@ import type {
   OpsHealthStatus,
 } from "@/lib/data/dashboard";
 
+export interface TeamTrackDraft {
+  key: string;
+  teamName: string;
+  statusId: string;
+  startDate: string;
+  endDate: string;
+}
+
 export interface WorkItemDraftFields {
   title: string;
   description: string;
@@ -34,9 +42,18 @@ export interface WorkItemFormValue {
   currentStatus: OpsHealthStatus | null;
   assignee: string | null;
   releaseTag: string | null;
+  teamTracks?: Array<{
+    teamName: string;
+    statusId: string;
+    startDate: string | null;
+    endDate: string | null;
+  }>;
 }
 
-export type WorkItemFormErrors = Partial<Record<keyof WorkItemDraftFields, string>>;
+export type WorkItemFormErrors = Partial<Record<keyof WorkItemDraftFields, string>> & {
+  teamTracks?: string;
+  teamTrackFields?: Record<string, Partial<Record<"teamName" | "statusId" | "endDate", string>>>;
+};
 
 const OPS_HEALTH_OPTIONS: OpsHealthStatus[] = ["Clear", "Delayed"];
 
@@ -44,10 +61,23 @@ function asOpsHealthStatus(value: string): OpsHealthStatus | null {
   return value === "Clear" || value === "Delayed" ? value : null;
 }
 
+function newTrackKey() {
+  return globalThis.crypto?.randomUUID?.() ?? `track-${Date.now()}-${Math.random()}`;
+}
+
+function teamFieldLabel(teamName: string, field: "Start Date" | "End Date" | "Status") {
+  const label = teamName.trim() || "Team";
+  return `${label} ${field}`;
+}
+
 export function validateWorkItemDraft(
   fields: WorkItemDraftFields,
   scheduleMode: "dates" | "ops-health" = "dates",
-  options: { requireProgress?: boolean } = {},
+  options: {
+    requireProgress?: boolean;
+    teamTracks?: TeamTrackDraft[];
+    requireTeamTracks?: boolean;
+  } = {},
 ): WorkItemFormErrors {
   const requireProgress = options.requireProgress ?? true;
   const errors: WorkItemFormErrors = {};
@@ -62,7 +92,42 @@ export function validateWorkItemDraft(
   if (fields.releaseTag.trim().length > 100) {
     errors.releaseTag = "Release must be 100 characters or fewer.";
   }
-  if (!fields.statusId) errors.statusId = "Status is required.";
+
+  if (options.requireTeamTracks) {
+    const tracks = options.teamTracks ?? [];
+    if (!tracks.length) {
+      errors.teamTracks = "Add at least one team with status and dates.";
+    } else {
+      const trackFieldErrors: NonNullable<WorkItemFormErrors["teamTrackFields"]> = {};
+      const seenNames = new Set<string>();
+      tracks.forEach((track) => {
+        const fieldErrors: Partial<Record<"teamName" | "statusId" | "endDate", string>> = {};
+        const name = track.teamName.trim();
+        if (!name) fieldErrors.teamName = "Team name is required.";
+        else if (name.length > 100) fieldErrors.teamName = "Team name must be 100 characters or fewer.";
+        else {
+          const key = name.toLowerCase();
+          if (seenNames.has(key)) fieldErrors.teamName = "Team names must be unique.";
+          seenNames.add(key);
+        }
+        if (!track.statusId) fieldErrors.statusId = "Status is required.";
+        if (track.startDate && track.endDate && track.endDate < track.startDate) {
+          fieldErrors.endDate = "End date must be on or after the start date.";
+        }
+        if (Object.keys(fieldErrors).length) {
+          trackFieldErrors[track.key] = fieldErrors;
+        }
+      });
+      if (Object.keys(trackFieldErrors).length) {
+        errors.teamTrackFields = trackFieldErrors;
+      }
+      if (!errors.statusId && !tracks.some((track) => track.statusId)) {
+        errors.statusId = "Status is required.";
+      }
+    }
+  } else if (!fields.statusId) {
+    errors.statusId = "Status is required.";
+  }
 
   const progressText = fields.progress.trim();
   const progress = Number(progressText);
@@ -78,11 +143,11 @@ export function validateWorkItemDraft(
   ) {
     errors.progress = "Progress must be a whole number from 0 to 100.";
   }
-  if (scheduleMode === "dates") {
+  if (!options.requireTeamTracks && scheduleMode === "dates") {
     if (fields.startDate && fields.endDate && fields.endDate < fields.startDate) {
       errors.endDate = "End date must be on or after the start date.";
     }
-  } else {
+  } else if (scheduleMode === "ops-health") {
     if (fields.lastWeekStatus && !asOpsHealthStatus(fields.lastWeekStatus)) {
       errors.lastWeekStatus = "Choose Clear or Delayed.";
     }
@@ -112,6 +177,28 @@ function initialFields(
   };
 }
 
+function initialTeamTracks(
+  statuses: DashboardStatus[],
+  value?: DashboardWorkItem,
+): TeamTrackDraft[] {
+  if (value?.teamTracks?.length) {
+    return value.teamTracks.map((track) => ({
+      key: track.id || newTrackKey(),
+      teamName: track.teamName,
+      statusId: track.statusId,
+      startDate: track.startDate ?? "",
+      endDate: track.endDate ?? "",
+    }));
+  }
+  return [{
+    key: newTrackKey(),
+    teamName: "",
+    statusId: statuses[0]?.id ?? "",
+    startDate: "",
+    endDate: "",
+  }];
+}
+
 interface WorkItemFormProps {
   kind: "project" | "subtask";
   statuses: DashboardStatus[];
@@ -124,6 +211,7 @@ interface WorkItemFormProps {
   showDescription?: boolean;
   showProgress?: boolean;
   showRelease?: boolean;
+  useTeamTracks?: boolean;
   onSubmit: (value: WorkItemFormValue) => Promise<void>;
   onCancel: () => void;
 }
@@ -140,12 +228,14 @@ export function WorkItemForm({
   showDescription = true,
   showProgress = true,
   showRelease = false,
+  useTeamTracks = false,
   onSubmit,
   onCancel,
 }: WorkItemFormProps) {
   // The form is intentionally initialized once. Realtime refreshes must not overwrite
   // fields while an administrator is editing them.
   const [fields, setFields] = useState(() => initialFields(statuses, initialValue));
+  const [teamTracks, setTeamTracks] = useState(() => initialTeamTracks(statuses, initialValue));
   const [errors, setErrors] = useState<WorkItemFormErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -161,27 +251,58 @@ export function WorkItemForm({
     setErrors((current) => ({ ...current, [key]: undefined }));
   }
 
+  function updateTeamTrack(key: string, patch: Partial<TeamTrackDraft>) {
+    setTeamTracks((current) =>
+      current.map((track) => (track.key === key ? { ...track, ...patch } : track)));
+    setErrors((current) => {
+      if (!current.teamTrackFields?.[key] && !current.teamTracks) return current;
+      const nextFieldErrors = { ...current.teamTrackFields };
+      delete nextFieldErrors[key];
+      return {
+        ...current,
+        teamTracks: undefined,
+        teamTrackFields: Object.keys(nextFieldErrors).length ? nextFieldErrors : undefined,
+      };
+    });
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (submittingRef.current) return;
     const nextErrors = validateWorkItemDraft(fields, scheduleMode, {
       requireProgress: showProgress,
+      requireTeamTracks: useTeamTracks,
+      teamTracks: useTeamTracks ? teamTracks : undefined,
     });
     setErrors(nextErrors);
     setSubmitError(null);
     if (Object.keys(nextErrors).length) return;
+
+    const normalizedTracks = useTeamTracks
+      ? teamTracks.map((track) => ({
+          teamName: track.teamName.trim(),
+          statusId: track.statusId,
+          startDate: track.startDate || null,
+          endDate: track.endDate || null,
+        }))
+      : undefined;
+    const primaryStatusId = normalizedTracks?.[0]?.statusId || fields.statusId;
 
     submittingRef.current = true;
     setSubmitting(true);
     try {
       await onSubmit({
         title: fields.title.trim(),
-        description: showDescription ? fields.description.trim() : fields.description.trim(),
-        statusId: fields.statusId,
+        description: fields.description.trim(),
+        statusId: primaryStatusId,
         priority: fields.priority,
         progress: showProgress ? Number(fields.progress) : Number(fields.progress || 0),
-        startDate: scheduleMode === "dates" ? fields.startDate || null : null,
-        endDate: scheduleMode === "dates" ? fields.endDate || null : null,
+        startDate: useTeamTracks
+          ? null
+          : scheduleMode === "dates" ? fields.startDate || null : null,
+        endDate: useTeamTracks
+          ? null
+          : scheduleMode === "dates" ? fields.endDate || null : null,
         lastWeekStatus: scheduleMode === "ops-health"
           ? asOpsHealthStatus(fields.lastWeekStatus)
           : null,
@@ -190,6 +311,7 @@ export function WorkItemForm({
           : null,
         assignee: fields.assignee.trim() || null,
         releaseTag: showRelease ? fields.releaseTag.trim() || null : fields.releaseTag.trim() || null,
+        ...(normalizedTracks ? { teamTracks: normalizedTracks } : {}),
       });
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "Unable to save this work item.");
@@ -233,23 +355,38 @@ export function WorkItemForm({
         </div>
       ) : null}
 
-      <div className="form-row">
-        <div className="form-field">
-          <label htmlFor="work-item-status">Status</label>
-          <select
-            id="work-item-status"
-            value={fields.statusId}
-            onChange={(event) => setField("statusId", event.target.value)}
-            aria-invalid={Boolean(errors.statusId)}
-            aria-describedby={errors.statusId ? "work-item-status-error" : undefined}
-          >
-            {!statuses.length ? <option value="">No statuses available</option> : null}
-            {statuses.map((status) => (
-              <option key={status.id} value={status.id}>{status.name}</option>
-            ))}
-          </select>
-          {errors.statusId ? <p className="form-error" id="work-item-status-error">{errors.statusId}</p> : null}
+      {!useTeamTracks ? (
+        <div className="form-row">
+          <div className="form-field">
+            <label htmlFor="work-item-status">Status</label>
+            <select
+              id="work-item-status"
+              value={fields.statusId}
+              onChange={(event) => setField("statusId", event.target.value)}
+              aria-invalid={Boolean(errors.statusId)}
+              aria-describedby={errors.statusId ? "work-item-status-error" : undefined}
+            >
+              {!statuses.length ? <option value="">No statuses available</option> : null}
+              {statuses.map((status) => (
+                <option key={status.id} value={status.id}>{status.name}</option>
+              ))}
+            </select>
+            {errors.statusId ? <p className="form-error" id="work-item-status-error">{errors.statusId}</p> : null}
+          </div>
+          <div className="form-field">
+            <label htmlFor="work-item-priority">Priority</label>
+            <select
+              id="work-item-priority"
+              value={fields.priority}
+              onChange={(event) => setField("priority", event.target.value as ProjectPriority)}
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
         </div>
+      ) : (
         <div className="form-field">
           <label htmlFor="work-item-priority">Priority</label>
           <select
@@ -262,7 +399,7 @@ export function WorkItemForm({
             <option value="high">High</option>
           </select>
         </div>
-      </div>
+      )}
 
       {showProgress ? (
         <div className="form-field">
@@ -282,7 +419,114 @@ export function WorkItemForm({
         </div>
       ) : null}
 
-      {scheduleMode === "ops-health" ? (
+      {useTeamTracks ? (
+        <section className="team-tracks-editor" aria-label="Team schedules">
+          <div className="team-tracks-editor-heading">
+            <h3>Teams</h3>
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => setTeamTracks((current) => [
+                ...current,
+                {
+                  key: newTrackKey(),
+                  teamName: "",
+                  statusId: statuses[0]?.id ?? "",
+                  startDate: "",
+                  endDate: "",
+                },
+              ])}
+            >
+              Add team
+            </button>
+          </div>
+          {errors.teamTracks ? (
+            <p className="form-error" role="alert">{errors.teamTracks}</p>
+          ) : null}
+          {teamTracks.map((track, index) => {
+            const trackErrors = errors.teamTrackFields?.[track.key];
+            return (
+              <div className="team-track-card" key={track.key}>
+                <div className="team-track-card-heading">
+                  <p>Team {index + 1}</p>
+                  {teamTracks.length > 1 ? (
+                    <button
+                      type="button"
+                      className="delete-button"
+                      aria-label={`Remove team ${index + 1}`}
+                      onClick={() => setTeamTracks((current) =>
+                        current.filter((candidate) => candidate.key !== track.key))}
+                    >
+                      x
+                    </button>
+                  ) : null}
+                </div>
+                <div className="form-field">
+                  <label htmlFor={`work-item-team-name-${track.key}`}>Team name</label>
+                  <input
+                    id={`work-item-team-name-${track.key}`}
+                    value={track.teamName}
+                    maxLength={100}
+                    placeholder="e.g. Data Lake, Analytics"
+                    onChange={(event) => updateTeamTrack(track.key, { teamName: event.target.value })}
+                    aria-invalid={Boolean(trackErrors?.teamName)}
+                  />
+                  {trackErrors?.teamName ? (
+                    <p className="form-error">{trackErrors.teamName}</p>
+                  ) : null}
+                </div>
+                <div className="form-field">
+                  <label htmlFor={`work-item-team-status-${track.key}`}>
+                    {teamFieldLabel(track.teamName, "Status")}
+                  </label>
+                  <select
+                    id={`work-item-team-status-${track.key}`}
+                    value={track.statusId}
+                    onChange={(event) => updateTeamTrack(track.key, { statusId: event.target.value })}
+                    aria-invalid={Boolean(trackErrors?.statusId)}
+                  >
+                    {!statuses.length ? <option value="">No statuses available</option> : null}
+                    {statuses.map((status) => (
+                      <option key={status.id} value={status.id}>{status.name}</option>
+                    ))}
+                  </select>
+                  {trackErrors?.statusId ? (
+                    <p className="form-error">{trackErrors.statusId}</p>
+                  ) : null}
+                </div>
+                <div className="form-row">
+                  <div className="form-field">
+                    <label htmlFor={`work-item-team-start-${track.key}`}>
+                      {teamFieldLabel(track.teamName, "Start Date")}
+                    </label>
+                    <input
+                      id={`work-item-team-start-${track.key}`}
+                      type="date"
+                      value={track.startDate}
+                      onChange={(event) => updateTeamTrack(track.key, { startDate: event.target.value })}
+                    />
+                  </div>
+                  <div className="form-field">
+                    <label htmlFor={`work-item-team-end-${track.key}`}>
+                      {teamFieldLabel(track.teamName, "End Date")}
+                    </label>
+                    <input
+                      id={`work-item-team-end-${track.key}`}
+                      type="date"
+                      value={track.endDate}
+                      onChange={(event) => updateTeamTrack(track.key, { endDate: event.target.value })}
+                      aria-invalid={Boolean(trackErrors?.endDate)}
+                    />
+                    {trackErrors?.endDate ? (
+                      <p className="form-error">{trackErrors.endDate}</p>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </section>
+      ) : scheduleMode === "ops-health" ? (
         <div className="form-row">
           <div className="form-field">
             <label htmlFor="work-item-last-week-status">Last Week Status</label>

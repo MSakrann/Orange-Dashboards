@@ -71,6 +71,31 @@ describe("validateWorkItemDraft", () => {
     expect(validateWorkItemDraft({ ...base, description: "x".repeat(10_001) }).description)
       .toMatch(/10000 characters/i);
   });
+
+  it("requires unique team tracks when team schedules are enabled", () => {
+    const errors = validateWorkItemDraft(emptyDraft, "dates", {
+      requireProgress: false,
+      requireTeamTracks: true,
+      teamTracks: [
+        {
+          key: "a",
+          teamName: "Data Lake",
+          statusId: "status-a",
+          startDate: "2026-03-01",
+          endDate: "2026-02-01",
+        },
+        {
+          key: "b",
+          teamName: "data lake",
+          statusId: "status-a",
+          startDate: "",
+          endDate: "",
+        },
+      ],
+    });
+    expect(errors.teamTrackFields?.a?.endDate).toMatch(/on or after/i);
+    expect(errors.teamTrackFields?.b?.teamName).toMatch(/unique/i);
+  });
 });
 
 describe("WorkItemForm", () => {

@@ -39,9 +39,22 @@ describe("Supabase core database behavior", () => {
 
   beforeAll(async () => {
     db = new PGlite();
-    await db.exec("create schema auth; create table auth.users (id uuid primary key);");
+    await db.exec(`
+      create schema auth;
+      create table auth.users (id uuid primary key);
+      create role anon nologin;
+      create role authenticated nologin;
+      create role service_role nologin bypassrls;
+      create or replace function public.is_admin()
+      returns boolean
+      language sql
+      stable
+      set search_path = ''
+      as $$ select false $$;
+    `);
     await db.exec(migration);
     await db.exec(read("supabase/migrations/0027_digital_dashboard.sql"));
+    await db.exec(read("supabase/migrations/0028_data_lake_dashboard.sql"));
     await db.exec(seed);
   });
 
@@ -71,6 +84,7 @@ describe("Supabase core database behavior", () => {
       "pe-ops",
       "datalake-ops",
       "digital",
+      "data-lake",
       "platform-development",
       "pe-development",
       "pe-operations",
@@ -90,11 +104,13 @@ describe("Supabase core database behavior", () => {
          'pe-operations',
          'datalake-ops',
          'datalake-operations',
-         'digital'
+         'digital',
+         'data-lake'
        )
        order by slug
     `);
     expect(names.rows).toEqual([
+      { slug: "data-lake", name: "Data Lake" },
       { slug: "datalake-operations", name: "Data Lake Operations Jira" },
       { slug: "datalake-ops", name: "Data Lake Operations" },
       { slug: "development-operations", name: "Dev Ops" },
@@ -116,11 +132,16 @@ describe("Supabase core database behavior", () => {
          'pe-delivery',
          'pe-ops',
          'datalake-ops',
-         'digital'
+         'digital',
+         'data-lake'
        )
        order by w.slug, s.sort_order
     `);
     expect(manualStatuses.rows).toEqual([
+      { slug: "data-lake", name: "In Progress" },
+      { slug: "data-lake", name: "Pending" },
+      { slug: "data-lake", name: "Cancelled" },
+      { slug: "data-lake", name: "Live" },
       { slug: "datalake-ops", name: "Data Ingestion" },
       { slug: "datalake-ops", name: "DAG Monitoring" },
       { slug: "datalake-ops", name: "Segmentation Files" },
@@ -155,6 +176,14 @@ describe("Supabase core database behavior", () => {
          and column_name = 'release_tag'
     `);
     expect(releaseColumn.rows).toEqual([{ column_name: "release_tag" }]);
+
+    const teamTracksTable = await db.query<{ table_name: string }>(`
+      select table_name
+        from information_schema.tables
+       where table_schema = 'public'
+         and table_name = 'work_item_team_tracks'
+    `);
+    expect(teamTracksTable.rows).toEqual([{ table_name: "work_item_team_tracks" }]);
   });
 
   it("applies the migration and seed with UUID keys, timestamps, foreign keys, and indexes", async () => {
@@ -472,6 +501,7 @@ describe("Supabase core database behavior", () => {
              and not tgisinternal
              and tgname not like 'set_%_updated_at'
              and tgname <> 'validate_work_item_hierarchy'
+             and tgname <> 'validate_work_item_team_track_workspace'
         ) as audit_triggers,
         (
           select count(*)::int
@@ -483,12 +513,19 @@ describe("Supabase core database behavior", () => {
             from pg_proc
            where pronamespace = 'public'::regnamespace
              and prorettype <> 'trigger'::regtype
+             and proname not in (
+               'is_admin',
+               'replace_and_delete_status',
+               'check_work_item_team_track_workspace'
+             )
         ) as rpc_functions
     `);
 
+    // Later migrations (e.g. Data Lake team tracks) may add RLS for new tables.
+    // This assertion still guards against Task-3-era objects on the core tables.
     expect(taskThreeObjects.rows[0]).toEqual({
-      policies: 0,
-      rls_tables: 0,
+      policies: 4,
+      rls_tables: 1,
       audit_triggers: 0,
       realtime_tables: 0,
       rpc_functions: 0,

@@ -118,6 +118,7 @@ const fixtureStatusesBySlug: Record<string, FixtureStatusDefinition[]> = {
   "pe-ops": peOpsFixtureStatuses,
   "datalake-ops": datalakeOpsFixtureStatuses,
   digital: digitalFixtureStatuses,
+  "data-lake": digitalFixtureStatuses,
 };
 
 export function mapFixtureWorkspace(workspace: Workspace): DashboardViewModel {

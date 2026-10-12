@@ -12,3 +12,15 @@ export function usesActionOwner(slug: string): boolean {
 export function usesTeamTracks(slug: string): boolean {
   return slug === "data-lake" || slug === "reports-and-insights";
 }
+
+/** Label for the “all items” KPI / status filter chip. */
+export function allFilterLabel(slug: string): string {
+  if (slug === "datalake-ops") return "All Tasks";
+  if (slug === "pe-delivery") return "Projects / CRS";
+  return "All Projects";
+}
+
+/** PE Development manual workspace (effort notes below KPIs). */
+export function isPeDeliveryWorkspace(slug: string): boolean {
+  return slug === "pe-delivery";
+}

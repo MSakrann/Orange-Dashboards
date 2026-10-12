@@ -394,6 +394,50 @@ describe("DashboardShell", () => {
     expect(screen.getByText("Insight pack")).toBeInTheDocument();
   });
 
+  it("labels PE Development all filter as Projects / CRS and shows effort notes", () => {
+    const peDashboard = mapFixtureWorkspace({
+      slug: "pe-delivery",
+      name: "PE Development",
+      description: "Promo engine delivery priorities tracked manually by the team.",
+      projects: [],
+    });
+    render(
+      <DashboardShell
+        initialDashboard={{
+          ...peDashboard,
+          projects: [
+            {
+              ...dashboard.projects[0],
+              statusId: peDashboard.statuses[0].id,
+              statusName: peDashboard.statuses[0].name,
+              statusColor: peDashboard.statuses[0].color,
+              subtasks: [],
+            },
+          ],
+        }}
+        source="fixture"
+      />,
+    );
+
+    const overview = screen.getByRole("region", { name: "Workspace status overview" });
+    expect(within(overview).getByRole("button", { name: /Projects \/ CRS/i })).toBeInTheDocument();
+    expect(within(overview).queryByRole("button", { name: /All Projects/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Projects / CRS" })).toBeInTheDocument();
+
+    const notes = screen.getByRole("complementary", { name: "PE Development effort guide" });
+    expect(within(notes).getByText("Complexity")).toBeInTheDocument();
+    expect(within(notes).getByText("Effort")).toBeInTheDocument();
+    expect(within(notes).getByText("Low")).toBeInTheDocument();
+    expect(within(notes).getByText("1–3 WDs")).toBeInTheDocument();
+    expect(within(notes).getByText("Medium")).toBeInTheDocument();
+    expect(within(notes).getByText("4–10 WDs")).toBeInTheDocument();
+    expect(within(notes).getByText("High")).toBeInTheDocument();
+    expect(within(notes).getByText("10–20 WDs")).toBeInTheDocument();
+    expect(within(notes).getByText(/Average efforts in the last 3 months/i)).toBeInTheDocument();
+    expect(within(notes).getByText("2 WDs")).toBeInTheDocument();
+    expect(within(notes).getByText("10 WDs")).toBeInTheDocument();
+  });
+
   it("shows Action Owner on PE Development cards", () => {
     const peDashboard = mapFixtureWorkspace({
       slug: "pe-delivery",

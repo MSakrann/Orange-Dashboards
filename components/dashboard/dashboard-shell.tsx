@@ -13,7 +13,9 @@ import {
   type DashboardWorkItem,
 } from "@/lib/data/dashboard";
 import {
+  allFilterLabel,
   isDigitalStyleWorkspace,
+  isPeDeliveryWorkspace,
   usesActionOwner,
   usesTeamTracks,
 } from "@/lib/dashboard/workspace-style";
@@ -45,6 +47,7 @@ import { EmptyState, ErrorState, LoadingState } from "@/components/ui/view-state
 import { ModalDialog } from "@/components/ui/modal-dialog";
 import { KpiGrid } from "./kpi-grid";
 import { LiveVariantFilterControl, type LiveVariantFilter } from "./live-variant-filter";
+import { PeDeliveryNotes } from "./pe-delivery-notes";
 import { ProjectCard } from "./project-card";
 import { ProjectDetailsModal } from "./project-details-modal";
 import { StatusFilters, type StatusFilter } from "./status-filters";
@@ -720,8 +723,10 @@ export function DashboardShell({
           projects={workspace.projects}
           activeFilter={effectiveFilter}
           onSelect={setActiveFilter}
-          allLabel={workspace.slug === "datalake-ops" ? "All Tasks" : "All Projects"}
+          allLabel={allFilterLabel(workspace.slug)}
         />
+
+        {isPeDeliveryWorkspace(workspace.slug) ? <PeDeliveryNotes /> : null}
 
         {isPeLiveFilter ? (
           <LiveVariantFilterControl value={liveVariant} onChange={setLiveVariant} />
@@ -772,7 +777,7 @@ export function DashboardShell({
                 activeFilter={effectiveFilter}
                 statuses={workspace.statuses}
                 onChange={setActiveFilter}
-                allLabel={workspace.slug === "datalake-ops" ? "All Tasks" : "All Projects"}
+                allLabel={allFilterLabel(workspace.slug)}
               />
               {visibleProjects.length ? (
                 <div className="projects-grid">

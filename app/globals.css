@@ -442,6 +442,83 @@ h1 {
   font-size: 12px;
 }
 
+.pe-delivery-notes {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  gap: 14px;
+  margin: -14px 0 32px;
+}
+
+.pe-delivery-notes-panel {
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--orange-soft) 55%, var(--surface)), var(--surface));
+  box-shadow: var(--shadow);
+}
+
+.pe-delivery-notes-panel .eyebrow {
+  margin-bottom: 12px;
+}
+
+.pe-complexity-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.pe-complexity-table th,
+.pe-complexity-table td {
+  padding: 8px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.pe-complexity-table thead th {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pe-complexity-table tbody th {
+  font-weight: 650;
+  color: var(--text);
+}
+
+.pe-complexity-table td {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.pe-complexity-table tr:last-child th,
+.pe-complexity-table tr:last-child td {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.pe-delivery-notes-average {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.pe-delivery-notes-copy {
+  margin: 0;
+  max-width: 42rem;
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.pe-delivery-notes-copy strong {
+  color: var(--orange-dark);
+  font-weight: 750;
+}
+
 .projects-section {
   padding: 26px;
   border: 1px solid var(--border);
@@ -1135,6 +1212,10 @@ footer {
 
   .kpi-grid-status {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .pe-delivery-notes {
+    grid-template-columns: 1fr;
   }
 }
 

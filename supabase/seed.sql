@@ -9,7 +9,8 @@ values
   ('10000000-0000-4000-8000-000000000009', 'pe-ops', 'PE Operations', 'Promo engine operations priorities tracked manually by the team.', 4),
   ('10000000-0000-4000-8000-00000000000a', 'datalake-ops', 'Data Lake Operations', 'Data lake operations priorities tracked manually by the team.', 5),
   ('10000000-0000-4000-8000-00000000000b', 'digital', 'Digital', 'Digital delivery priorities tracked manually by the team.', 6),
-  ('10000000-0000-4000-8000-00000000000c', 'data-lake', 'Data Lake', 'Data Lake delivery priorities tracked manually by the team.', 7),
+  ('10000000-0000-4000-8000-00000000000c', 'data-lake', 'Data Lake and AI', 'Data Lake and AI delivery priorities tracked manually by the team.', 7),
+  ('10000000-0000-4000-8000-00000000000d', 'reports-and-insights', 'Reports and Insights', 'Reports and Insights delivery priorities tracked manually by the team.', 8),
   ('10000000-0000-4000-8000-000000000002', 'platform-development', 'Platform Development', 'Platform development delivery workspace (hidden Jira mirror).', 100),
   ('10000000-0000-4000-8000-000000000003', 'pe-development', 'PE Development Jira', 'PE development delivery workspace (hidden Jira mirror).', 101),
   ('10000000-0000-4000-8000-000000000004', 'pe-operations', 'PE Operations Jira', 'PE operations delivery workspace (hidden Jira mirror).', 102),
@@ -77,7 +78,13 @@ values
   ('20000000-0000-4000-8000-000000000032', '10000000-0000-4000-8000-00000000000c', 'Pending', '#f59e0b', 2, 'risk'),
   ('20000000-0000-4000-8000-000000000035', '10000000-0000-4000-8000-00000000000c', 'On Hold', '#f59e0b', 3, 'risk'),
   ('20000000-0000-4000-8000-000000000036', '10000000-0000-4000-8000-00000000000c', 'Testing', '#246a91', 4, 'active'),
-  ('20000000-0000-4000-8000-000000000034', '10000000-0000-4000-8000-00000000000c', 'Done', '#16a34a', 5, 'completed')
+  ('20000000-0000-4000-8000-000000000034', '10000000-0000-4000-8000-00000000000c', 'Done', '#16a34a', 5, 'completed'),
+  ('20000000-0000-4000-8000-000000000037', '10000000-0000-4000-8000-00000000000d', 'Planning', '#237b4b', 0, 'active'),
+  ('20000000-0000-4000-8000-000000000038', '10000000-0000-4000-8000-00000000000d', 'In Progress', '#237b4b', 1, 'active'),
+  ('20000000-0000-4000-8000-000000000039', '10000000-0000-4000-8000-00000000000d', 'Pending', '#f59e0b', 2, 'risk'),
+  ('20000000-0000-4000-8000-00000000003a', '10000000-0000-4000-8000-00000000000d', 'On Hold', '#f59e0b', 3, 'risk'),
+  ('20000000-0000-4000-8000-00000000003b', '10000000-0000-4000-8000-00000000000d', 'Testing', '#246a91', 4, 'active'),
+  ('20000000-0000-4000-8000-00000000003c', '10000000-0000-4000-8000-00000000000d', 'Done', '#16a34a', 5, 'completed')
 on conflict (id) do update set
   workspace_id = excluded.workspace_id,
   name = excluded.name,

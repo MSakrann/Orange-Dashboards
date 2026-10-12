@@ -53,7 +53,11 @@ test.describe("public fixture workspace", () => {
 
     await page.getByRole("combobox", { name: "Workspace" }).selectOption("data-lake");
     await expect(page).toHaveURL(/\/data-lake$/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Data Lake");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Data Lake and AI");
+
+    await page.getByRole("combobox", { name: "Workspace" }).selectOption("reports-and-insights");
+    await expect(page).toHaveURL(/\/reports-and-insights$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Reports and Insights");
 
     const optionLabels = await page
       .getByRole("combobox", { name: "Workspace" })
@@ -67,7 +71,8 @@ test.describe("public fixture workspace", () => {
       "PE Operations",
       "Data Lake Operations",
       "Digital",
-      "Data Lake",
+      "Data Lake and AI",
+      "Reports and Insights",
     ]);
     expect(optionLabels).not.toContain("Platform Development");
     expect(optionLabels).not.toContain("PE Development Jira");

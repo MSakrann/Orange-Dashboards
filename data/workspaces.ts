@@ -152,8 +152,14 @@ export const workspaces: Workspace[] = [
   },
   {
     slug: "data-lake",
-    name: "Data Lake",
-    description: "Data Lake delivery priorities tracked manually by the team.",
+    name: "Data Lake and AI",
+    description: "Data Lake and AI delivery priorities tracked manually by the team.",
+    projects: [],
+  },
+  {
+    slug: "reports-and-insights",
+    name: "Reports and Insights",
+    description: "Reports and Insights delivery priorities tracked manually by the team.",
     projects: [],
   },
 ];

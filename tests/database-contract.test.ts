@@ -57,6 +57,7 @@ describe("Supabase core database behavior", () => {
     await db.exec(read("supabase/migrations/0028_data_lake_dashboard.sql"));
     await db.exec(read("supabase/migrations/0029_data_lake_on_hold_done.sql"));
     await db.exec(read("supabase/migrations/0030_data_lake_planning_testing.sql"));
+    await db.exec(read("supabase/migrations/0031_data_lake_ai_reports_insights.sql"));
     await db.exec(seed);
   });
 
@@ -87,6 +88,7 @@ describe("Supabase core database behavior", () => {
       "datalake-ops",
       "digital",
       "data-lake",
+      "reports-and-insights",
       "platform-development",
       "pe-development",
       "pe-operations",
@@ -107,12 +109,13 @@ describe("Supabase core database behavior", () => {
          'datalake-ops',
          'datalake-operations',
          'digital',
-         'data-lake'
+         'data-lake',
+         'reports-and-insights'
        )
        order by slug
     `);
     expect(names.rows).toEqual([
-      { slug: "data-lake", name: "Data Lake" },
+      { slug: "data-lake", name: "Data Lake and AI" },
       { slug: "datalake-operations", name: "Data Lake Operations Jira" },
       { slug: "datalake-ops", name: "Data Lake Operations" },
       { slug: "development-operations", name: "Dev Ops" },
@@ -123,6 +126,7 @@ describe("Supabase core database behavior", () => {
       { slug: "pe-ops", name: "PE Operations" },
       { slug: "platform-development", name: "Platform Development" },
       { slug: "platforms-development", name: "Platforms Development" },
+      { slug: "reports-and-insights", name: "Reports and Insights" },
     ]);
 
     const manualStatuses = await db.query<{ slug: string; name: string }>(`
@@ -135,7 +139,8 @@ describe("Supabase core database behavior", () => {
          'pe-ops',
          'datalake-ops',
          'digital',
-         'data-lake'
+         'data-lake',
+         'reports-and-insights'
        )
        order by w.slug, s.sort_order
     `);
@@ -170,6 +175,12 @@ describe("Supabase core database behavior", () => {
       { slug: "platforms-development", name: "In Progress" },
       { slug: "platforms-development", name: "Done" },
       { slug: "platforms-development", name: "Delayed" },
+      { slug: "reports-and-insights", name: "Planning" },
+      { slug: "reports-and-insights", name: "In Progress" },
+      { slug: "reports-and-insights", name: "Pending" },
+      { slug: "reports-and-insights", name: "On Hold" },
+      { slug: "reports-and-insights", name: "Testing" },
+      { slug: "reports-and-insights", name: "Done" },
     ]);
 
     const releaseColumn = await db.query<{ column_name: string }>(`

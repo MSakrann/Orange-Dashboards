@@ -290,8 +290,8 @@ describe("DashboardShell", () => {
   it("shows Data Lake team-track dates and KPI statuses", () => {
     const dataLakeDashboard = mapFixtureWorkspace({
       slug: "data-lake",
-      name: "Data Lake",
-      description: "Data Lake delivery priorities tracked manually by the team.",
+      name: "Data Lake and AI",
+      description: "Data Lake and AI delivery priorities tracked manually by the team.",
       projects: [],
     });
     const project = {
@@ -348,6 +348,50 @@ describe("DashboardShell", () => {
     expect(screen.getByText("Description")).toBeInTheDocument();
     expect(screen.getByText("Cross-team rollout")).toBeInTheDocument();
     expect(screen.queryByText("Comments")).not.toBeInTheDocument();
+  });
+
+  it("shows Reports and Insights with the same team-track fields as Data Lake", () => {
+    const reportsDashboard = mapFixtureWorkspace({
+      slug: "reports-and-insights",
+      name: "Reports and Insights",
+      description: "Reports and Insights delivery priorities tracked manually by the team.",
+      projects: [],
+    });
+    const project = {
+      ...dashboard.projects[0],
+      statusId: reportsDashboard.statuses[0].id,
+      statusName: reportsDashboard.statuses[0].name,
+      statusColor: reportsDashboard.statuses[0].color,
+      owner: "Sam Reports",
+      releaseTag: "R2",
+      description: "Insight pack",
+      teamTracks: [
+        {
+          id: "t1",
+          teamName: "Insights",
+          statusId: reportsDashboard.statuses[1].id,
+          statusName: reportsDashboard.statuses[1].name,
+          statusColor: reportsDashboard.statuses[1].color,
+          startDate: "2026-04-01",
+          endDate: "2026-05-01",
+          sortOrder: 0,
+        },
+      ],
+      subtasks: [],
+    };
+    render(
+      <DashboardShell
+        initialDashboard={{ ...reportsDashboard, projects: [project] }}
+        source="fixture"
+      />,
+    );
+
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Reports and Insights");
+    expect(screen.getByText("Insights Start Date")).toBeInTheDocument();
+    expect(screen.getByText("Action Owner")).toBeInTheDocument();
+    expect(screen.getByLabelText("Release R2")).toHaveTextContent("R2");
+    expect(screen.getByText("Description")).toBeInTheDocument();
+    expect(screen.getByText("Insight pack")).toBeInTheDocument();
   });
 
   it("shows Action Owner on PE Development cards", () => {

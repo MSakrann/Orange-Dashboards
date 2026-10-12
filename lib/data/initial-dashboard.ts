@@ -128,6 +128,7 @@ const fixtureStatusesBySlug: Record<string, FixtureStatusDefinition[]> = {
   "datalake-ops": datalakeOpsFixtureStatuses,
   digital: digitalFixtureStatuses,
   "data-lake": dataLakeFixtureStatuses,
+  "reports-and-insights": dataLakeFixtureStatuses,
 };
 
 export function mapFixtureWorkspace(workspace: Workspace): DashboardViewModel {

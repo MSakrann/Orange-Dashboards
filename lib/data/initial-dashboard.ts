@@ -82,7 +82,7 @@ const manualDeliveryFixtureStatuses: FixtureStatusDefinition[] = [
 
 const peDeliveryFixtureStatuses: FixtureStatusDefinition[] = [
   { legacyStatus: "in-progress", name: "Planning", category: "active", color: "#23b123", key: "planning" },
-  { legacyStatus: "in-progress", name: "In Progress", category: "active", color: "#23b123", key: "in-progress" },
+  { legacyStatus: "in-progress", name: "Development", category: "active", color: "#23b123", key: "development" },
   { legacyStatus: "at-risk", name: "On Hold", category: "risk", color: "#f59e0b", key: "on-hold" },
   { legacyStatus: "in-progress", name: "Testing", category: "active", color: "#246a91", key: "testing" },
   { legacyStatus: "completed", name: "Live", category: "completed", color: "#16a34a", key: "live" },

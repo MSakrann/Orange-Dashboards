@@ -58,6 +58,7 @@ describe("Supabase core database behavior", () => {
     await db.exec(read("supabase/migrations/0029_data_lake_on_hold_done.sql"));
     await db.exec(read("supabase/migrations/0030_data_lake_planning_testing.sql"));
     await db.exec(read("supabase/migrations/0031_data_lake_ai_reports_insights.sql"));
+    await db.exec(read("supabase/migrations/0032_pe_delivery_development_status.sql"));
     await db.exec(seed);
   });
 
@@ -162,7 +163,7 @@ describe("Supabase core database behavior", () => {
       { slug: "digital", name: "Cancelled" },
       { slug: "digital", name: "Live" },
       { slug: "pe-delivery", name: "Planning" },
-      { slug: "pe-delivery", name: "In Progress" },
+      { slug: "pe-delivery", name: "Development" },
       { slug: "pe-delivery", name: "On Hold" },
       { slug: "pe-delivery", name: "Testing" },
       { slug: "pe-delivery", name: "Live" },

@@ -93,11 +93,11 @@ describe("StatusManager", () => {
 
   it("requires replacement for used deletion and prevents final status deletion", async () => {
     const user = userEvent.setup();
-    vi.spyOn(window, "confirm").mockReturnValue(true);
     render(<StatusManager initialDashboard={dashboard} />);
     await user.click(screen.getByRole("button", { name: "Delete In Progress" }));
     expect(screen.getByLabelText("Replacement status")).toBeInTheDocument();
     await user.selectOptions(screen.getByLabelText("Replacement status"), "status-1");
+    await user.click(screen.getByRole("button", { name: "Delete status" }));
     await user.click(screen.getByRole("button", { name: "Confirm delete" }));
     expect(mutations.deleteStatus).toHaveBeenCalledWith(
       expect.anything(),
@@ -265,7 +265,6 @@ describe("StatusManager", () => {
 
   it("requires fresh confirmation after a stale status delete", async () => {
     const user = userEvent.setup();
-    vi.spyOn(window, "confirm").mockReturnValue(true);
     mutations.deleteStatus.mockRejectedValueOnce(new StatusMutationError(
       "This status changed by someone else.",
       false,
@@ -283,12 +282,12 @@ describe("StatusManager", () => {
 
     await user.click(screen.getByRole("button", { name: "Delete In Progress" }));
     await user.selectOptions(screen.getByLabelText("Replacement status"), "status-1");
+    await user.click(screen.getByRole("button", { name: "Delete status" }));
     await user.click(screen.getByRole("button", { name: "Confirm delete" }));
 
     expect(await screen.findByText("Changed before delete")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Retry" })).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Replacement status")).not.toBeInTheDocument();
     expect(mutations.deleteStatus).toHaveBeenCalledTimes(1);
-    expect(window.confirm).toHaveBeenCalledTimes(1);
   });
 });

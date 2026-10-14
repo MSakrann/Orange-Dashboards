@@ -98,9 +98,16 @@ describe("admin dashboard controls", () => {
     expect(within(dialog).getByRole("button", { name: "Edit Existing subtask" })).toBeInTheDocument();
     expect(within(dialog).queryByRole("button", { name: /add subtask to existing subtask/i }))
       .not.toBeInTheDocument();
-    expect(within(dialog).getByRole("button", { name: "Move Existing subtask up" }))
-      .toBeDisabled();
+    expect(within(dialog).queryByRole("button", { name: /Move Existing subtask up/i }))
+      .not.toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: /Drag to reorder Existing subtask/i }))
+      .toBeInTheDocument();
   });
+
+  async function confirmDelete(user: ReturnType<typeof userEvent.setup>) {
+    const confirmDialog = await screen.findByRole("dialog", { name: /Delete /i });
+    await user.click(within(confirmDialog).getByRole("button", { name: "Confirm delete" }));
+  }
 
   it("renders existing session controls only for database admins", () => {
     const { rerender } = render(
@@ -178,11 +185,11 @@ describe("admin dashboard controls", () => {
 
   it("rolls a failed deletion back and offers retry", async () => {
     const user = userEvent.setup();
-    vi.spyOn(window, "confirm").mockReturnValue(true);
     mutationMocks.deleteWorkItem.mockRejectedValueOnce(new Error("network unavailable"));
     render(<DashboardShell initialDashboard={dashboard} source="database" isAdmin />);
 
     await user.click(screen.getByRole("button", { name: "Delete Existing project" }));
+    await confirmDelete(user);
 
     await vi.waitFor(() => expect(screen.getByText("Existing project")).toBeInTheDocument());
     expect(screen.getByRole("alert")).toHaveTextContent("network unavailable");
@@ -194,7 +201,6 @@ describe("admin dashboard controls", () => {
     ["subtask", "Delete Existing subtask", dashboard.projects[0].subtasks[0].updatedAt],
   ])("refreshes a stale %s delete without replaying it", async (_, buttonName, updatedAt) => {
     const user = userEvent.setup();
-    vi.spyOn(window, "confirm").mockReturnValue(true);
     mutationMocks.deleteWorkItem.mockRejectedValueOnce(
       new WorkItemMutationError(
         "This work item changed by another administrator. Review the latest version.",
@@ -208,6 +214,7 @@ describe("admin dashboard controls", () => {
       await user.click(screen.getByRole("button", { name: /view existing project details/i }));
     }
     await user.click(screen.getByRole("button", { name: buttonName }));
+    await confirmDelete(user);
 
     await screen.findByText(/changed by another administrator/i);
     expect(mutationMocks.deleteWorkItem).toHaveBeenCalledWith(
@@ -265,7 +272,6 @@ describe("admin dashboard controls", () => {
       ...dashboard,
       projects: [{ ...dashboard.projects[0], title: "Server project" }],
     };
-    vi.spyOn(window, "confirm").mockReturnValue(true);
     mutationMocks.deleteWorkItem.mockReturnValueOnce(new Promise((_, reject) => {
       rejectDelete = reject;
     }));
@@ -276,6 +282,7 @@ describe("admin dashboard controls", () => {
     await user.click(screen.getByRole("button", { name: /view existing project details/i }));
 
     await user.click(screen.getByRole("button", { name: "Delete Existing project" }));
+    await confirmDelete(user);
     realtimeState.data = authoritative;
     rerender(<DashboardShell initialDashboard={dashboard} source="database" isAdmin />);
     rejectDelete(new Error("delete failed"));
@@ -365,9 +372,29 @@ describe("admin dashboard controls", () => {
       .mockRejectedValueOnce(new WorkItemMutationError("Try again.", true, "55P03"))
       .mockResolvedValueOnce(undefined);
     refetch.mockResolvedValue(changedDashboard);
-    render(<DashboardShell initialDashboard={orderedDashboard} source="database" isAdmin />);
+    const { container } = render(
+      <DashboardShell initialDashboard={orderedDashboard} source="database" isAdmin />,
+    );
 
-    await user.click(screen.getByRole("button", { name: "Move Middle project up" }));
+    const middleHandle = screen.getByRole("button", {
+      name: "Drag to reorder Middle project",
+    });
+    const existingCard = Array.from(container.querySelectorAll(".project-card")).find((card) =>
+      card.textContent?.includes("Existing project")
+      && !card.textContent?.includes("Middle project"));
+    expect(existingCard).toBeTruthy();
+
+    const dataTransfer = {
+      effectAllowed: "none",
+      dropEffect: "none",
+      setData: vi.fn(),
+      getData: vi.fn(() => middle.id),
+    };
+    fireEvent.dragStart(middleHandle, { dataTransfer });
+    fireEvent.dragOver(existingCard!, { dataTransfer });
+    fireEvent.drop(existingCard!, { dataTransfer });
+    fireEvent.dragEnd(middleHandle, { dataTransfer });
+
     await screen.findByRole("button", { name: "Retry" });
     await user.click(screen.getByRole("button", { name: "Retry" }));
 
@@ -381,5 +408,52 @@ describe("admin dashboard controls", () => {
       dashboard.projects[0].id,
       last.id,
     ]);
+  });
+
+  it("deletes multiple selected projects after confirmation", async () => {
+    const user = userEvent.setup();
+    const second = {
+      ...dashboard.projects[0],
+      id: "33333333-3333-4333-8333-333333333333",
+      title: "Second project",
+      subtasks: [],
+    };
+    const multiDashboard = {
+      ...dashboard,
+      projects: [dashboard.projects[0], second],
+    };
+    realtimeState.data = multiDashboard;
+    refetch.mockImplementation(async () => {
+      const deletedIds = new Set(
+        mutationMocks.deleteWorkItem.mock.calls.map((call) => call[2] as string),
+      );
+      return {
+        ...multiDashboard,
+        projects: multiDashboard.projects.filter((project) => !deletedIds.has(project.id)),
+      };
+    });
+    render(<DashboardShell initialDashboard={multiDashboard} source="database" isAdmin />);
+
+    await user.click(screen.getByRole("checkbox", { name: "Select Existing project" }));
+    await user.click(screen.getByRole("checkbox", { name: "Select Second project" }));
+    await user.click(screen.getByRole("button", { name: "Delete selected" }));
+    await confirmDelete(user);
+
+    await vi.waitFor(() => expect(mutationMocks.deleteWorkItem).toHaveBeenCalledTimes(2));
+    expect(mutationMocks.deleteWorkItem.mock.calls.map((call) => call[2])).toEqual([
+      dashboard.projects[0].id,
+      second.id,
+    ]);
+  });
+
+  it("opens Manage KPIs for renaming and changing status cards", async () => {
+    const user = userEvent.setup();
+    render(<DashboardShell initialDashboard={dashboard} source="database" isAdmin />);
+
+    await user.click(screen.getByRole("button", { name: "Manage KPIs" }));
+    const dialog = screen.getByRole("dialog", { name: "Manage KPIs" });
+    expect(within(dialog).getByRole("button", { name: "New status" })).toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: "Edit In Progress" })).toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: "Delete In Progress" })).toBeInTheDocument();
   });
 });

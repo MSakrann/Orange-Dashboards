@@ -12,6 +12,7 @@ import {
   type StatusInput,
 } from "@/lib/data/status-mutations";
 import { createClient } from "@/lib/supabase/client";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { StatusForm } from "./status-form";
 
 type Editor = "new" | DashboardStatus | null;
@@ -70,13 +71,20 @@ function intentApplied(statuses: DashboardStatus[], intent: StatusIntent) {
   return statuses.map((status) => status.id).join(",") === intent.orderedIds.join(",");
 }
 
-export function StatusManager({ initialDashboard }: { initialDashboard: DashboardViewModel }) {
+export function StatusManager({
+  initialDashboard,
+  variant = "page",
+}: {
+  initialDashboard: DashboardViewModel;
+  variant?: "page" | "panel";
+}) {
   const realtime = useWorkspaceRealtime(initialDashboard, { enabled: true });
   const supabase = useMemo(() => createClient(), []);
   const [statuses, setStatuses] = useState(realtime.data.statuses);
   const [editor, setEditor] = useState<Editor>(null);
   const [deleting, setDeleting] = useState<DashboardStatus | null>(null);
   const [replacementId, setReplacementId] = useState("");
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<{
     message: string;
@@ -256,30 +264,44 @@ export function StatusManager({ initialDashboard }: { initialDashboard: Dashboar
     void run({ kind: "reorder", orderedIds: reordered.map((entry) => entry.id) });
   };
 
+  const requestDeleteConfirmation = () => {
+    if (!deleting || !replacementId) {
+      setNotice({ message: "Select a replacement status." });
+      return;
+    }
+    setConfirmingDelete(true);
+  };
+
   const confirmDelete = () => {
     if (!deleting || !replacementId) {
       setNotice({ message: "Select a replacement status." });
       return;
     }
-    if (!window.confirm(
-      `Delete "${deleting.name}" and move its items to the selected replacement?`,
-    )) return;
+    setConfirmingDelete(false);
     void run({ kind: "delete", status: deleting, replacementId });
   };
 
+  const Root = variant === "page" ? "main" : "div";
+
   return (
-    <main className="status-settings">
-      <header className="settings-header">
-        <div>
-          <p className="eyebrow">Workspace administration</p>
-          <h1>Status settings</h1>
-          <p>Manage reporting labels for {initialDashboard.name}.</p>
-        </div>
-        <nav aria-label="Admin navigation">
-          <a href={`/${initialDashboard.slug}`}>Back to workspace</a>
-          <a href={`/${initialDashboard.slug}/history`}>History</a>
-        </nav>
-      </header>
+    <Root className={variant === "page" ? "status-settings" : "status-settings status-settings-panel"}>
+      {variant === "page" ? (
+        <header className="settings-header">
+          <div>
+            <p className="eyebrow">Workspace administration</p>
+            <h1>Status settings</h1>
+            <p>Manage reporting labels for {initialDashboard.name}.</p>
+          </div>
+          <nav aria-label="Admin navigation">
+            <a href={`/${initialDashboard.slug}`}>Back to workspace</a>
+            <a href={`/${initialDashboard.slug}/history`}>History</a>
+          </nav>
+        </header>
+      ) : (
+        <p className="status-panel-intro">
+          Rename, add, or remove KPI status cards for {initialDashboard.name}.
+        </p>
+      )}
       {notice ? (
         <div className="mutation-notice" role="alert">
           <span>{notice.message}</span>
@@ -342,6 +364,7 @@ export function StatusManager({ initialDashboard }: { initialDashboard: Dashboar
                   onClick={() => {
                     setDeleting(status);
                     setReplacementId("");
+                    setConfirmingDelete(false);
                   }}
                 >
                   Delete {status.name}
@@ -372,15 +395,36 @@ export function StatusManager({ initialDashboard }: { initialDashboard: Dashboar
             </select>
           </label>
           <div className="form-actions">
-            <button type="button" className="secondary-button" onClick={() => setDeleting(null)}>
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => {
+                setDeleting(null);
+                setConfirmingDelete(false);
+              }}
+            >
               Cancel
             </button>
-            <button type="button" className="primary-button" disabled={busy} onClick={confirmDelete}>
-              Confirm delete
+            <button
+              type="button"
+              className="primary-button"
+              disabled={busy}
+              onClick={requestDeleteConfirmation}
+            >
+              Delete status
             </button>
           </div>
         </section>
       ) : null}
-    </main>
+      {confirmingDelete && deleting ? (
+        <ConfirmDialog
+          title={`Delete ${deleting.name}?`}
+          message={`Delete "${deleting.name}" and move its items to the selected replacement? This cannot be undone.`}
+          onConfirm={confirmDelete}
+          onCancel={() => setConfirmingDelete(false)}
+          busy={busy}
+        />
+      ) : null}
+    </Root>
   );
 }

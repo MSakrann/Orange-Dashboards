@@ -1,4 +1,4 @@
-import type { KeyboardEvent, MouseEvent } from "react";
+import type { DragEvent, KeyboardEvent, MouseEvent } from "react";
 import type {
   DashboardProject,
   DashboardWorkItem,
@@ -22,13 +22,20 @@ interface ProjectCardProps {
   scheduleMode?: "dates" | "ops-health";
   startDateLabel?: string;
   endDateLabel?: string;
+  selected?: boolean;
+  onSelectedChange?: (selected: boolean) => void;
+  dragControls?: {
+    onDragStart: (event: DragEvent<HTMLElement>) => void;
+    onDragOver: (event: DragEvent<HTMLElement>) => void;
+    onDragLeave: (event: DragEvent<HTMLElement>) => void;
+    onDrop: (event: DragEvent<HTMLElement>) => void;
+    onDragEnd: () => void;
+    isDragging?: boolean;
+    isDropTarget?: boolean;
+  };
   adminControls?: {
     onEdit: () => void;
     onDelete: () => void;
-    onMoveUp: () => void;
-    onMoveDown: () => void;
-    canMoveUp: boolean;
-    canMoveDown: boolean;
   };
 }
 
@@ -103,11 +110,19 @@ export function ProjectCard({
   scheduleMode = "dates",
   startDateLabel = "Start",
   endDateLabel = "Target",
+  selected = false,
+  onSelectedChange,
+  dragControls,
   adminControls,
 }: ProjectCardProps) {
   const childCount = project.subtasks.length;
   const overdue = showOverdueTag && isPastTargetDate(project.endDate);
-  const cardClassName = openOnCardClick ? "project-card project-card-clickable" : "project-card";
+  const cardClassName = [
+    openOnCardClick ? "project-card project-card-clickable" : "project-card",
+    dragControls?.isDragging ? "project-card-dragging" : "",
+    dragControls?.isDropTarget ? "project-card-drop-target" : "",
+    selected ? "project-card-selected" : "",
+  ].filter(Boolean).join(" ");
   const releaseTag = project.releaseTag?.trim();
 
   return (
@@ -116,6 +131,12 @@ export function ProjectCard({
       role={openOnCardClick ? "button" : undefined}
       tabIndex={openOnCardClick ? 0 : undefined}
       aria-label={openOnCardClick ? `View ${project.title} details` : undefined}
+      draggable={Boolean(dragControls)}
+      onDragStart={dragControls?.onDragStart}
+      onDragOver={dragControls?.onDragOver}
+      onDragLeave={dragControls?.onDragLeave}
+      onDrop={dragControls?.onDrop}
+      onDragEnd={dragControls?.onDragEnd}
       onClick={openOnCardClick ? () => onOpen(project) : undefined}
       onKeyDown={
         openOnCardClick
@@ -128,6 +149,31 @@ export function ProjectCard({
           : undefined
       }
     >
+      {adminControls || onSelectedChange ? (
+        <div
+          className="project-card-admin-bar"
+          onClick={stopCardActivation}
+          onKeyDown={stopCardActivation}
+        >
+          {onSelectedChange ? (
+            <label className="project-select">
+              <input
+                type="checkbox"
+                checked={selected}
+                onChange={(event) => onSelectedChange(event.target.checked)}
+                aria-label={`Select ${project.title}`}
+              />
+              <span>Select</span>
+            </label>
+          ) : null}
+          {dragControls ? (
+            <span className="drag-handle" aria-hidden="true">
+              Drag to reorder
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+
       <div className="project-heading">
         <div>
           <div className="project-meta-row">
@@ -311,26 +357,12 @@ export function ProjectCard({
             Edit {project.title}
           </button>
           <button
-            type="button"
-            onClick={adminControls.onMoveUp}
-            disabled={!adminControls.canMoveUp}
-          >
-            Move {project.title} up
-          </button>
-          <button
-            type="button"
-            onClick={adminControls.onMoveDown}
-            disabled={!adminControls.canMoveDown}
-          >
-            Move {project.title} down
-          </button>
-          <button
             className="delete-button"
             type="button"
             onClick={adminControls.onDelete}
             aria-label={`Delete ${project.title}`}
           >
-            x
+            Delete
           </button>
         </div>
       ) : null}

@@ -1,3 +1,6 @@
+"use client";
+
+import { useRef, type DragEvent } from "react";
 import type { DashboardComment, DashboardProject } from "@/lib/data/dashboard";
 import type { CommentInput } from "@/lib/data/comment-mutations";
 import { CommentSection } from "@/components/admin/comments/comment-section";
@@ -13,7 +16,7 @@ interface ProjectDetailsModalProps {
     onAddSubtask: () => void;
     onEditSubtask: (subtaskId: string) => void;
     onDeleteSubtask: (subtaskId: string) => void;
-    onMoveSubtask: (subtaskId: string, direction: -1 | 1) => void;
+    onReorderSubtask: (subtaskId: string, beforeId: string | null) => void;
   };
   commentControls?: {
     onCreate: (
@@ -37,6 +40,38 @@ export function ProjectDetailsModal({
   adminControls,
   commentControls,
 }: ProjectDetailsModalProps) {
+  const dragSubtaskIdRef = useRef<string | null>(null);
+
+  function handleSubtaskDragStart(subtaskId: string, event: DragEvent<HTMLLIElement>) {
+    dragSubtaskIdRef.current = subtaskId;
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", subtaskId);
+    event.currentTarget.classList.add("subtask-dragging");
+  }
+
+  function handleSubtaskDragOver(event: DragEvent<HTMLLIElement>) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    event.currentTarget.classList.add("subtask-drop-target");
+  }
+
+  function handleSubtaskDragLeave(event: DragEvent<HTMLLIElement>) {
+    event.currentTarget.classList.remove("subtask-drop-target");
+  }
+
+  function handleSubtaskDrop(beforeId: string, event: DragEvent<HTMLLIElement>) {
+    event.preventDefault();
+    event.currentTarget.classList.remove("subtask-drop-target");
+    const sourceId = event.dataTransfer.getData("text/plain") || dragSubtaskIdRef.current;
+    if (!adminControls || !sourceId || sourceId === beforeId) return;
+    adminControls.onReorderSubtask(sourceId, beforeId);
+  }
+
+  function handleSubtaskDragEnd(event: DragEvent<HTMLLIElement>) {
+    event.currentTarget.classList.remove("subtask-dragging");
+    dragSubtaskIdRef.current = null;
+  }
+
   return (
     <ModalDialog
       labelledBy={`project-title-${project.id}`}
@@ -95,7 +130,7 @@ export function ProjectDetailsModal({
               aria-label={`Delete ${project.title}`}
               onClick={adminControls.onDeleteProject}
             >
-              x
+              Delete
             </button>
           </div>
         ) : null}
@@ -105,8 +140,21 @@ export function ProjectDetailsModal({
           </h3>
           {project.subtasks.length ? (
             <ul>
-              {project.subtasks.map((subtask, index) => (
-                <li key={subtask.id}>
+              {project.subtasks.map((subtask) => (
+                <li
+                  key={subtask.id}
+                  draggable={Boolean(adminControls)}
+                  onDragStart={adminControls
+                    ? (event) => handleSubtaskDragStart(subtask.id, event)
+                    : undefined}
+                  onDragOver={adminControls ? handleSubtaskDragOver : undefined}
+                  onDragLeave={adminControls ? handleSubtaskDragLeave : undefined}
+                  onDrop={adminControls
+                    ? (event) => handleSubtaskDrop(subtask.id, event)
+                    : undefined}
+                  onDragEnd={adminControls ? handleSubtaskDragEnd : undefined}
+                  className={adminControls ? "subtask-draggable" : undefined}
+                >
                   <div>
                     <strong>
                       {subtask.title}
@@ -123,6 +171,11 @@ export function ProjectDetailsModal({
                       ) : null}
                     </strong>
                     <small>{subtask.statusName} · {subtask.progress}%</small>
+                    {adminControls ? (
+                      <span className="drag-handle drag-handle-inline" aria-hidden="true">
+                        Drag to reorder
+                      </span>
+                    ) : null}
                   </div>
                   {adminControls ? (
                     <div className="admin-actions">
@@ -134,25 +187,11 @@ export function ProjectDetailsModal({
                       </button>
                       <button
                         type="button"
-                        disabled={index === 0}
-                        onClick={() => adminControls.onMoveSubtask(subtask.id, -1)}
-                      >
-                        Move {subtask.title} up
-                      </button>
-                      <button
-                        type="button"
-                        disabled={index === project.subtasks.length - 1}
-                        onClick={() => adminControls.onMoveSubtask(subtask.id, 1)}
-                      >
-                        Move {subtask.title} down
-                      </button>
-                      <button
-                        type="button"
                         className="delete-button"
                         aria-label={`Delete ${subtask.title}`}
                         onClick={() => adminControls.onDeleteSubtask(subtask.id)}
                       >
-                        x
+                        Delete
                       </button>
                     </div>
                   ) : null}

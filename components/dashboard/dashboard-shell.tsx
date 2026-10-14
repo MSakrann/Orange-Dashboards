@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type DragEvent,
+} from "react";
 import { useWorkspaceRealtime } from "@/hooks/use-workspace-realtime";
 import type { DashboardSource } from "@/lib/data/initial-dashboard";
 import {
@@ -23,6 +30,7 @@ import {
   WorkItemForm,
   type WorkItemFormValue,
 } from "@/components/admin/work-item-form";
+import { StatusManager } from "@/components/admin/statuses/status-manager";
 import {
   buildWorkItemPayload,
   createWorkItem,
@@ -44,6 +52,7 @@ import { WorkspaceSwitcher } from "@/components/layout/workspace-switcher";
 import { SessionControls } from "@/components/auth/session-controls";
 import { BrandMark } from "@/components/ui/brand-mark";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/view-states";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ModalDialog } from "@/components/ui/modal-dialog";
 import { KpiGrid } from "./kpi-grid";
 import { LiveVariantFilterControl, type LiveVariantFilter } from "./live-variant-filter";
@@ -90,8 +99,15 @@ type RetryIntent =
       kind: "reorder";
       itemId: string;
       parentId: string | null;
-      direction: -1 | 1;
+      beforeId: string | null;
     };
+
+interface PendingDelete {
+  items: Array<{
+    item: DashboardWorkItem;
+    parentId: string | null;
+  }>;
+}
 
 interface OptimisticOperation {
   apply: (current: DashboardViewModel) => DashboardViewModel;
@@ -263,6 +279,11 @@ export function DashboardShell({
   const [liveVariant, setLiveVariant] = useState<LiveVariantFilter>("live");
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [editor, setEditor] = useState<EditorState | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
+  const [selectedProjectIds, setSelectedProjectIds] = useState<Set<string>>(new Set());
+  const [dragProjectId, setDragProjectId] = useState<string | null>(null);
+  const [dropTargetProjectId, setDropTargetProjectId] = useState<string | null>(null);
+  const [manageKpisOpen, setManageKpisOpen] = useState(false);
   const [mutationNotice, setMutationNotice] = useState<{
     message: string;
     retry?: () => void;
@@ -478,11 +499,23 @@ export function DashboardShell({
       ? base.projects.find((project) => project.id === intent.parentId)?.subtasks
       : base.projects;
     if (!siblings) throw new Error("The sibling list no longer exists.");
-    const index = siblings.findIndex((item) => item.id === intent.itemId);
-    const target = index + intent.direction;
-    if (index < 0 || target < 0 || target >= siblings.length) return;
-    const reordered = [...siblings];
-    [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+    const moving = siblings.find((item) => item.id === intent.itemId);
+    if (!moving) return;
+    if (intent.beforeId === intent.itemId) return;
+    const without = siblings.filter((item) => item.id !== intent.itemId);
+    let reordered: typeof siblings;
+    if (intent.beforeId == null) {
+      reordered = [...without, moving];
+    } else {
+      const beforeIndex = without.findIndex((item) => item.id === intent.beforeId);
+      if (beforeIndex < 0) return;
+      reordered = [
+        ...without.slice(0, beforeIndex),
+        moving,
+        ...without.slice(beforeIndex),
+      ];
+    }
+    if (reordered.every((item, index) => item.id === siblings[index]?.id)) return;
     const normalized = reordered.map((item, sortOrder) => ({ ...item, sortOrder }));
     const orderedIds = normalized.map((item) => item.id);
     await perform({
@@ -550,31 +583,97 @@ export function DashboardShell({
     }
   }, [editor, runIntent, supabase]);
 
-  const removeItem = useCallback((item: DashboardWorkItem, parentId: string | null) => {
+  const requestRemoveItem = useCallback((item: DashboardWorkItem, parentId: string | null) => {
     if (!supabase) return;
-    const noun = parentId ? "subtask" : "project";
-    if (!window.confirm(`Delete ${noun} "${item.title}"? This cannot be undone.`)) return;
-    void runIntent({
-      kind: "delete",
-      itemId: item.id,
-      parentId,
-      expectedUpdatedAt: item.updatedAt,
-    }).catch(() => undefined);
-  }, [runIntent, supabase]);
+    setPendingDelete({ items: [{ item, parentId }] });
+  }, [supabase]);
 
-  const moveItem = useCallback((
+  const requestRemoveSelectedProjects = useCallback(() => {
+    if (!supabase || !selectedProjectIds.size) return;
+    const items = workspace.projects
+      .filter((project) => selectedProjectIds.has(project.id))
+      .map((item) => ({ item, parentId: null as string | null }));
+    if (!items.length) return;
+    setPendingDelete({ items });
+  }, [selectedProjectIds, supabase, workspace.projects]);
+
+  const confirmPendingDelete = useCallback(async () => {
+    if (!pendingDelete || !supabase) return;
+    const items = pendingDelete.items;
+    setPendingDelete(null);
+    for (const entry of items) {
+      const current = findItem(workspaceRef.current, entry.item.id);
+      if (!current) continue;
+      try {
+        await runIntent({
+          kind: "delete",
+          itemId: current.id,
+          parentId: entry.parentId,
+          expectedUpdatedAt: current.updatedAt,
+        });
+      } catch {
+        // Notice + retry are handled by perform/runIntent.
+        break;
+      }
+    }
+    setSelectedProjectIds((current) => {
+      const removed = new Set(items.map((entry) => entry.item.id));
+      const next = new Set<string>();
+      current.forEach((id) => {
+        if (!removed.has(id)) next.add(id);
+      });
+      return next;
+    });
+  }, [pendingDelete, runIntent, supabase]);
+
+  const reorderItem = useCallback((
     itemId: string,
     parentId: string | null,
-    direction: -1 | 1,
+    beforeId: string | null,
   ) => {
     if (!supabase) return;
     void runIntent({
       kind: "reorder",
       itemId,
       parentId,
-      direction,
+      beforeId,
     }).catch(() => undefined);
   }, [runIntent, supabase]);
+
+  const handleProjectDragStart = useCallback((
+    projectId: string,
+    event: DragEvent<HTMLElement>,
+  ) => {
+    setDragProjectId(projectId);
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", projectId);
+  }, []);
+
+  const handleProjectDragOver = useCallback((
+    projectId: string,
+    event: DragEvent<HTMLElement>,
+  ) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    setDropTargetProjectId(projectId);
+  }, []);
+
+  const handleProjectDrop = useCallback((
+    beforeId: string,
+    event: DragEvent<HTMLElement>,
+  ) => {
+    event.preventDefault();
+    const sourceId = event.dataTransfer.getData("text/plain") || dragProjectId;
+    setDropTargetProjectId(null);
+    setDragProjectId(null);
+    if (!sourceId || sourceId === beforeId) return;
+    reorderItem(sourceId, null, beforeId);
+  }, [dragProjectId, reorderItem]);
+
+  const handleProjectDragEnd = useCallback(() => {
+    setDragProjectId(null);
+    setDropTargetProjectId(null);
+  }, []);
 
   const mapComment = useCallback((row: {
     id: string;
@@ -692,6 +791,13 @@ export function DashboardShell({
                     >
                       History
                     </Link>
+                    <button
+                      className="secondary-button settings-link"
+                      type="button"
+                      onClick={() => setManageKpisOpen(true)}
+                    >
+                      Manage KPIs
+                    </button>
                     <Link
                       className="secondary-button settings-link"
                       href={`/${workspace.slug}/settings/statuses`}
@@ -740,6 +846,25 @@ export function DashboardShell({
             </div>
             <div className="section-actions">
               <p>{visibleProjects.length} visible</p>
+              {canAdmin && selectedProjectIds.size ? (
+                <>
+                  <p>{selectedProjectIds.size} selected</p>
+                  <button
+                    className="secondary-button"
+                    type="button"
+                    onClick={() => setSelectedProjectIds(new Set())}
+                  >
+                    Clear selection
+                  </button>
+                  <button
+                    className="primary-button delete-confirm-button"
+                    type="button"
+                    onClick={requestRemoveSelectedProjects}
+                  >
+                    Delete selected
+                  </button>
+                </>
+              ) : null}
               {canAdmin ? (
                 <button
                   className="primary-button"
@@ -781,11 +906,7 @@ export function DashboardShell({
               />
               {visibleProjects.length ? (
                 <div className="projects-grid">
-                  {visibleProjects.map((project) => {
-                    const projectIndex = workspace.projects.findIndex(
-                      (candidate) => candidate.id === project.id,
-                    );
-                    return (
+                  {visibleProjects.map((project) => (
                     <ProjectCard
                       project={project}
                       key={project.id}
@@ -854,21 +975,37 @@ export function DashboardShell({
                       showOverdueTag={workspace.slug === "development-operations"}
                       showChildHierarchy={workspace.jiraLinked}
                       onOpen={(selected) => setSelectedProjectId(selected.id)}
+                      selected={selectedProjectIds.has(project.id)}
+                      onSelectedChange={canAdmin ? (selected) => {
+                        setSelectedProjectIds((current) => {
+                          const next = new Set(current);
+                          if (selected) next.add(project.id);
+                          else next.delete(project.id);
+                          return next;
+                        });
+                      } : undefined}
+                      dragControls={canAdmin ? {
+                        onDragStart: (event) => handleProjectDragStart(project.id, event),
+                        onDragOver: (event) => handleProjectDragOver(project.id, event),
+                        onDragLeave: () => {
+                          setDropTargetProjectId((current) =>
+                            current === project.id ? null : current);
+                        },
+                        onDrop: (event) => handleProjectDrop(project.id, event),
+                        onDragEnd: handleProjectDragEnd,
+                        isDragging: dragProjectId === project.id,
+                        isDropTarget: dropTargetProjectId === project.id,
+                      } : undefined}
                       adminControls={canAdmin ? {
                         onEdit: () => setEditor({
                           kind: "project",
                           parentId: null,
                           item: project,
                         }),
-                        onDelete: () => removeItem(project, null),
-                        onMoveUp: () => moveItem(project.id, null, -1),
-                        onMoveDown: () => moveItem(project.id, null, 1),
-                        canMoveUp: projectIndex > 0,
-                        canMoveDown: projectIndex < workspace.projects.length - 1,
+                        onDelete: () => requestRemoveItem(project, null),
                       } : undefined}
                     />
-                    );
-                  })}
+                  ))}
                 </div>
               ) : (
                 <EmptyState />
@@ -903,7 +1040,7 @@ export function DashboardShell({
               parentId: null,
               item: selectedProject,
             }),
-            onDeleteProject: () => removeItem(selectedProject, null),
+            onDeleteProject: () => requestRemoveItem(selectedProject, null),
             onAddSubtask: () => setEditor({
               kind: "subtask",
               parentId: selectedProject.id,
@@ -920,13 +1057,43 @@ export function DashboardShell({
             },
             onDeleteSubtask: (subtaskId) => {
               const subtask = selectedProject.subtasks.find((item) => item.id === subtaskId);
-              if (subtask) removeItem(subtask, selectedProject.id);
+              if (subtask) requestRemoveItem(subtask, selectedProject.id);
             },
-            onMoveSubtask: (subtaskId, direction) =>
-              moveItem(subtaskId, selectedProject.id, direction),
+            onReorderSubtask: (subtaskId, beforeId) =>
+              reorderItem(subtaskId, selectedProject.id, beforeId),
           } : undefined}
           commentControls={commentControls}
         />
+      ) : null}
+      {pendingDelete ? (
+        <ConfirmDialog
+          title={
+            pendingDelete.items.length === 1
+              ? `Delete ${pendingDelete.items[0].item.title}?`
+              : `Delete ${pendingDelete.items.length} projects?`
+          }
+          message={
+            pendingDelete.items.length === 1
+              ? `Delete ${pendingDelete.items[0].parentId ? "subtask" : "project"} "${pendingDelete.items[0].item.title}"? This cannot be undone.`
+              : `Delete ${pendingDelete.items.length} selected projects? This cannot be undone.`
+          }
+          onConfirm={() => {
+            void confirmPendingDelete();
+          }}
+          onCancel={() => setPendingDelete(null)}
+        />
+      ) : null}
+      {manageKpisOpen ? (
+        <ModalDialog
+          labelledBy="manage-kpis-title"
+          closeLabel="Close KPI manager"
+          onClose={() => setManageKpisOpen(false)}
+          className="admin-modal kpi-manager-modal"
+        >
+          <p className="eyebrow">Administration</p>
+          <h2 id="manage-kpis-title">Manage KPIs</h2>
+          <StatusManager initialDashboard={workspace} variant="panel" />
+        </ModalDialog>
       ) : null}
     </>
   );

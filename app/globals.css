@@ -594,10 +594,95 @@ h1 {
   opacity: 0.45;
 }
 
-.admin-actions .delete-button {
+.admin-actions .delete-button,
+.delete-confirm-button {
   min-width: 30px;
   color: var(--red);
   font-size: 13px;
+}
+
+.delete-confirm-button {
+  border-color: color-mix(in srgb, var(--red) 35%, var(--border));
+  background: #fff0ed;
+}
+
+.project-card-admin-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.project-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.project-select input {
+  margin: 0;
+}
+
+.drag-handle {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: grab;
+  user-select: none;
+}
+
+.drag-handle-inline {
+  display: block;
+  margin-top: 4px;
+}
+
+.project-card-dragging {
+  opacity: 0.55;
+}
+
+.project-card-drop-target,
+.subtask-drop-target {
+  outline: 2px solid var(--orange);
+  outline-offset: 2px;
+}
+
+.project-card-selected {
+  border-color: color-mix(in srgb, var(--orange) 45%, var(--border));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--orange) 25%, transparent);
+}
+
+.subtask-draggable {
+  cursor: grab;
+}
+
+.subtask-dragging {
+  opacity: 0.55;
+}
+
+.modal-backdrop:has(> .confirm-modal) {
+  z-index: 40;
+}
+
+.kpi-manager-modal {
+  width: min(100%, 760px);
+}
+
+.status-settings-panel .status-panel-intro {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.confirm-dialog-message {
+  margin: 0 0 18px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
 }
 
 .mutation-notice {

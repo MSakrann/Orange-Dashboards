@@ -131,12 +131,9 @@ export function ProjectCard({
       role={openOnCardClick ? "button" : undefined}
       tabIndex={openOnCardClick ? 0 : undefined}
       aria-label={openOnCardClick ? `View ${project.title} details` : undefined}
-      draggable={Boolean(dragControls)}
-      onDragStart={dragControls?.onDragStart}
       onDragOver={dragControls?.onDragOver}
       onDragLeave={dragControls?.onDragLeave}
       onDrop={dragControls?.onDrop}
-      onDragEnd={dragControls?.onDragEnd}
       onClick={openOnCardClick ? () => onOpen(project) : undefined}
       onKeyDown={
         openOnCardClick
@@ -149,7 +146,7 @@ export function ProjectCard({
           : undefined
       }
     >
-      {adminControls || onSelectedChange ? (
+      {adminControls || onSelectedChange || dragControls ? (
         <div
           className="project-card-admin-bar"
           onClick={stopCardActivation}
@@ -167,9 +164,16 @@ export function ProjectCard({
             </label>
           ) : null}
           {dragControls ? (
-            <span className="drag-handle" aria-hidden="true">
+            <button
+              type="button"
+              className="drag-handle"
+              draggable
+              aria-label={`Drag to reorder ${project.title}`}
+              onDragStart={dragControls.onDragStart}
+              onDragEnd={dragControls.onDragEnd}
+            >
               Drag to reorder
-            </span>
+            </button>
           ) : null}
         </div>
       ) : null}

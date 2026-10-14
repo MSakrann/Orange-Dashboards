@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 const focusableSelector =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -25,12 +26,19 @@ export function ModalDialog({
 
   useEffect(() => {
     const previousActiveElement = document.activeElement as HTMLElement | null;
-    const dashboard = document.querySelector<HTMLElement>(".dashboard");
-    const previousAriaHidden = dashboard?.getAttribute("aria-hidden");
-    const wasInert = dashboard?.hasAttribute("inert") ?? false;
+    const blockedRoots = Array.from(
+      document.querySelectorAll<HTMLElement>("main.dashboard, main.status-settings"),
+    );
+    const previousState = blockedRoots.map((root) => ({
+      root,
+      ariaHidden: root.getAttribute("aria-hidden"),
+      wasInert: root.hasAttribute("inert"),
+    }));
 
-    dashboard?.setAttribute("aria-hidden", "true");
-    dashboard?.setAttribute("inert", "");
+    for (const root of blockedRoots) {
+      root.setAttribute("aria-hidden", "true");
+      root.setAttribute("inert", "");
+    }
     const initialFocus = dialogRef.current?.querySelector<HTMLElement>(
       "[data-modal-initial-focus]",
     );
@@ -70,10 +78,10 @@ export function ModalDialog({
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      if (dashboard) {
-        if (previousAriaHidden == null) dashboard.removeAttribute("aria-hidden");
-        else dashboard.setAttribute("aria-hidden", previousAriaHidden);
-        if (!wasInert) dashboard.removeAttribute("inert");
+      for (const entry of previousState) {
+        if (entry.ariaHidden == null) entry.root.removeAttribute("aria-hidden");
+        else entry.root.setAttribute("aria-hidden", entry.ariaHidden);
+        if (!entry.wasInert) entry.root.removeAttribute("inert");
       }
       queueMicrotask(() => {
         if (previousActiveElement?.isConnected) previousActiveElement.focus();
@@ -81,7 +89,7 @@ export function ModalDialog({
     };
   }, [onClose]);
 
-  return (
+  const dialog = (
     <div
       className="modal-backdrop"
       onMouseDown={(event) => event.target === event.currentTarget && onClose()}
@@ -107,4 +115,7 @@ export function ModalDialog({
       </section>
     </div>
   );
+
+  if (typeof document === "undefined") return dialog;
+  return createPortal(dialog, document.body);
 }

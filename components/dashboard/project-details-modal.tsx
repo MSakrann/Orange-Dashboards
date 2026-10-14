@@ -42,11 +42,11 @@ export function ProjectDetailsModal({
 }: ProjectDetailsModalProps) {
   const dragSubtaskIdRef = useRef<string | null>(null);
 
-  function handleSubtaskDragStart(subtaskId: string, event: DragEvent<HTMLLIElement>) {
+  function handleSubtaskDragStart(subtaskId: string, event: DragEvent<HTMLElement>) {
     dragSubtaskIdRef.current = subtaskId;
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", subtaskId);
-    event.currentTarget.classList.add("subtask-dragging");
+    event.currentTarget.closest("li")?.classList.add("subtask-dragging");
   }
 
   function handleSubtaskDragOver(event: DragEvent<HTMLLIElement>) {
@@ -67,8 +67,8 @@ export function ProjectDetailsModal({
     adminControls.onReorderSubtask(sourceId, beforeId);
   }
 
-  function handleSubtaskDragEnd(event: DragEvent<HTMLLIElement>) {
-    event.currentTarget.classList.remove("subtask-dragging");
+  function handleSubtaskDragEnd(event: DragEvent<HTMLElement>) {
+    event.currentTarget.closest("li")?.classList.remove("subtask-dragging");
     dragSubtaskIdRef.current = null;
   }
 
@@ -143,16 +143,11 @@ export function ProjectDetailsModal({
               {project.subtasks.map((subtask) => (
                 <li
                   key={subtask.id}
-                  draggable={Boolean(adminControls)}
-                  onDragStart={adminControls
-                    ? (event) => handleSubtaskDragStart(subtask.id, event)
-                    : undefined}
                   onDragOver={adminControls ? handleSubtaskDragOver : undefined}
                   onDragLeave={adminControls ? handleSubtaskDragLeave : undefined}
                   onDrop={adminControls
                     ? (event) => handleSubtaskDrop(subtask.id, event)
                     : undefined}
-                  onDragEnd={adminControls ? handleSubtaskDragEnd : undefined}
                   className={adminControls ? "subtask-draggable" : undefined}
                 >
                   <div>
@@ -172,9 +167,16 @@ export function ProjectDetailsModal({
                     </strong>
                     <small>{subtask.statusName} · {subtask.progress}%</small>
                     {adminControls ? (
-                      <span className="drag-handle drag-handle-inline" aria-hidden="true">
+                      <button
+                        type="button"
+                        className="drag-handle drag-handle-inline"
+                        draggable
+                        aria-label={`Drag to reorder ${subtask.title}`}
+                        onDragStart={(event) => handleSubtaskDragStart(subtask.id, event)}
+                        onDragEnd={handleSubtaskDragEnd}
+                      >
                         Drag to reorder
-                      </span>
+                      </button>
                     ) : null}
                   </div>
                   {adminControls ? (

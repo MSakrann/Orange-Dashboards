@@ -100,7 +100,8 @@ describe("admin dashboard controls", () => {
       .not.toBeInTheDocument();
     expect(within(dialog).queryByRole("button", { name: /Move Existing subtask up/i }))
       .not.toBeInTheDocument();
-    expect(within(dialog).getByText("Drag to reorder")).toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: /Drag to reorder Existing subtask/i }))
+      .toBeInTheDocument();
   });
 
   async function confirmDelete(user: ReturnType<typeof userEvent.setup>) {
@@ -375,13 +376,12 @@ describe("admin dashboard controls", () => {
       <DashboardShell initialDashboard={orderedDashboard} source="database" isAdmin />,
     );
 
-    const cards = container.querySelectorAll(".project-card");
-    const middleCard = Array.from(cards).find((card) =>
-      card.textContent?.includes("Middle project"));
-    const existingCard = Array.from(cards).find((card) =>
+    const middleHandle = screen.getByRole("button", {
+      name: "Drag to reorder Middle project",
+    });
+    const existingCard = Array.from(container.querySelectorAll(".project-card")).find((card) =>
       card.textContent?.includes("Existing project")
       && !card.textContent?.includes("Middle project"));
-    expect(middleCard).toBeTruthy();
     expect(existingCard).toBeTruthy();
 
     const dataTransfer = {
@@ -390,10 +390,10 @@ describe("admin dashboard controls", () => {
       setData: vi.fn(),
       getData: vi.fn(() => middle.id),
     };
-    fireEvent.dragStart(middleCard!, { dataTransfer });
+    fireEvent.dragStart(middleHandle, { dataTransfer });
     fireEvent.dragOver(existingCard!, { dataTransfer });
     fireEvent.drop(existingCard!, { dataTransfer });
-    fireEvent.dragEnd(middleCard!, { dataTransfer });
+    fireEvent.dragEnd(middleHandle, { dataTransfer });
 
     await screen.findByRole("button", { name: "Retry" });
     await user.click(screen.getByRole("button", { name: "Retry" }));
